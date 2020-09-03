@@ -57,13 +57,17 @@ SetDeviceAlias.ps1
 	Note, Using this script with a Private Key Encrpytion device will convert it to Passphrase encryption.
 
 SW MSP_MSPBenhancedMonitoringDeploymentConfiguration_01jul2020jr1.pdf
+
 MSPB_CFG_CHECK_v1.amp
+
 MSPB_CLOUD_CHECK_v1.amp
+
 MSPB_LSV_CHECK_v1.amp
 
 	3 AMP files and PDF documentation to enhance monitoring of SolarWinds Backup (Ncentral Integrated or Standalone Editions).
 	
 SolarWinds Backup - RMM auto deploy setup.pdf
+
 SolarWinds Backup Deploy.amp
 
 	1 AMP file and PDF documentation to enable RMM deployment of SolarWinds Backup - Standalone Edition
@@ -74,6 +78,7 @@ SolarWinds Backup Redeploy.amp
 	using device credentials and passphase 
 
 SolarWinds Backup Store Credentials.amp
+
 SolarWinds Backup Reuse Stored Credentials.amp
 
 	2 AMP files for use with SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition, when deployed via Ncentral or RMM).
@@ -87,13 +92,17 @@ SolarWinds Backup Upgrade.v02.amp
 ### SolarWinds Backup - Ncentral Integrated Editon ###
 
 SW MSP_MSPBenhancedMonitoringDeploymentConfiguration_01jul2020jr1.pdf
+
 MSPB_CFG_CHECK_v1.amp
+
 MSPB_CLOUD_CHECK_v1.amp
+
 MSPB_LSV_CHECK_v1.amp
 
 	3 AMP files and PDF documentation to enhance monitoring of SolarWinds Backup (Ncentral Integrated or Standalone Editions).
 
 SolarWinds Backup Migration Prep.amp
+
 SolarWinds Backup Migration Cleanup.amp
 
 	2 AMP files for use when working with SolarWinds on an approved migration from Ncentral Integrated Backup to the Standalone Edition.
@@ -101,6 +110,7 @@ SolarWinds Backup Migration Cleanup.amp
 	Migration Cleanup will revert changes made to block Ncentral from being able to uninstall the Backup Manager. 
 
 SolarWinds Backup Store Credentials.amp
+
 SolarWinds Backup Reuse Stored Credentials.amp
 
 	2 AMP files for use with SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition, when deployed via Ncentral or RMM).
