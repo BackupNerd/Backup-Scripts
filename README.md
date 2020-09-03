@@ -7,18 +7,18 @@ TO DOWNLOAD FILES click the green ( CODE button ) to download the entire Script 
 
 BackupManagerDeploy.ps1 
 
-  Universal deployment script for SolarWinds Backup
-  Supports Automatic Deployment, Documents Deployment, Manual Deployment, Uninstall, Upgrade, Redeploy with Passphrase,
-  Redeploy with Private Key, Store Credentials, Reinstall & Reuse Stored Crendentials
+	Universal deployment script for SolarWinds Backup
+	Supports Automatic Deployment, Documents Deployment, Manual Deployment, Uninstall, Upgrade, Redeploy with Passphrase,
+	Redeploy with Private Key, Store Credentials, Reinstall & Reuse Stored Crendentials
 
 BulkGenerateBackupManagerRedeployCommands.ps1
 
-  Script to bulk generate a list of device credentials and redeployment commands for SolarWinds Backup devices
+	Script to bulk generate a list of device credentials and redeployment commands for SolarWinds Backup devices
 
 CleanupArchive.ps1
 
-  Script to clean all archive sessions older than X months. 
-  Optionally, check for existing Archive rules and/or create new Archive rules in no active rules are found. 
+	Script to clean all archive sessions older than X months. 
+	Optionally, check for existing Archive rules and/or create new Archive rules in no active rules are found. 
 
 CustomBackupThrottle.v05.ps1
 
