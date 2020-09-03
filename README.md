@@ -39,13 +39,13 @@ CustomBackupThrottle.ps1
 
 ExcludeUSB.ps1
 	
-	Script to excude USB attached disks from backup.
-	Identify disks attached via a USB bus type and exlcude those device volumes using backup filter or the FilesNotToBackup Registry Key.
+	Script to exclude USB attached disks from backup.
+	Identify disks attached via USB bus type and exclude those device volumes using backup filter or the FilesNotToBackup registry key.
 
 LSVSyncCheckFinal.ps1
 
-	Script to check the current Status and Sync percentage of the LocalSpeedVault and Cloud Storage
-.
+	Script to check the current Status and Sync percentage of the LocalSpeedVault and Cloud Storage.
+
 SetBackupLogging.ps1
 
 	Script to set the logging level of the local Backup Manager client.
@@ -82,7 +82,7 @@ SolarWinds Backup Reuse Stored Credentials.amp
 
 SolarWinds Backup Upgrade.v02.amp
 
-	AMP file to force upgrade of the Backup Manager to the latest downloadable version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition)
+	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition)
 
 ### SolarWinds Backup - Ncentral Integrated Editon ###
 
@@ -109,7 +109,7 @@ SolarWinds Backup Reuse Stored Credentials.amp
 
 SolarWinds Backup Upgrade.v02.amp
 
-	AMP file to force upgrade of the Backup Manager to the latest downloadable version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition)
+	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition)
 
 ### SolarWinds Backup - RMM Integrated Editon ###
 
