@@ -1,10 +1,10 @@
 # Backup-Scripts
 ## READ ME 
 
-# Sample scripts are not supported under any SolarWinds support program or service.
-# The sample scripts are provided AS IS without warranty of any kind.
-# SolarWinds expressly disclaims all implied warranties including, warranties of merchantability or of fitness for a particular purpose. 
-# In no event shall SolarWinds or any other party be liable for damages arising out of the use of or inability to use the sample scripts.
+### Sample scripts are not supported under any SolarWinds support program or service.
+### The sample scripts are provided AS IS without warranty of any kind.
+### SolarWinds expressly disclaims all implied warranties including, warranties of merchantability or of fitness for a particular purpose. 
+### In no event shall SolarWinds or any other party be liable for damages arising out of the use of or inability to use the sample scripts.
 
 ## TO DOWNLOAD FILES click the green ( CODE button ) to download the entire Script Repository as a single .ZIP file.
 
