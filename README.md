@@ -14,7 +14,7 @@
 
 Get-Foldersizes.ps1
 
-	Script to inventory a file tree and report sizes for each branch .
+	Script to inventory a file tree and report sizes of each branch.
 
 ### SolarWinds Backup - Standalone Editon ###
 
@@ -76,13 +76,13 @@ SolarWinds Backup Redeploy.amp
 SolarWinds Backup Store Credentials.amp
 SolarWinds Backup Reuse Stored Credentials.amp
 
-	2 AMP files for use with SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition, when deployed via Ncentral or RMM)
+	2 AMP files for use with SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition, when deployed via Ncentral or RMM).
 	Store Credentials will store your local Backup Manager credentials 
 	Reuse Stored Credentials will redeploy SolarWinds Backup using stored credentials if the Backup Manager gets uninstalled. 
 
 SolarWinds Backup Upgrade.v02.amp
 
-	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition)
+	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
 
 ### SolarWinds Backup - Ncentral Integrated Editon ###
 
@@ -103,21 +103,37 @@ SolarWinds Backup Migration Cleanup.amp
 SolarWinds Backup Store Credentials.amp
 SolarWinds Backup Reuse Stored Credentials.amp
 
-	2 AMP files for use with SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition, when deployed via Ncentral or RMM)
-	Store Credentials will store your local Backup Manager credentials 
+	2 AMP files for use with SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition, when deployed via Ncentral or RMM).
+	Store Credentials will store your local Backup Manager credentials.
 	Reuse Stored Credentials will redeploy SolarWinds Backup using stored credentials if the Backup Manager gets uninstalled. 
 
 SolarWinds Backup Upgrade.v02.amp
 
-	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition)
+	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
 
 ### SolarWinds Backup - RMM Integrated Editon ###
 
+CleanupArchive.ps1
+
+	Script to clean all archive sessions older than X months. 
+	Optionally, check for existing Archive rules and/or create new Archive rules in no active rules are found.
+
+CustomBackupThrottle.ps1
+	
+	Script to set backup throttling times and values for individual days of the week   
+
+ExcludeUSB.ps1
+	
+	Script to exclude USB attached disks from backup.
+	Identify disks attached via USB bus type and exclude those device volumes using backup filter or the FilesNotToBackup registry key.
+
 LSVSyncCheckFinal.ps1
 
-	Script to check the current Status and Sync percentage of the LocalSpeedVault and Cloud Storage
+	Script to check the current Status and Sync percentage of the LocalSpeedVault and Cloud Storage.
 
+SetBackupLogging.ps1
 
+	Script to set the logging level of the local Backup Manager client.
 
 
 
