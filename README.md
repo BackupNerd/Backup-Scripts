@@ -31,7 +31,7 @@ BulkGenerateBackupManagerRedeployCommands.ps1
 CleanupArchive.ps1
 
 	Script to clean all archive sessions older than X months. 
-	Optionally, check for existing Archive rules and/or create new Archive rules in no active rules are found.
+	Optionally, check for existing Archive rules and/or create new Archive rules if no active archive rules are found.
 
 CustomBackupThrottle.ps1
 	
@@ -91,6 +91,11 @@ SolarWinds Backup Upgrade.v02.amp
 
 ### SolarWinds Backup - Ncentral Integrated Editon ###
 
+CleanupArchive.ps1
+
+	Script to clean all archive sessions older than X months. 
+	Optionally, check for existing Archive rules and/or create new Archive rules if no active archive rules are found.
+
 SW MSP_MSPBenhancedMonitoringDeploymentConfiguration_01jul2020jr1.pdf
 
 MSPB_CFG_CHECK_v1.amp
@@ -126,7 +131,7 @@ SolarWinds Backup Upgrade.v02.amp
 CleanupArchive.ps1
 
 	Script to clean all archive sessions older than X months. 
-	Optionally, check for existing Archive rules and/or create new Archive rules in no active rules are found.
+	Optionally, check for existing Archive rules and/or create new Archive rules if no active archive rules are found.
 
 CustomBackupThrottle.ps1
 	
