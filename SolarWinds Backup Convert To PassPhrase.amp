@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="cdfd4044-ec9a-44fb-9e14-b0f8c90f84de" Name="SolarWinds Backup Convert To PassPhrase" Description="U29sYXJXaW5kcyBCYWNrdXAgQ29udmVydCBUbyBQYXNzUGhyYXNl" Version="2.10.0.19" RemoteCategory="0" ExecutionType="Local" MinimumPSVersionRequired="0.0.0">
+  <Object ID="{e5cf004f-24cb-470c-bdcc-6761ed99b837}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml&gt;&lt;Parameters&gt;&lt;Parameter ParameterName=&quot;PartnerName&quot; Label=&quot;Partner Name (https://backup.management)&quot; ParameterType=&quot;string&quot; Value=&quot;i.e. ABC Systems (bob@abcsys.net)&quot; /&gt;&lt;Parameter ParameterName=&quot;UserName&quot; Label=&quot;User Name (https://backup.management)&quot; ParameterType=&quot;string&quot; Value=&quot;i.e. thomas@abcsys.net&quot; /&gt;&lt;Parameter ParameterName=&quot;Password&quot; Label=&quot;User Password (https://backup.management)&quot; ParameterType=&quot;password&quot; Value=&quot;&quot; /&gt;&lt;/Parameters&gt;&lt;OutputParameters&gt;&lt;Parameter ParameterName=&quot;InstallationType&quot; Label=&quot;InstallationType&quot; ParameterType=&quot;string&quot; Value=&quot;Run PowerShell Script.Installation Type&quot; /&gt;&lt;Parameter ParameterName=&quot;DeviceName&quot; Label=&quot;Device Name&quot; ParameterType=&quot;string&quot; Value=&quot;Run PowerShell Script.Device Name&quot; /&gt;&lt;Parameter ParameterName=&quot;DevicePartnerName&quot; Label=&quot;Partner Name&quot; ParameterType=&quot;string&quot; Value=&quot;Run PowerShell Script.Partner Name&quot; /&gt;&lt;Parameter ParameterName=&quot;uid&quot; Label=&quot;Partner UID&quot; ParameterType=&quot;string&quot; Value=&quot;Run PowerShell Script.Partner UID&quot; /&gt;&lt;/OutputParameters&gt;&lt;/xml&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System">
+      <d2p1:TupleOfstringstringstringstring>
+        <d2p1:m_Item1>d68edfca-a764-4cb7-9be6-a39e3596aca8.InstallationType</d2p1:m_Item1>
+        <d2p1:m_Item2>OutputObject</d2p1:m_Item2>
+        <d2p1:m_Item3></d2p1:m_Item3>
+        <d2p1:m_Item4>InstallationType</d2p1:m_Item4>
+      </d2p1:TupleOfstringstringstringstring>
+      <d2p1:TupleOfstringstringstringstring>
+        <d2p1:m_Item1>d68edfca-a764-4cb7-9be6-a39e3596aca8.Account</d2p1:m_Item1>
+        <d2p1:m_Item2>OutputObject</d2p1:m_Item2>
+        <d2p1:m_Item3></d2p1:m_Item3>
+        <d2p1:m_Item4>DeviceName</d2p1:m_Item4>
+      </d2p1:TupleOfstringstringstringstring>
+      <d2p1:TupleOfstringstringstringstring>
+        <d2p1:m_Item1>d68edfca-a764-4cb7-9be6-a39e3596aca8.DevicePartnerName</d2p1:m_Item1>
+        <d2p1:m_Item2>OutputObject</d2p1:m_Item2>
+        <d2p1:m_Item3></d2p1:m_Item3>
+        <d2p1:m_Item4>DevicePartnerName</d2p1:m_Item4>
+      </d2p1:TupleOfstringstringstringstring>
+      <d2p1:TupleOfstringstringstringstring>
+        <d2p1:m_Item1>d68edfca-a764-4cb7-9be6-a39e3596aca8.uid</d2p1:m_Item1>
+        <d2p1:m_Item2>OutputObject</d2p1:m_Item2>
+        <d2p1:m_Item3></d2p1:m_Item3>
+        <d2p1:m_Item4>uid</d2p1:m_Item4>
+      </d2p1:TupleOfstringstringstringstring>
+    </hashset>
+  </LinkManager>
+  <Diagnostics OriginalVersion="2.16.1.10" />
+  <Activity mc:Ignorable="sads sap" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>504,1304.8</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="504,1304.8" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.15.1.1, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="468,520.8" Moniker="f937e80c-2a30-4668-952d-185f7a0b243a" OutPut_64="[RunPowerShellScript_OutPut_64]" Result="[RunPowerShellScript_Result]" ResultString="[RunPowerShellScript_ResultString]" Results_x64="[RunPowerShellScript_Results_x64]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="50418117-27b6-4728-a0fe-499a0e8989f1" m_bTextLinkChange="False" script="WwBOAGUAdAAuAFMAZQByAHYAaQBjAGUAUABvAGkAbgB0AE0AYQBuAGEAZwBlAHIAXQA6ADoAUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbAAgAD0AIABbAE4AZQB0AC4AUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbABUAHkAcABlAF0AOgA6AFQAbABzADEAMgANAAoADQAKACQAdQByAGwAIAA9ACAAIgBoAHQAdABwAHMAOgAvAC8AYQBwAGkALgBiAGEAYwBrAHUAcAAuAG0AYQBuAGEAZwBlAG0AZQBuAHQALwBqAHMAbwBuAGEAcABpACIADQAKACAAIAAgACAAJABkAGEAdABhACAAPQAgAEAAewB9AA0ACgAgACAAIAAgACQAZABhAHQAYQAuAGoAcwBvAG4AcgBwAGMAIAA9ACAAJwAyAC4AMAAnAA0ACgAgACAAIAAgACQAZABhAHQAYQAuAGkAZAAgAD0AIAAnADIAJwANAAoAIAAgACAAIAAkAGQAYQB0AGEALgBtAGUAdABoAG8AZAAgAD0AIAAnAEwAbwBnAGkAbgAnAA0ACgAgACAAIAAgACQAZABhAHQAYQAuAHAAYQByAGEAbQBzACAAPQAgAEAAewB9AA0ACgAgACAAIAAgACQAZABhAHQAYQAuAHAAYQByAGEAbQBzAC4AcABhAHIAdABuAGUAcgAgAD0AIAAkAFAAYQByAHQAbgBlAHIATgBhAG0AZQANAAoAIAAgACAAIAAkAGQAYQB0AGEALgBwAGEAcgBhAG0AcwAuAHUAcwBlAHIAbgBhAG0AZQAgAD0AIAAkAFUAcwBlAHIATgBhAG0AZQANAAoAIAAgACAAIAAkAGQAYQB0AGEALgBwAGEAcgBhAG0AcwAuAHAAYQBzAHMAdwBvAHIAZAAgAD0AIAAkAFAAYQBzAHMAdwBvAHIAZAANAAoAIAAgACAAIAANAAoAIAAgACAAIAAkAHcAZQBiAHIAZQBxAHUAZQBzAHQAIAA9ACAASQBuAHYAbwBrAGUALQBXAGUAYgBSAGUAcQB1AGUAcwB0ACAALQBNAGUAdABoAG8AZAAgAFAATwBTAFQAIABgAA0ACgAgACAAIAAgAC0AQwBvAG4AdABlAG4AdABUAHkAcABlACAAJwBhAHAAcABsAGkAYwBhAHQAaQBvAG4ALwBqAHMAbwBuACcAIABgAA0ACgAgACAAIAAgAC0AQgBvAGQAeQAgACgAQwBvAG4AdgBlAHIAdABUAG8ALQBKAHMAbwBuACAAJABkAGEAdABhACkAIABgAA0ACgAgACAAIAAgAC0AVQByAGkAIAAkAHUAcgBsACAAYAANAAoAIAAgACAAIAAtAFMAZQBzAHMAaQBvAG4AVgBhAHIAaQBhAGIAbABlACAAZwBsAG8AYgBhAGwAOgB3AGUAYgBzAGUAcwBzAGkAbwBuACAAYAANAAoAIAAgACAAIAAtAFUAcwBlAEIAYQBzAGkAYwBQAGEAcgBzAGkAbgBnAA0ACgAgACAAIAAgACQAZwBsAG8AYgBhAGwAOgBjAG8AbwBrAGkAZQBzACAAPQAgACQAdwBlAGIAcwBlAHMAcwBpAG8AbgAuAEMAbwBvAGsAaQBlAHMALgBHAGUAdABDAG8AbwBrAGkAZQBzACgAJAB1AHIAbAApAA0ACgAgACAAIAAgACQAZwBsAG8AYgBhAGwAOgB3AGUAYgBzAGUAcwBzAGkAbwBuACAAPQAgACQAdwBlAGIAcwBlAHMAcwBpAG8AbgANAAoAIAAgACAADQAKACAAIAAgACAAJABnAGwAbwBiAGEAbAA6AEEAdQB0AGgAZQBuAHQAaQBjAGEAdABlACAAPQAgACQAdwBlAGIAcgBlAHEAdQBlAHMAdAAgAHwAIABjAG8AbgB2AGUAcgB0AGYAcgBvAG0ALQBqAHMAbwBuAA0ACgAgACAAIAAgACQAZwBsAG8AYgBhAGwAOgB2AGkAcwBhACAAPQAgACQAYQB1AHQAaABlAG4AdABpAGMAYQB0AGUALgB2AGkAcwBhAA==">
+          <p:RunPowerShellScript.InArgs>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="PartnerName" ArgType="string" DisplayArg="Input Parameters.Partner Name (https://backup.management)" DisplayName="PartnerName" Name="PartnerName" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[PartnerName]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="UserName" ArgType="string" DisplayArg="Input Parameters.User Name (https://backup.management)" DisplayName="UserName" Name="UserName" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[UserName]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="Password" ArgType="password" DisplayArg="Input Parameters.User Password (https://backup.management)" DisplayName="Password" Name="Password" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="p:Password">[Password]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+          </p:RunPowerShellScript.InArgs>
+          <p:RunPowerShellScript.OutArgs>
+            <p:OutArg x:Key="visa" ArgType="string" DisplayName="Current Visa" Name="visa">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_visa]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+            <p:OutArg x:Key="cookies" ArgType="string" DisplayName="cookies" Name="cookies">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_cookies]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+            <p:OutArg x:Key="websession" ArgType="string" DisplayName="websession" Name="websession">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_websession]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+          </p:RunPowerShellScript.OutArgs>
+        </p:RunPowerShellScript>
+        <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.15.1.1, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="468,520.8" Moniker="d68edfca-a764-4cb7-9be6-a39e3596aca8" OutPut_64="[RunPowerShellScript_OutPut_64_1]" Result="[RunPowerShellScript_Result_1]" ResultString="[RunPowerShellScript_ResultString_1]" Results_x64="[RunPowerShellScript_Results_x64_1]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="d8c7acb1-51e5-4671-ab22-81d5e4aa9a5e" m_bTextLinkChange="False" script="WwBOAGUAdAAuAFMAZQByAHYAaQBjAGUAUABvAGkAbgB0AE0AYQBuAGEAZwBlAHIAXQA6ADoAUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbAAgAD0AIABbAE4AZQB0AC4AUwBlAGMAdQByAGkAdAB5AFAAcgBvAHQAbwBjAG8AbABUAHkAcABlAF0AOgA6AFQAbABzADEAMgANAAoAIAANAAoAJABTAEEAXwBwAGEAdABoACAAPQAgACIAJABlAG4AdgA6AEEATABMAFUAUwBFAFIAUwBQAFIATwBGAEkATABFAFwATQBYAEIAXAAiAA0ACgAgACQAUwBBAF8AWABNAEwAcABhAHQAaAAgAD0AIABKAG8AaQBuAC0AUABhAHQAaAAgAC0AUABhAHQAaAAgACQAUwBBAF8AcABhAHQAaAAgAC0AQwBoAGkAbABkAFAAYQB0AGgAIAAiAFwAQgBhAGMAawB1AHAAIABNAGEAbgBhAGcAZQByAFwAUwB0AGEAdAB1AHMAUgBlAHAAbwByAHQALgB4AG0AbAAiAA0ACgAgAFsAeABtAGwAXQAkAFMAdABhAHQAdQBzAFIAZQBwAG8AcgB0ACAAPQAgAEcAZQB0AC0AQwBvAG4AdABlAG4AdAAgACQAUwBBAF8AWABNAEwAcABhAHQAaAANAAoAIAAkAGcAbABvAGIAYQBsADoARABlAHYAaQBjAGUAUABhAHIAdABuAGUAcgBOAGEAbQBlACAAPQAgACQAUwB0AGEAdAB1AHMAUgBlAHAAbwByAHQALgBTAHQAYQB0AGkAcwB0AGkAYwBzAC4AUABhAHIAdABuAGUAcgBOAGEAbQBlAA0ACgAgACQAZwBsAG8AYgBhAGwAOgBBAGMAYwBvAHUAbgB0ACAAPQAgACQAUwB0AGEAdAB1AHMAUgBlAHAAbwByAHQALgBTAHQAYQB0AGkAcwB0AGkAYwBzAC4AQQBjAGMAbwB1AG4AdAANAAoAIAAkAGcAbABvAGIAYQBsADoASQBuAHMAdABhAGwAbABhAHQAaQBvAG4AVAB5AHAAZQAgAD0AIAAkAFMAdABhAHQAdQBzAFIAZQBwAG8AcgB0AC4AUwB0AGEAdABpAHMAdABpAGMAcwAuAEkAbgBzAHQAYQBsAGwAYQB0AGkAbwBuAFQAeQBwAGUADQAKAA0ACgAgACAAIAAgACAAIAAgACAAJAB1AHIAbAAgAD0AIAAiAGgAdAB0AHAAcwA6AC8ALwBhAHAAaQAuAGIAYQBjAGsAdQBwAC4AbQBhAG4AYQBnAGUAbQBlAG4AdAAvAGoAcwBvAG4AYQBwAGkAIgANAAoAIAAgACAAIAAgACAAIAAgACQAZABhAHQAYQAgAD0AIABAAHsAfQANAAoAIAAgACAAIAAgACAAIAAgACQAZABhAHQAYQAuAGoAcwBvAG4AcgBwAGMAIAA9ACAAJwAyAC4AMAAnAA0ACgAgACAAIAAgACAAIAAgACAAJABkAGEAdABhAC4AaQBkACAAPQAgACcAMgAnAA0ACgAgACAAIAAgACAAIAAgACAAJABkAGEAdABhAC4AdgBpAHMAYQAgAD0AIAAkAHYAaQBzAGEADQAKACAAIAAgACAAIAAgACAAIAAkAGQAYQB0AGEALgBtAGUAdABoAG8AZAAgAD0AIAAnAEcAZQB0AFAAYQByAHQAbgBlAHIASQBuAGYAbwAnAA0ACgAgACAAIAAgACAAIAAgACAAJABkAGEAdABhAC4AcABhAHIAYQBtAHMAIAA9ACAAQAB7AH0ADQAKACAAIAAgACAAIAAgACAAIAAkAGQAYQB0AGEALgBwAGEAcgBhAG0AcwAuAG4AYQBtAGUAIAA9ACAAWwBTAHQAcgBpAG4AZwBdACQARABlAHYAaQBjAGUAUABhAHIAdABuAGUAcgBOAGEAbQBlAA0ACgAgACAAIAAgAA0ACgAgACAAIAAgACAAIAAgACAAJAB3AGUAYgByAGUAcQB1AGUAcwB0ACAAPQAgAEkAbgB2AG8AawBlAC0AVwBlAGIAUgBlAHEAdQBlAHMAdAAgAC0ATQBlAHQAaABvAGQAIABQAE8AUwBUACAAYAANAAoAIAAgACAAIAAgACAAIAAgAC0AQwBvAG4AdABlAG4AdABUAHkAcABlACAAJwBhAHAAcABsAGkAYwBhAHQAaQBvAG4ALwBqAHMAbwBuACcAIABgAA0ACgAgACAAIAAgACAAIAAgACAALQBCAG8AZAB5ACAAKABDAG8AbgB2AGUAcgB0AFQAbwAtAEoAcwBvAG4AIAAkAGQAYQB0AGEAIAAtAGQAZQBwAHQAaAAgADUAKQAgAGAADQAKACAAIAAgACAAIAAgACAAIAAtAFUAcgBpACAAJAB1AHIAbAAgAGAADQAKACAAIAAgACAAIAAgACAAIAAtAFMAZQBzAHMAaQBvAG4AVgBhAHIAaQBhAGIAbABlACAAZwBsAG8AYgBhAGwAOgB3AGUAYgBzAGUAcwBzAGkAbwBuACAAYAANAAoAIAAgACAAIAAgACAAIAAgAC0AVQBzAGUAQgBhAHMAaQBjAFAAYQByAHMAaQBuAGcADQAKACAAIAAgACAAIAAgACAAIAAkAGcAbABvAGIAYQBsADoAYwBvAG8AawBpAGUAcwAgAD0AIAAkAHcAZQBiAHMAZQBzAHMAaQBvAG4ALgBDAG8AbwBrAGkAZQBzAC4ARwBlAHQAQwBvAG8AawBpAGUAcwAoACQAdQByAGwAKQANAAoAIAAgACAAIAAgACAAIAAgACQAZwBsAG8AYgBhAGwAOgB3AGUAYgBzAGUAcwBzAGkAbwBuACAAPQAgACQAdwBlAGIAcwBlAHMAcwBpAG8AbgANAAoADQAKACAAIAAgACAAIAAgACAAIAAkAEcAbABvAGIAYQBsADoAUABhAHIAdABuAGUAcgAgAD0AIAAkAHcAZQBiAHIAZQBxAHUAZQBzAHQAIAB8ACAAYwBvAG4AdgBlAHIAdABmAHIAbwBtAC0AagBzAG8AbgANAAoADQAKACAAIAAgACAAIAAgACAAIABbAFMAdAByAGkAbgBnAF0AJABnAGwAbwBiAGEAbAA6AFUAaQBkACAAPQAgACQAUABhAHIAdABuAGUAcgAuAHIAZQBzAHUAbAB0AC4AcgBlAHMAdQBsAHQALgBVAGkAZAANAAoAIAAgACAAIAAgACAAIAAgAFsAUwB0AHIAaQBuAGcAXQAkAGcAbABvAGIAYQBsADoARABlAHYAaQBjAGUAUABhAHIAdABuAGUAcgBOAGEAbQBlACAAPQAgACQAUABhAHIAdABuAGUAcgAuAHIAZQBzAHUAbAB0AC4AcgBlAHMAdQBsAHQALgBOAGEAbQBlAA0ACgANAAoAIAAgACAAIAAgAEkAZgAgACgAJABJAG4AcwB0AGEAbABsAGEAdABpAG8AbgBUAHkAcABlACAALQBuAGUAIAAiAEEAdQB0AG8ARABlAHAAbABvAHkAZQBkACIAKQAgAHsADQAKACAAIAAgACAAIAAmACAAIgBDADoAXABQAHIAbwBnAHIAYQBtACAARgBpAGwAZQBzAFwAQgBhAGMAawB1AHAAIABNAGEAbgBhAGcAZQByAFwAQwBsAGkAZQBuAHQAVABvAG8AbAAuAGUAeABlACIAIAB0AGEAawBlAG8AdgBlAHIAIAAtAHAAYQByAHQAbgBlAHIALQB1AGkAZAAgACQAVQBpAGQAIAAtAGMAbwBuAGYAaQBnAC0AcABhAHQAaAAgACIAYwA6AFwAUAByAG8AZwByAGEAbQAgAEYAaQBsAGUAcwBcAEIAYQBjAGsAdQBwACAATQBhAG4AYQBnAGUAcgBcAGMAbwBuAGYAaQBnAC4AaQBuAGkAIgANAAoADQAKACAAIAAgACAAIAB9AA==">
+          <p:RunPowerShellScript.InArgs>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="visa" ArgType="string" DisplayArg="Run PowerShell Script.Current Visa" DisplayName="visa" Name="visa" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[RunPowerShellScript_visa]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="cookies" ArgType="string" DisplayArg="Run PowerShell Script.cookies" DisplayName="cookies" Name="cookies" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[RunPowerShellScript_cookies]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="websession" ArgType="string" DisplayArg="Run PowerShell Script.websession" DisplayName="websession" Name="websession" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[RunPowerShellScript_websession]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+          </p:RunPowerShellScript.InArgs>
+          <p:RunPowerShellScript.OutArgs>
+            <p:OutArg x:Key="uid" ArgType="string" DisplayName="Partner UID" Name="uid">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_uid]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+            <p:OutArg x:Key="DevicePartnerName" ArgType="string" DisplayName="Partner Name" Name="DevicePartnerName">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_DevicePartnerName]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+            <p:OutArg x:Key="InstallationType" ArgType="string" DisplayName="Installation Type" Name="InstallationType">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_InstallationType]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+            <p:OutArg x:Key="Account" ArgType="string" DisplayName="Device Name" Name="Account">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_Account]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+          </p:RunPowerShellScript.OutArgs>
+        </p:RunPowerShellScript>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString" />
+        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64" />
+        <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_visa" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64_1" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString_1" />
+        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64_1" />
+        <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result_1" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_cookies" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_websession" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_Account" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_InstallationType" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_DevicePartnerName" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_uid" />
+        <Variable x:TypeArguments="x:String" Default="HEH Computing IT" Name="PartnerName" />
+        <Variable x:TypeArguments="x:String" Default="eric_harless@solarwinds.net" Name="UserName" />
+        <Variable x:TypeArguments="p:Password" Name="Password">
+          <Variable.Default>
+            <Literal x:TypeArguments="p:Password">
+              <p:Password PasswordValue="0EjCFD/MJXPNsOoEtH/wow==" />
+            </Literal>
+          </Variable.Default>
+        </Variable>
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>
