@@ -1,5 +1,7 @@
 # Backup-Scripts
-## READ ME 
+## READ ME
+
+## TO DOWNLOAD FILES click the green ( CODE button ) to download the entire Script Repository as a single .ZIP file.
 
 ### Sample scripts are not supported under any SolarWinds support program or service.
 ### The sample scripts are provided AS IS without warranty of any kind.
@@ -7,8 +9,6 @@
 ### In no event shall SolarWinds or any other party be liable for damages arising out of the use of or inability to use the sample scripts.
 
 ### Please review, test and understand any scripts you download before implementing them in production!
-
-## TO DOWNLOAD FILES click the green ( CODE button ) to download the entire Script Repository as a single .ZIP file.
 
 ### Non Backup Specific ###
 
