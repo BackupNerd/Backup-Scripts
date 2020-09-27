@@ -85,9 +85,13 @@ SolarWinds Backup Reuse Stored Credentials.amp
 	Store Credentials will store your local Backup Manager credentials 
 	Reuse Stored Credentials will redeploy SolarWinds Backup using stored credentials if the Backup Manager gets uninstalled. 
 
-SolarWinds Backup Upgrade.v02.amp
+SolarWinds Backup Upgrade.amp
 
 	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
+	
+SolarWinds Backup Convert To PassPhrase.amp
+
+	AMP file to convert Backup Manager devices with Private Key Encryption to PassPhrase Encryption (Standalone Edition Managed by Ncentral or RMM)
 
 ### SolarWinds Backup - Ncentral Integrated Editon ###
 
@@ -122,7 +126,7 @@ SolarWinds Backup Reuse Stored Credentials.amp
 	Store Credentials will store your local Backup Manager credentials.
 	Reuse Stored Credentials will redeploy SolarWinds Backup using stored credentials if the Backup Manager gets uninstalled. 
 
-SolarWinds Backup Upgrade.v02.amp
+SolarWinds Backup Upgrade.amp
 
 	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
 
