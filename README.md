@@ -22,7 +22,7 @@ BackupManagerDeploy.ps1
 
 	Universal deployment script for SolarWinds Backup
 	Supports Automatic Deployment, Documents Deployment, Manual Deployment, Uninstall, Upgrade, Redeploy with Passphrase,
-	Redeploy with Private Key, Store Credentials, Reinstall & Reuse Stored Crendentials.
+	Redeploy with Private Key, Store Credentials, Reinstall & Reuse Stored Credentials.
 
 BulkGenerateBackupManagerRedeployCommands.ps1
 
@@ -54,7 +54,7 @@ SetDeviceAlias.ps1
 	
 	Script to set a value for the Device Alias column in the Backup Management Console.
 	This script is for Automatic Deployed, Passphrase enabled devices.
-	Note, Using this script with a Private Key Encrpytion device will convert it to Passphrase encryption.
+	Note, Using this script with a Private Key Encryption device will convert it to Passphrase Encryption.
 
 SW MSP_MSPBenhancedMonitoringDeploymentConfiguration_01jul2020jr1.pdf
 
@@ -70,7 +70,7 @@ SolarWinds Backup - RMM auto deploy setup.pdf
 
 SolarWinds Backup Deploy.amp
 
-	1 AMP file and PDF documentation to enable RMM deployment of SolarWinds Backup - Standalone Edition
+	1 AMP file and PDF documentation to enable RMM deployment of SolarWinds Backup (Standalone Edition)
 
 SolarWinds Backup Redeploy.amp
 
