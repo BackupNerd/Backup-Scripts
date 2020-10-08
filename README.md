@@ -1,5 +1,5 @@
-# Backup-Scripts
-## READ ME
+
+# READ ME
 
 ## TO DOWNLOAD FILES click the green ( CODE button ) to download the entire Script Repository as a single .ZIP file.
 
@@ -16,7 +16,7 @@ Get-Foldersizes.ps1
 
 	Script to inventory a file tree and report sizes of each branch.
 
-### SolarWinds Backup - Standalone Editon ###
+# SolarWinds Backup - Standalone Editon ###
 
 BackupManagerDeploy.ps1
 
@@ -93,7 +93,7 @@ SolarWinds Backup Convert To PassPhrase.amp
 
 	AMP file to convert Backup Manager devices with Private Key Encryption to PassPhrase Encryption (Standalone Edition Managed by Ncentral or RMM)
 
-### SolarWinds Backup - Ncentral Integrated Editon ###
+# SolarWinds Backup - Ncentral Integrated Editon ###
 
 CleanupArchive.ps1
 
@@ -130,7 +130,7 @@ SolarWinds Backup Upgrade.amp
 
 	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
 
-### SolarWinds Backup - RMM Integrated Editon ###
+# SolarWinds Backup - RMM Integrated Editon ###
 
 CleanupArchive.ps1
 
