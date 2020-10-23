@@ -41,6 +41,12 @@ ExcludeUSB.ps1
 	
 	Script to exclude USB attached disks from backup.
 	Identify disks attached via USB bus type and exclude those device volumes using backup filter or the FilesNotToBackup registry key.
+	
+GetDeviceInstallations
+
+	Script to Enumerate Device Installations.
+	Incudes all Historic installation instances of a Device, including Backup, Restore Only, Bare-Metal Recovery, Recovery Console and Recovery Testing instances
+        Useful for Auding the last activity date for a specific Installation Id.
 
 LSVSyncCheckFinal.ps1
 
