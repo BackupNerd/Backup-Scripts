@@ -43,12 +43,14 @@
     )
 
     Clear-Host
-
+   
 # ----- Variables and Paths ----
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $Script:strLineSeparator = "  ---------"
     $CurrentDate = Get-Date -format "yyy-MM-dd_hh-mm-ss"
-    Write-output "  Get Device Installations"
+    Write-Output "  Get Device Installations"
+    Write-Output ""
+    $Syntax = Get-Command $PSCommandPath -Syntax ; Write-Output "  Script Parameter Syntax:`n" $Syntax
 
 # ----- End Variables and Paths ----
 
