@@ -37,7 +37,7 @@
 [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$False)] [Alias("Clear")] [switch]$ClearCredentials,  ## Remove Stored API Credentials at start of script
-        [Parameter(Mandatory=$False)] [Alias("Tail")] [switch]$Monitorlog  ## Remove Stored API Credentials at start of script
+        [Parameter(Mandatory=$False)] [Alias("Tail")] [switch]$Monitorlog  ## Display Logs via seperate Powershell Console
     )   
 
 Clear-Host
