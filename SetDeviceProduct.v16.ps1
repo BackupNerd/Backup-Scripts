@@ -294,7 +294,7 @@ Function Set-Persistance {
         if ($partner.error) {
             write-output "  $($partner.error.message)"
             $Script:PartnerName = Read-Host "  Enter EXACT Case Sensitive Customer/ Partner displayed name to lookup i.e. 'Acme, Inc (bob@acme.net)'"
-            Sen-GetPartnerInfo $Script:partnername
+            Send-GetPartnerInfo $Script:partnername
 
         }
 
