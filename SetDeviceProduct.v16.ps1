@@ -288,13 +288,13 @@ Function Set-Persistance {
             Write-Host "  Lookup for Root, Sub-root and Distributor Partner Level Not Allowed"
             Write-Output $Script:strLineSeparator
             $Script:PartnerName = Read-Host "  Enter EXACT Case Sensitive Customer/ Partner displayed name to lookup i.e. 'Acme, Inc (bob@acme.net)'"
-            Get-PartnerInfo $Script:partnername
+            Send-GetPartnerInfo $Script:partnername
             }
 
         if ($partner.error) {
             write-output "  $($partner.error.message)"
             $Script:PartnerName = Read-Host "  Enter EXACT Case Sensitive Customer/ Partner displayed name to lookup i.e. 'Acme, Inc (bob@acme.net)'"
-            Get-PartnerInfo $Script:partnername
+            Sen-GetPartnerInfo $Script:partnername
 
         }
 
@@ -603,7 +603,7 @@ $MaxDeviceCount=3000
 
     Set-Persistance
 
-    If ($Monitorlog) { invoke-expression "cmd /c start powershell -NoExit -Command {(Get-Host).ui.RawUI.WindowTitle=`" SET PRODUCT LOG - $scriptlog `"; Get-Content $scriptlog -Wait }" }
+    If ($Monitorlog) { invoke-expression "cmd /c start powershell -NoExit -Command {(Get-Host).ui.RawUI.WindowTitle=`" SET PRODUCT LOG - $scriptlog `"; Get-Content $scriptlog -tail 10 -Wait }" }
 
     Send-APICredentialsCookie
     
