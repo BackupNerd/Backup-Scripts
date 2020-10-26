@@ -288,13 +288,13 @@
             Write-Host "  Lookup for Root, Sub-root and Distributor Partner Level Not Allowed"
             Write-Output $Script:strLineSeparator
             $Script:PartnerName = Read-Host "  Enter EXACT Case Sensitive Customer/ Partner displayed name to lookup i.e. 'Acme, Inc (bob@acme.net)'"
-            Get-PartnerInfo $Script:partnername
+            Send-GetPartnerInfo $Script:partnername
             }
 
         if ($partner.error) {
             write-output "  $($partner.error.message)"
             $Script:PartnerName = Read-Host "  Enter EXACT Case Sensitive Customer/ Partner displayed name to lookup i.e. 'Acme, Inc (bob@acme.net)'"
-            Get-PartnerInfo $Script:partnername
+            Send-GetPartnerInfo $Script:partnername
 
         }
 
