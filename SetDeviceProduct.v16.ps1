@@ -603,14 +603,14 @@ $MaxDeviceCount=3000
 
     Set-Persistance
 
-    If ($Monitorlog) { invoke-expression "cmd /c start powershell -NoExit -Command {(Get-Host).ui.RawUI.WindowTitle=`" SET PRODUCT LOG - $scriptlog `"; Get-Content $scriptlog -tail 10 -Wait }" }
-
     Send-APICredentialsCookie
     
     Send-GetPartnerInfo $Script:cred0
 
     Send-EnumeratePartners
     
+    If ($Monitorlog) { invoke-expression "cmd /c start powershell -NoExit -Command {(Get-Host).ui.RawUI.WindowTitle=`" SET PRODUCT LOG - $scriptlog `"; Get-Content $scriptlog -tail 2 -Wait }" }
+
     Send-EnumerateProducts
     
     Send-EnumerateAccountStatistics

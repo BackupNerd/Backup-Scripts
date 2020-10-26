@@ -603,13 +603,13 @@ $Filter = "((!(PF =~ '[??????????]* - ????????-????-????-????-????????????') AND
 
     Set-Persistance    
 
-    If ($Monitorlog) { invoke-expression "cmd /c start powershell -NoExit -Command {(Get-Host).ui.RawUI.WindowTitle=`" SET PROFILE LOG - $scriptlog `"; Get-Content $scriptlog -Wait }" }
-
     Send-APICredentialsCookie
 
     Send-GetPartnerInfo $Script:cred0
 
     Send-EnumeratePartners
+
+    If ($Monitorlog) { invoke-expression "cmd /c start powershell -NoExit -Command {(Get-Host).ui.RawUI.WindowTitle=`" SET PROFILE LOG - $scriptlog `"; Get-Content $scriptlog -tail 2 -Wait }" }
 
     Send-EnumerateAccountProfiles
     
