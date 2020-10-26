@@ -41,7 +41,11 @@ ExcludeUSB.ps1
 	
 	Script to exclude USB attached disks from backup.
 	Identify disks attached via USB bus type and exclude those device volumes using backup filter or the FilesNotToBackup registry key.
-	
+
+GetDeviceErrors
+
+	Script to pull recent Device Errors and output to the console or update a Custom Column in the Management Console
+        
 GetDeviceInstallations
 
 	Script to Enumerate Device Installations.
@@ -61,7 +65,17 @@ SetDeviceAlias.ps1
 	Script to set a value for the Device Alias column in the Backup Management Console.
 	This script is for Automatic Deployed, Passphrase enabled devices.
 	Note, Using this script with a Private Key Encryption device will convert it to Passphrase Encryption.
-
+	
+SetDeviceProduct.ps1
+	
+	Script to bulk assign a Product to multiple devices.
+	Useful for bulk assignment of a Product to devices without modifying their current parent partner location.
+	
+SetDeviceProfile.ps1
+	
+	Script to bulk assign a Profile to multiple devices.
+	Useful for bulk removal, assignment or reassignment of a Profile to devices outside of the Management Console
+	
 SW MSP_MSPBenhancedMonitoringDeploymentConfiguration_01jul2020jr1.pdf
 
 MSPB_CFG_CHECK_v1.amp
