@@ -417,7 +417,7 @@ Clear-Host
         $Script:ZeroErrorDevices = $webrequest | convertfrom-json
         #$Script:visa = $authenticate.visa
     }
-#region ----- Backup.Management JSON Calls ----
+#endregion ----- Backup.Management JSON Calls ----
 
 #endregion ----- Functions ----
 
