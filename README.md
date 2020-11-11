@@ -59,6 +59,10 @@ LSVSyncCheckFinal.ps1
 SetBackupLogging.ps1
 
 	Script to set the logging level of the local Backup Manager client.
+	
+SetGUIPassword.ps1
+
+	Script to bulk set/wipe a GUI Password that is usefule when limiting local and remote access to the Backup Manager client.
 
 SetDeviceAlias.ps1
 	
