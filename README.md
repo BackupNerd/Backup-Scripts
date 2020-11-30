@@ -42,15 +42,21 @@ ExcludeUSB.ps1
 	Script to exclude USB attached disks from backup.
 	Identify disks attached via USB bus type and exclude those device volumes using backup filter or the FilesNotToBackup registry key.
 
-GetDeviceErrors
+GetDeviceErrors.ps1
 
 	Script to pull recent Device Errors and output to the console or update a Custom Column in the Management Console
         
-GetDeviceInstallations
+GetDeviceInstallations.ps1
 
 	Script to Enumerate Device Installations.
 	Incudes all Historic installation instances of a Device, including Backup, Restore Only, Bare-Metal Recovery, Recovery Console and Recovery Testing instances
-        Useful for Auding the last activity date for a specific Installation Id.
+        Useful for Auditing the last activity date for a specific Installation Id.
+	
+GetSessionFiles.ps1	
+
+	Script to Enumerate Files from the most recent Backup Sessions.
+	Incudes x largest transfered files, Hyper-V Files and Hyper-V Files incorectly included in File System Backups 
+        Useful for Auding selections and ensuring that data is not double selected.
 
 LSVSyncCheckFinal.ps1
 
