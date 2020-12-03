@@ -28,6 +28,10 @@ BulkGenerateBackupManagerRedeployCommands.ps1
 
 	Script to bulk generate a list of device credentials and redeployment commands for SolarWinds Backup devices.
 
+BulkSetGUIPassword.ps1
+
+	Script to bulk set/wipe a GUI Password that is useful forlimiting local and remote access to the Backup Manager client.
+
 CleanupArchive.ps1
 
 	Script to clean all archive sessions older than X months. 
@@ -66,10 +70,6 @@ SetBackupLogging.ps1
 
 	Script to set the logging level of the local Backup Manager client.
 	
-SetGUIPassword.ps1
-
-	Script to bulk set/wipe a GUI Password that is usefule when limiting local and remote access to the Backup Manager client.
-
 SetDeviceAlias.ps1
 	
 	Script to set a value for the Device Alias column in the Backup Management Console.
