@@ -18,12 +18,6 @@ Get-Foldersizes.ps1
 
 # SolarWinds Backup - Standalone Editon ###
 
-BackupManagerDeploy.ps1
-
-	Universal deployment script for SolarWinds Backup
-	Supports Automatic Deployment, Documents Deployment, Manual Deployment, Uninstall, Upgrade, Redeploy with Passphrase,
-	Redeploy with Private Key, Store Credentials, Reinstall & Reuse Stored Credentials.
-
 BulkGenerateBackupManagerRedeployCommands.ps1
 
 	Script to bulk generate a list of device credentials and redeployment commands for SolarWinds Backup devices.
@@ -40,6 +34,12 @@ CleanupArchive.ps1
 CustomBackupThrottle.ps1
 	
 	Script to set backup throttling times and values for individual days of the week   
+
+DeployBackupManager.ps1
+
+	Universal deployment script for SolarWinds Backup
+	Supports Automatic Deployment, Documents Deployment, Manual Deployment, Uninstall, Upgrade, Redeploy with Passphrase,
+	Redeploy with Private Key, Store Credentials, Reinstall & Reuse Stored Credentials.
 
 ExcludeUSB.ps1
 	
