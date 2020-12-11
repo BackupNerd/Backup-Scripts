@@ -54,7 +54,13 @@ GetDeviceInstallations.ps1
 
 	Script to Enumerate Device Installations.
 	Incudes all Historic installation instances of a Device, including Backup, Restore Only, Bare-Metal Recovery, Recovery Console and Recovery Testing instances
-        Useful for Auditing the last activity date for a specific Installation Id.
+        Useful for auditing the last activity date for a specific Installation Id.
+	
+GetDeviceStatistics.ps1
+
+	Script to Enumerate Device Statistics.
+	Predefined to Include Multiple Columns from the Management Console, can be expanded to include custom columns.
+        Useful for automating an export of data for billing or reporting.	
 	
 GetSessionFiles.ps1	
 
