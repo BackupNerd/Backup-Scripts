@@ -123,7 +123,8 @@ SolarWinds Backup Reuse Stored Credentials.amp
 
 SolarWinds Backup Upgrade.amp
 
-	AMP file to force upgrade of the Backup Manager to the latest download version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
+	AMP file to force upgrade of the Backup Manager to the latest downloadable version of SolarWinds Backup (Ncentral Integrated Edition or Standalone Edition).
+	TLS 1.2 Compatible
 	
 SolarWinds Backup Convert To PassPhrase.amp
 
