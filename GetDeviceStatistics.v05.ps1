@@ -42,24 +42,23 @@
         [Parameter(Mandatory=$False)] [switch]$Export,                              ## Generate CSV / XLS Output Files
         [Parameter(Mandatory=$False)] [switch]$Launch,                              ## Launch XLS or CSV file 
         [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS & CSV file   
-        [Parameter(Mandatory=$False)] [switch]$ClearCredentials,                    ## Remove Stored API Credentials at start of script
-        [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot"                 ## Export Path
-
+        [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot",                ## Export Path
+        [Parameter(Mandatory=$False)] [switch]$ClearCredentials                     ## Remove Stored API Credentials at start of script
     )
 
 #region ----- Environment, Variables, Names and Paths ----
     Clear-Host
     Write-output "  Get Device Statistics `n"
     $Syntax = Get-Command $PSCommandPath -Syntax ; Write-Output "  Script Parameter Syntax:`n`n  $Syntax"
-    $scriptpath = $MyInvocation.MyCommand.Path
     Write-output "  Current Parameters:"
     Write-output "  -AllPartners = $AllPartners"
     Write-output "  -AllDevices  = $AllDevices"
     Write-output "  -DeviceCount = $DeviceCount"
     Write-output "  -Export      = $Export"
-    Write-output "  -Launch      = $Launch"
     Write-output "  -ExportPath  = $ExportPath"
     Write-output "  -Delimiter   = $Delimiter"
+    Write-output "  -Launch      = $Launch"
+    $scriptpath = $MyInvocation.MyCommand.Path
     $dir = Split-Path $scriptpath
     Push-Location $dir
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -523,7 +522,7 @@ Function Save-CSVasExcel {
 
         If ($Script:Export) {
             $Script:csvoutputfile = "$ExportPath\$($CurrentDate)_Statistics_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
-            $Script:SelectedDevices | Select-object * | Export-CSV -path "$csvoutputfile" -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF8 -append }
+            $Script:SelectedDevices | Select-object * | Export-CSV -path "$csvoutputfile" -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF}
             
     }
 
