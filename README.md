@@ -18,7 +18,7 @@ Get-Foldersizes.ps1
 
 # SolarWinds Backup - Standalone Editon ###
 
-BulkGenerateBackupManagerRedeployCommands.ps1
+BulkGenerateRedeployCommands.ps1
 
 	Script to bulk generate a list of device credentials and redeployment commands for SolarWinds Backup devices.
 
