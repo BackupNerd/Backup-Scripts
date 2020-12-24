@@ -62,7 +62,7 @@
     Write-output "  -Delimiter     = $Delimiter"
     Write-output "  -Launch        = $Launch"
     Write-output "  -Gridview      = $GridView"
-    Write-output "  -CustomColumn  = $GridView"
+    Write-output "  -CustomColumn  = $CustomColumn"
     $scriptpath = $MyInvocation.MyCommand.Path
     $dir = Split-Path $scriptpath
     Push-Location $dir
