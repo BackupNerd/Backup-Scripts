@@ -27,12 +27,15 @@
     # Optionally Post Error Message to Custom Column in Backup.Management
     # Optionally Export to CSV / XLS
     #
-    # Use the -ClearCredentials switch parameter to Remove Stored API Credentials at start of script
+    # Use the -Days ## (Default=7) Parameter to define the Age of Devices with Errors to Query
     # Use the -GridView switch parameter to Display output via Powershell Out-Gridview
     # Use the -Export Switch Parameter to Export statistics to XLS and CSV files
     # Use the -ExportPath (?:\Folder) Parameter to specify alternate XLS and CSV file path
+    # Use the -Launch Switch Parameter to Launch the XLS or CSV file after completion
+    # Use the -Delimiter ',' (Default) Parameter to set the Delimiter for XLS and CSV output (i.e. use ';' for The Netherland)
     # Use the -CustomColumn switch parameter to post last error to Backup.Management Column AA2045
     #   Note: Partner must Add Custom Column AA2045 to their Backup.Management console to view last error message.
+    # Use the -ClearCredentials switch parameter to Remove Stored API Credentials at start of script
     #
     # https://documentation.solarwindsmsp.com/backup/documentation/Content/service-management/json-api/home.htm 
     # https://documentation.solarwindsmsp.com/backup/documentation/Content/service-management/console/custom-columns.htm
@@ -40,14 +43,14 @@
 
 [CmdletBinding()]
     Param (
-        [Parameter(Mandatory=$False)] [switch]$ClearCredentials,                    ## Remove Stored API Credentials at start of script
         [Parameter(Mandatory=$False)] [Int]$Days = 7,                               ## Number of days to search for Errors
         [Parameter(Mandatory=$False)] [switch]$GridView,                            ## Display Output via Powershell Out-Gridview
-        [Parameter(Mandatory=$False)] [switch]$CustomColumn=$True,                  ## Update Backup.Manangement Custom Column
         [Parameter(Mandatory=$False)] [switch]$Export,                              ## Generate CSV / XLS Output Files
         [Parameter(Mandatory=$False)] [switch]$Launch,                              ## Launch XLS or CSV file 
         [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS & CSV file
-        [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot"                 ## Export Path
+        [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot",                ## Export Path
+        [Parameter(Mandatory=$False)] [switch]$CustomColumn=$True,                  ## Update Backup.Manangement Custom Column
+        [Parameter(Mandatory=$False)] [switch]$ClearCredentials                     ## Remove Stored API Credentials at start of script
     )   
 
 #region ----- Environment, Variables, Names and Paths ----
