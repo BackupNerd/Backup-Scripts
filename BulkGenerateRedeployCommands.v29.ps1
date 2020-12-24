@@ -168,7 +168,7 @@ Function Authenticate {
                 [IO.Path]::GetFullPath($Path)
             }
     
-            function Release-Ref ($ref) {
+            function Get-Release-Ref ($ref) {
                 ([System.Runtime.InteropServices.Marshal]::ReleaseComObject([System.__ComObject]$ref) -gt 0)
                 [System.GC]::Collect()
                 [System.GC]::WaitForPendingFinalizers()
@@ -203,7 +203,7 @@ Function Authenticate {
         END {
             $xl.Quit()
         
-            $null = $ws, $wb, $xl | ForEach-Object {Release-Ref $_}
+            $null = $ws, $wb, $xl | ForEach-Object {Get-Release-Ref $_}
     
             # del $CSVFile
         }
