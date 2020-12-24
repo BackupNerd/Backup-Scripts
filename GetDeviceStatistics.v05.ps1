@@ -43,7 +43,7 @@
         [Parameter(Mandatory=$False)] [switch]$Launch,                              ## Launch XLS or CSV file 
         [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS & CSV file   
         [Parameter(Mandatory=$False)] [switch]$ClearCredentials,                    ## Remove Stored API Credentials at start of script
-        [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot"                 ## Remove Stored API Credentials at start of script
+        [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot"                 ## Export Path
 
     )
 
