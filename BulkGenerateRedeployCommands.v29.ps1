@@ -1,5 +1,5 @@
 ﻿<# ----- About: ----
-    # Bulk Generate Redeploy Commands
+    # Bulk Generate SW Backup Redeploy Commands
     # Revision v29 - 2020-12-24 
     # Author: Eric Harless, Head Backup Nerd - SolarWinds 
     # Twitter @Backup_Nerd  Email:eric.harless@solarwinds.com
@@ -20,20 +20,20 @@
 # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
-    # !!WARNING!! Output Files may contain device credentials and should be regarded as !!CONFIDENTIAL!!
+    # !!WARNING!! Output contains backup credentials and should be regarded as !!CONFIDENTIAL!!
+    # Generated passphrases are valid for 24 hours or single use
     #
-    # Authenticate to Backup.Management
-    # GUI Select Devices
-    # Auto Launch XLS or CSV output
+    # Authenticate to https://backup.management console
+    # GUI select devices
+    # Export to XLS/CSV and autolaunch
     # 
-    # Script Bulk generates Backup Manager reinstallation credentials and commands
-    # for your backup devices that use Passphase based encryption key management
-    # Generates CSV and XLSX files with individual device credentials, download and installer scripts
-    # Passphrases generated are valid for 24 hours or a Single Use
+    # Script to bulk generates Backup Manager reinstallation credentials and commands
+    # for your backup devices that use passphase based encryption key management.
+    # Generates XLS/CSV files with download and installer scripts with individual device credentials, 
     #
-    # Use the -DeviceCount ## (Default=1000) Parameter to define how many devices to process
-    # Use the -Silent Switch Parameter to Skip GUI Device Selection and AutoLaunch of XLS or CSV file
-    # Use the -ExportPath (?:\Folder) Parameter to specify alternate XLS and CSV file path
+    # Use the -DeviceCount ## (default=1000) parameter to define how many devices to process
+    # Use the -Silent switch parameter to skip GUI device selection and autolaunch XLS/CSV file
+    # Use the -ExportPath (?:\Folder) parameter to specify alternate XLS/CSV file path
     #
     # https://documentation.solarwindsmsp.com/backup/documentation/Content/backup-manager/backup-manager-installation/get-passphrase.htm
     # https://documentation.solarwindsmsp.com/backup/documentation/Content/backup-manager/backup-manager-installation/re-install.htm

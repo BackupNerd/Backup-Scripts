@@ -1,6 +1,6 @@
-﻿<# ----- About: ----
-    # Get SW Backup Device Errors
-    # Revision v24 - 2020-12-24
+<# ----- About: ----
+    # Get SW Backup Device Statistics 
+    # Revision v06 - 2020-12-24
     # Author: Eric Harless, Head Backup Nerd - SolarWinds 
     # Twitter @Backup_Nerd  Email:eric.harless@solarwinds.com
 # -----------------------------------------------------------#>  ## About
@@ -21,59 +21,55 @@
 <# ----- Behavior: ----
     # Check/ Get/ Store secure credentials 
     # Authenticate to https://backup.management console
-    # Get last session errors for selected devices
-    # Optionally post/ clear error message to/ from a custom column in the https://backup.management console
+    # Check partner level/ Enumerate partners/ GUI select partner
+    # Enumerate devices/ GUI select devices
     # Optionally export to XLS/CSV
     #
-    # Use the -Days ## (default=7) parameter to define the age of devices with errors to query
+    # Use the -AllPartners switch parameter to skip GUI partner selection
+    # Use the -AllDevices switch parameter to skip GUI device selection
     # Use the -DeviceCount ## (default=5000) parameter to define the maximum number of devices returned
-    # Use the -GridView switch parameter to display output via Powershell Out-Gridview
     # Use the -Export switch parameter to export statistics to XLS/CSV files
-    # Use the -ExportPath (?:\Folder) parameter to specify alternate XLS/CSV file path
+    # Use the -ExportPath (?:\Folder) parameter to specify XLS/CSV file path
     # Use the -Launch switch parameter to launch the XLS/CSV file after completion
     # Use the -Delimiter (default=',') parameter to set the delimiter for XLS/CSV output (i.e. use ';' for The Netherland)
-    # Use the -CustomColumn (default=$True) switch parameter to post last error to https://backup.management console column AA2045
-    #   Note: Partner must add custom column AA2045 to their https://backup.management console to view last error message.
     # Use the -ClearCredentials parameter to remove stored API credentials at start of script
     #
-    # https://documentation.solarwindsmsp.com/backup/documentation/Content/service-management/json-api/home.htm 
-    # https://documentation.solarwindsmsp.com/backup/documentation/Content/service-management/console/custom-columns.htm
+    # https://documentation.solarwindsmsp.com/backup/documentation/Content/service-management/json-api/home.htm
+    # https://documentation.solarwindsmsp.com/backup/documentation/Content/service-management/json-api/API-column-codes.htm 
 # -----------------------------------------------------------#>  ## Behavior
 
 [CmdletBinding()]
     Param (
-        [Parameter(Mandatory=$False)] [Int]$Days = 7,                               ## Number of days to search for Errors
+        [Parameter(Mandatory=$False)] [switch]$AllPartners,                         ## Skip partner selection
+        [Parameter(Mandatory=$False)] [switch]$AllDevices,                          ## Skip device selection
         [Parameter(Mandatory=$False)] [int]$DeviceCount = 5000,                     ## Change Maximum Number of devices results to return
-        [Parameter(Mandatory=$False)] [switch]$GridView,                            ## Display Output via Powershell Out-Gridview
         [Parameter(Mandatory=$False)] [switch]$Export,                              ## Generate CSV / XLS Output Files
         [Parameter(Mandatory=$False)] [switch]$Launch,                              ## Launch XLS or CSV file 
-        [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS & CSV file
+        [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS & CSV file   
         [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot",                ## Export Path
-        [Parameter(Mandatory=$False)] [switch]$CustomColumn = $True,                ## Update Backup.Manangement Custom Column
         [Parameter(Mandatory=$False)] [switch]$ClearCredentials                     ## Remove Stored API Credentials at start of script
-    )   
+    )
 
 #region ----- Environment, Variables, Names and Paths ----
     Clear-Host
-    Write-output "  Get Device Errors`n`n"
+    Write-output "  Get Device Statistics `n"
     $Syntax = Get-Command $PSCommandPath -Syntax ; Write-Output "  Script Parameter Syntax:`n`n  $Syntax"
     Write-output "  Current Parameters:"
-    Write-output "  -Days          = $Days"
-    Write-output "  -DeviceCount   = $DeviceCount"
-    Write-output "  -Export        = $Export"
-    Write-output "  -ExportPath    = $ExportPath"
-    Write-output "  -Delimiter     = $Delimiter"
-    Write-output "  -Launch        = $Launch"
-    Write-output "  -Gridview      = $GridView"
-    Write-output "  -CustomColumn  = $CustomColumn"
-    
+    Write-output "  -AllPartners = $AllPartners"
+    Write-output "  -AllDevices  = $AllDevices"
+    Write-output "  -DeviceCount = $DeviceCount"
+    Write-output "  -Export      = $Export"
+    Write-output "  -Launch      = $Launch"
+    Write-output "  -ExportPath  = $ExportPath"
+    Write-output "  -Delimiter   = $Delimiter"
+
     $scriptpath = $MyInvocation.MyCommand.Path
     $dir = Split-Path $scriptpath
     Push-Location $dir
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $Script:strLineSeparator = "  ---------"
     $CurrentDate = Get-Date -format "yyy-MM-dd_hh-mm-ss"
-    $urlJSON = 'https://api.backup.management/jsonapi'
+    $urljson = "https://api.backup.management/jsonapi"
 
 #endregion ----- Environment, Variables, Names and Paths ----
 
@@ -87,10 +83,10 @@
         if (Test-Path $APIcredpath) {
             Write-Output $Script:strLineSeparator 
             Write-Output "  Backup API Credential Path Present" }else{ New-Item -ItemType Directory -Path $APIcredpath} 
-        Write-Output $Script:strLineSeparator     
-        Write-Output "  Enter Exact, Case Sensitive Partner Name for SolarWinds Backup.Management API i.e. 'Acme, Inc (bob@acme.net)'"
-        DO{ $PartnerName = Read-Host "  Enter Login Partner Name" }
-        WHILE ($partnerName.length -eq 0)
+ 
+            Write-Output "  Enter Exact, Case Sensitive Partner Name for SolarWinds Backup.Management API i.e. 'Acme, Inc (bob@acme.net)'"
+        DO{ $Script:PartnerName = Read-Host "  Enter Login Partner Name" }
+        WHILE ($PartnerName.length -eq 0)
         $PartnerName | out-file $APIcredfile
 
         $BackupCred = Get-Credential -UserName "" -Message 'Enter Login Email and Password for SolarWinds Backup.Management API'
@@ -110,7 +106,7 @@
         $Script:True_path = "C:\ProgramData\MXB\"
         $Script:APIcredfile = join-path -Path $True_Path -ChildPath "$env:computername API_Credentials.Secure.txt"
         $Script:APIcredpath = Split-path -path $APIcredfile
-
+    
         if (($ClearCredentials) -and (Test-Path $APIcredfile)) { 
             Remove-Item -Path $Script:APIcredfile
             $ClearCredentials = $Null
@@ -131,7 +127,7 @@
                     $Script:cred1 = [string]$APIcredentials[1]
                     $Script:cred2 = $APIcredentials[2] | Convertto-SecureString 
                     $Script:cred2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($Script:cred2))
-
+    
                     Write-Output    $Script:strLineSeparator 
                     Write-output "  Stored Backup API Partner  = $Script:cred0"
                     Write-output "  Stored Backup API User     = $Script:cred1"
@@ -140,11 +136,11 @@
                 }else{
                     Write-Output    $Script:strLineSeparator 
                     Write-Output "  Backup API Credential File Not Present"
-
+    
                     Set-APICredentials  ## Create API Credential File if Not Found
                     }
                 }
-
+    
     }  ## Get API credentials if present
 
     Function Send-APICredentialsCookie {
@@ -176,6 +172,7 @@
     if ($authenticate.visa) { 
 
         $Script:visa = $authenticate.visa
+        $script:UserId = $authenticate.result.result.id
         }else{
             Write-Output    $Script:strLineSeparator 
             Write-output "  Authentication Failed: Please confirm your Backup.Management Partner Name and Credentials"
@@ -258,23 +255,8 @@ Function Save-CSVasExcel {
 
 #region ----- Backup.Management JSON Calls ----
 
-    Function CallJSON($url,$object) {
-
-        $bytes = [System.Text.Encoding]::ASCII.GetBytes($object)
-        $web = [System.Net.WebRequest]::Create($url)
-        $web.Method = “POST”
-        $web.ContentLength = $bytes.Length
-        $web.ContentType = “application/json”
-        $stream = $web.GetRequestStream()
-        $stream.Write($bytes,0,$bytes.Length)
-        $stream.close()
-        $reader = New-Object System.IO.Streamreader -ArgumentList $web.GetResponse().GetResponseStream()
-        return $reader.ReadToEnd()| ConvertFrom-Json
-        $reader.Close()
-    }
-
     Function Send-GetPartnerInfo ($PartnerName) { 
-            
+                    
         $url = "https://api.backup.management/jsonapi"
         $data = @{}
         $data.jsonrpc = '2.0'
@@ -290,11 +272,13 @@ Function Save-CSVasExcel {
             -Uri $url `
             -SessionVariable Script:websession `
             -UseBasicParsing
-            $Script:cookies = $websession.Cookies.GetCookies($url)
+            #$Script:cookies = $websession.Cookies.GetCookies($url)
             $Script:websession = $websession
             $Script:Partner = $webrequest | convertfrom-json
 
-        if (($Partner.result.result.Level -ne "Root") -and ($Partner.result.result.Level -ne "Sub-root") -and ($Partner.result.result.Level -ne "Distributor")) {
+        $RestrictedPartnerLevel = @("Root","Sub-root","Distributor")
+
+        if ($Partner.result.result.Level -notin $RestrictedPartnerLevel) {
             [String]$Script:Uid = $Partner.result.result.Uid
             [int]$Script:PartnerId = [int]$Partner.result.result.Id
             [String]$script:Level = $Partner.result.result.Level
@@ -305,7 +289,7 @@ Function Save-CSVasExcel {
             Write-Output $Script:strLineSeparator
             }else{
             Write-Output $Script:strLineSeparator
-            Write-Host "  Lookup for Root, Sub-root and Distributor Partner Level Not Allowed"
+            Write-Host "  Lookup for $($Partner.result.result.Level) Partner Level Not Allowed"
             Write-Output $Script:strLineSeparator
             $Script:PartnerName = Read-Host "  Enter EXACT Case Sensitive Customer/ Partner displayed name to lookup i.e. 'Acme, Inc (bob@acme.net)'"
             Send-GetPartnerInfo $Script:partnername
@@ -318,64 +302,105 @@ Function Save-CSVasExcel {
 
         }
 
-    } ## get PartnerID and Partner Level
+    } ## get PartnerID and Partner Level    
 
-    Function GetDeviceErrors($DeviceId) {
-    
-        $url2 = "https://backup.management/web/accounts/properties/api/errors/recent?accounts.SelectedAccount.Id=$DeviceId"
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Cookie", "__cfduid=d7cfe7579ba7716fe73703636ea50b1251593338423; visa=$Script:visa")
-    
-        $Script:response = Invoke-RestMethod -Uri $url2 `
-            -Method GET `
-            -Headers $headers `
-            -ContentType 'application/json' `
-            -WebSession $websession `
+    Function CallJSON($url,$object) {
 
-        If ($response.HasItemsWithCount -eq $False) {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($object)
+        $web = [System.Net.WebRequest]::Create($url)
+        $web.Method = "POST"
+        $web.ContentLength = $bytes.Length
+        $web.ContentType = "application/json"
+        $stream = $web.GetRequestStream()
+        $stream.Write($bytes,0,$bytes.Length)
+        $stream.close()
+        $reader = New-Object System.IO.Streamreader -ArgumentList $web.GetResponse().GetResponseStream()
+        return $reader.ReadToEnd()| ConvertFrom-Json
+        $reader.Close()
+    }
+
+    Function Send-EnumeratePartners {
+        # ----- Get Partners via EnumeratePartners -----
         
-        Write-output "  DeviceId# $DeviceId - Skipping, initial backup in progress"
-        }else{   
-        Write-output "  DeviceId# $DeviceId - Requesting errors "   
-        $response = $response.replace('[ESCAPE[','') 
-        $response = $response.replace("]]","") 
-        $response = $response.replace("\","\\")
-        $response = $response.replace("&quot;","")  
-        $response = $response.replace(",`n        `n    ]","`n     ]") | ConvertFrom-Json
+        # (Create the JSON object to call the EnumeratePartners function)
+            $objEnumeratePartners = (New-Object PSObject | Add-Member -PassThru NoteProperty jsonrpc '2.0' |
+                Add-Member -PassThru NoteProperty visa $Script:visa |
+                Add-Member -PassThru NoteProperty method 'EnumeratePartners' |
+                Add-Member -PassThru NoteProperty params @{
+                                                            parentPartnerId = $PartnerId 
+                                                            fetchRecursively = "true"
+                                                            fields = (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22) 
+                                                            } |
+                Add-Member -PassThru NoteProperty id '1')| ConvertTo-Json -Depth 5
         
-        #$Script:response = $response.collection | select-object time,count,file,message,groupID,DeviceID | Format-Table
-        #$Script:response.deviceid = $deviceid
-        #$Script:response
-        #$response.collection | select-object time,count,file,message | out-gridview
+        # (Call the JSON Web Request Function to get the EnumeratePartners Object)
+                [array]$Script:EnumeratePartnersSession = CallJSON $urlJSON $objEnumeratePartners
+        
+                $Script:visa = $EnumeratePartnersSession.visa
+        
+                #Write-Output    $Script:strLineSeparator
+                #Write-Output    "  Using Visa:" $Script:visa
+                #Write-Output    $Script:strLineSeparator
+        
+        # (Added Delay in case command takes a bit to respond)
+                Start-Sleep -Milliseconds 100
+        
+        # (Get Result Status of EnumerateAccountProfiles)
+                $EnumeratePartnersSessionErrorCode = $EnumeratePartnersSession.error.code
+                $EnumeratePartnersSessionErrorMsg = $EnumeratePartnersSession.error.message
+        
+        # (Check for Errors with EnumeratePartners - Check if ErrorCode has a value)
+                if ($EnumeratePartnersSessionErrorCode) {
+                    Write-Output    $Script:strLineSeparator
+                    Write-Output    "  EnumeratePartnersSession Error Code:  $EnumeratePartnersSessionErrorCode"
+                    Write-Output    "  EnumeratePartnersSession Message:  $EnumeratePartnersSessionErrorMsg"
+                    Write-Output    $Script:strLineSeparator
+                    Write-Output    "  Exiting Script"
+        # (Exit Script if there is a problem)
+        
+                    #Break Script
+                }
+                    Else {
+        # (No error)
+        
+                $Script:EnumeratePartnersSessionResults = $EnumeratePartnersSession.result.result | select-object Name,@{l='Id';e={($_.Id).tostring()}},Level,ExternalCode,ParentId,LocationId,* -ExcludeProperty Company -ErrorAction Ignore
+                
+                $Script:EnumeratePartnersSessionResults | ForEach-Object {$_.CreationTime = [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.CreationTime))}
+                $Script:EnumeratePartnersSessionResults | ForEach-Object { if ($_.TrialExpirationTime  -ne "0") { $_.TrialExpirationTime = [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.TrialExpirationTime))}}
+                $Script:EnumeratePartnersSessionResults | ForEach-Object { if ($_.TrialRegistrationTime -ne "0") {$_.TrialRegistrationTime = [timezone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.TrialRegistrationTime))}}
+            
+                $Script:SelectedPartners = $EnumeratePartnersSessionResults | Select-object * | Where-object {$_.name -notlike "001???????????????- Recycle Bin"} | Where-object {$_.Externalcode -notlike '`[??????????`]* - ????????-????-????-????-????????????'}
+                        
+                $Script:SelectedPartner = $Script:SelectedPartners += @( [pscustomobject]@{Name=$PartnerName;Id=[string]$PartnerId;Level='<ParentPartner>'} ) 
+                
+                
+                if ($AllPartners) {
+                    $script:Selection = $Script:SelectedPartners |Select-object id,Name,Level,CreationTime,State,TrialRegistrationTime,TrialExpirationTime,Uid | sort-object Level,name
+                    Write-Output    $Script:strLineSeparator
+                    Write-Output    "  All Partners Selected"
+                }else{
+                    $script:Selection = $Script:SelectedPartners |Select-object id,Name,Level,CreationTime,State,TrialRegistrationTime,TrialExpirationTime,Uid | sort-object Level,name | out-gridview -Title "Current Partner | $partnername" -OutputMode Single
+            
+                    if($null -eq $Selection) {
+                        # Cancel was pressed
+                        # Run cancel script
+                        Write-Output    $Script:strLineSeparator
+                        Write-Output    "  No Partners Selected"
+                        Break
+                    }
+                    else {
+                        # OK was pressed, $Selection contains what was chosen
+                        # Run OK script
+                        [int]$script:PartnerId = $script:Selection.Id
+                        [String]$script:PartnerName = $script:Selection.Name
+                    }
+                }
+
         }
-        $Script:cleanresponse = $response.collection
-
-        } 
-    
-    Function Send-UpdateCustomColumn($DeviceId,$ColumnId,$Message) {
-
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Content-Type", "application/json")
-        $headers.Add("Cookie", "__cfduid=d110201d75658c43f9730368d03320d0f1601993342")
         
-        $body = "{
-        `n      `"jsonrpc`":`"2.0`",
-        `n      `"id`":`"jsonrpc`",
-        `n      `"visa`":`"$Visa`",
-        `n      `"method`":`"UpdateAccountCustomColumnValues`",
-        `n      `"params`":{
-        `n      `"accountId`": $DeviceId,
-        `n      `"values`": [[$ColumnId,`"$Message`"]]
-        `n      }
-        `n  }
-        `n"
-        
-        $script:updateCC = Invoke-RestMethod 'https://cloudbackup.management/jsonapi' -Method 'POST' -Headers $headers -Body $body
-        }
-    
-    Function Send-GetErrorDevices {
+    }  ## EnumeratePartners API Call
 
-        $filter1 = "aa2045 OR ((T7 >= 1) AND TS > $days.days().ago())"
+    Function Send-GetDevices {
 
         $url = "https://api.backup.management/jsonapi"
         $data = @{}
@@ -387,135 +412,91 @@ Function Save-CSVasExcel {
         $data.params.query = @{}
         $data.params.query.PartnerId = [int]$PartnerId
         $data.params.query.Filter = $Filter1
-        $data.params.query.Columns = @("AU","AR","AN","AL","LN","OP","OI","OS","PD","AP","PF","PN","AA843","AA77","T7")
-        $data.params.query.OrderBy = "TS ASC"
+        $data.params.query.Columns = @("AU","AR","AN","MN","AL","LN","OP","OI","OS","OT","PD","AP","PF","PN","CD","TS","TL","T3","US","AA843","AA77","AA2048")
+        $data.params.query.OrderBy = "CD DESC"
         $data.params.query.StartRecordNumber = 0
-        $data.params.query.RecordsCount = $DeviceCount
+        $data.params.query.RecordsCount = $devicecount
         $data.params.query.Totals = @("COUNT(AT==1)","SUM(T3)","SUM(US)")
     
         $webrequest = Invoke-WebRequest -Method POST `
         -ContentType 'application/json' `
         -Body (ConvertTo-Json $data -depth 6) `
         -Uri $url `
-        -SessionVariable Script:websession `
+        -WebSession $websession `
         -UseBasicParsing
         $Script:cookies = $websession.Cookies.GetCookies($url)
         $Script:websession = $websession
     
-        $Script:ErrorDevices = $webrequest | convertfrom-json
+        #Write-output "$($Script:cookies[0].name) = $($cookies[0].value)"
     
-        if ($Partner.result.result.Uid) {
-            [String]$Script:PartnerId = $Partner.result.result.Id
-            [String]$Script:PartnerName = $Partner.result.result.Name
-    
-            Write-Output $Script:strLineSeparator
-            Write-output "  Searching  $PartnerName "
-            Write-Output $Script:strLineSeparator
-            }else{
-            Write-Output $Script:strLineSeparator
-            Write-Host "PartnerName Not Found"
-            Write-Output $Script:strLineSeparator
-            }
-             
-        $Script:ErrorDeviceDetail = @()
+        $Script:Devices = $webrequest | convertfrom-json
+        #$Script:visa = $authenticate.visa
+                
+        $Script:DeviceDetail = @()
 
-        if ($ErrorDevices.result.result.count -eq 0) {
-            Write-Output "  No Errors Found for the Last $days Days`n  Exiting Script"
-            Start-Sleep -seconds 10
-            Break
-        }
-        
-        Write-Output "  Requesting error details for $($ErrorDevices.result.result.count) devices."
-        Write-Output "  Please be patient, this could take some time."
-        Write-Output $Script:strLineSeparator
-
-        ForEach ( $DeviceResult in $ErrorDevices.result.result ) {
-
-        $Script:ErrorDeviceDetail += New-Object -TypeName PSObject -Property @{ AccountID      = [String]$DeviceResult.AccountId;
+        ForEach ( $DeviceResult in $Devices.result.result ) {
+        $Script:DeviceDetail += New-Object -TypeName PSObject -Property @{ AccountID      = [Int]$DeviceResult.AccountId;
                                                                     PartnerID      = [string]$DeviceResult.PartnerId;
                                                                     DeviceName     = $DeviceResult.Settings.AN -join '' ;
+                                                                    ComputerName   = $DeviceResult.Settings.MN -join '' ;
                                                                     DeviceAlias    = $DeviceResult.Settings.AL -join '' ;
                                                                     PartnerName    = $DeviceResult.Settings.AR -join '' ;
                                                                     Reference      = $DeviceResult.Settings.PF -join '' ;
+                                                                    Creation       = Convert-UnixTimeToDateTime ($DeviceResult.Settings.CD -join '') ;
+                                                                    TimeStamp      = Convert-UnixTimeToDateTime ($DeviceResult.Settings.TS -join '') ;  
+                                                                    LastSuccess    = Convert-UnixTimeToDateTime ($DeviceResult.Settings.TL -join '') ;                                                                                                                                                                                                               
+                                                                    SelectedGB     = (($DeviceResult.Settings.T3 -join '') /1GB) ;  
+                                                                    UsedGB         = (($DeviceResult.Settings.US -join '') /1GB) ;  
                                                                     DataSources    = $DeviceResult.Settings.AP -join '' ;                                                                
                                                                     Account        = $DeviceResult.Settings.AU -join '' ;
                                                                     Location       = $DeviceResult.Settings.LN -join '' ;
                                                                     Notes          = $DeviceResult.Settings.AA843 -join '' ;
+                                                                    GUIPassword    = $DeviceResult.Settings.AA2048 -join '' ;                                                                    
                                                                     TempInfo       = $DeviceResult.Settings.AA77 -join '' ;
-                                                                    Errors         = $DeviceResult.Settings.T7 -join '' ;
-                                                                    Errors_FS      = $DeviceResult.Settings.F7 -join '' ;                                                                    
                                                                     Product        = $DeviceResult.Settings.PN -join '' ;
                                                                     ProductID      = $DeviceResult.Settings.PD -join '' ;
                                                                     Profile        = $DeviceResult.Settings.OP -join '' ;
                                                                     OS             = $DeviceResult.Settings.OS -join '' ;                                                                
+                                                                    OSType         = $DeviceResult.Settings.OT -join '' ;        
                                                                     ProfileID      = $DeviceResult.Settings.OI -join '' }
+        }
+    
+       
 
-        GetDeviceErrors $DeviceResult.AccountId
-                
-        if (($CustomColumn) -and ($cleanresponse.message -like "*restarted*")) {
-            $RestartedMSG = $cleanresponse.message | Where-Object {$_ -like "*restarted*"}
-            Send-UpdateCustomColumn $DeviceResult.AccountId 2045 $RestartedMSG
-        }elseif (($CustomColumn) -and ($cleanresponse.message -like "*Operation Aborted*")) {
-                $AbortedMSG = $cleanresponse.message | Where-Object {$_ -like "*Operation Aborted*"}
-                Send-UpdateCustomColumn $DeviceResult.AccountId 2045 $AbortedMSG
-        }elseif ($CustomColumn) {
-            Send-UpdateCustomColumn $DeviceResult.AccountId 2045 $cleanresponse[-1].message 
-        }     
-        
-            ForEach ( $ErrorResult in $Script:cleanresponse ) {
-  
-            $Script:ResponseDetail += New-Object -TypeName PSObject -Property @{ DeviceId      = [String]$DeviceResult.AccountId;
-                                                                     DeviceName     = $DeviceResult.Settings.AN  -join '';
-                                                                     PartnerName    = $DeviceResult.Settings.AR -join '' ;
-                                                                     Time           = [datetime]$ErrorResult.time;
-                                                                     Count          = $ErrorResult.count;
-                                                                     File           = $ErrorResult.file;
-                                                                     Message        = $ErrorResult.message;
-                                                                     GroupID        = $ErrorResult.groupid }
-                                                                    }
-        }   
-    }
+    } ## EnumerateAccountStatistics API Call
 
-    Function Send-ClearErrorDevices {
-
-        $filter1 = "(aa2045 AND T7 == 0) OR (aa2045 AND TS < $days.days().ago())"
-
+    Function Send-GetUserViews ($PartnerName) { 
+                    
         $url = "https://api.backup.management/jsonapi"
         $data = @{}
         $data.jsonrpc = '2.0'
         $data.id = '2'
-        $data.visa = $visa
-        $data.method = 'EnumerateAccountStatistics'
+        $data.visa = $Script:visa
+        $data.method = 'EnumerateUserSettings'
         $data.params = @{}
-        $data.params.query = @{}
-        $data.params.query.PartnerId = [int]$PartnerId
-        $data.params.query.Filter = $Filter1
-        $data.params.query.Columns = @("AU","AR","AN","AL","LN","OP","OI","OS","PD","AP","PF","PN","AA843","AA77","T7")
-        $data.params.query.StartRecordNumber = 0
-        $data.params.query.RecordsCount = $DeviceCount
-        $data.params.query.Totals = @("COUNT(AT==1)","SUM(T3)","SUM(US)")
-    
-        $webrequest = Invoke-WebRequest -Method POST `
-        -ContentType 'application/json' `
-        -Body (ConvertTo-Json $data -depth 6) `
-        -Uri $url `
-        -SessionVariable Script:websession `
-        -UseBasicParsing
-        $Script:cookies = $websession.Cookies.GetCookies($url)
-        $Script:websession = $websession
-    
-        $Script:ZeroErrorDevices = $webrequest | convertfrom-json
+        $data.params.userId = [int]$UserId
 
-        ForEach ( $DeviceResult in $ZeroErrorDevices.result.result ) {
-            Send-UpdateCustomColumn $DeviceResult.AccountId 2045 ""
-            Write-output "  DeviceId# $($DeviceResult.AccountId) - Clearing Custom Columns for Resolved Errors or Errors older than $days Days "
-        }  
+        $webrequest = Invoke-WebRequest -Method POST `
+            -ContentType 'application/json' `
+            -Body (ConvertTo-Json $data -depth 5) `
+            -Uri $url `
+            -SessionVariable Script:websession `
+            -UseBasicParsing
+            #$Script:cookies = $websession.Cookies.GetCookies($url)
+            $Script:websession = $websession
+            $Script:UserViews = $webrequest | convertfrom-json
+
+    $userviews.result.result.view | format-table
+    $userviews.result.result | Select-Object name,id,type,@{N="StatisticsFilter";E={$_.view.StatisticsFilter}},@{N="Columns";E={$_.view.Columns -join ','}}| Out-GridView
+    $userviews.result.result | Select-Object name,id,type,@{N="StatisticsFilter";E={$_.view.StatisticsFilter}},@{N="Columns";E={$_.view.Columns -join ','}}| Format-table -AutoSize
     }
+            
+
 #endregion ----- Backup.Management JSON Calls ----
 
 #endregion ----- Functions ----
 
-    $Script:ResponseDetail = @()
+    $switch = $PSCmdlet.ParameterSetName
 
     Send-APICredentialsCookie
 
@@ -524,52 +505,57 @@ Function Save-CSVasExcel {
 
     Send-GetPartnerInfo $Script:cred0
 
+    if ($AllPartners) {}else{Send-EnumeratePartners}
 
-    
-    Send-ClearErrorDevices
+    Send-GetDevices $partnerId
 
- 
-        
-    Send-GetErrorDevices
+    if ($AllDevices) {
+        $script:SelectedDevices = $DeviceDetail | Select-Object PartnerId,PartnerName,Reference,AccountID,DeviceName,ComputerName,Creation,TimeStamp,LastSuccess,ProductId,Product,ProfileId,Profile,DataSources,SelectedGB,UsedGB,Location,OS,OSType
+    }else{
+        $script:SelectedDevices = $DeviceDetail | Select-Object PartnerId,PartnerName,Reference,AccountID,DeviceName,ComputerName,Creation,TimeStamp,LastSuccess,ProductId,Product,ProfileId,Profile,DataSources,SelectedGB,UsedGB,Location,OS,OSType | Out-GridView -title "Current Partner | $partnername" -OutputMode Multiple}
 
-    $filterDate = (Get-Date).AddDays(-$days)
+    if($null -eq $SelectedDevices) {
+        # Cancel was pressed
+        # Run cancel script
+        Write-Output    $Script:strLineSeparator
+        Write-Output    "  No Devices Selected"
+        Break
+    }else{
+        # OK was pressed, $Selection contains what was chosen
+        # Run OK script
+        $script:SelectedDevices |  Select-Object PartnerName,AccountID,DeviceName,ComputerName,Creation,TimeStamp,LastSuccess,Product,Profile,DataSources,SelectedGB,UsedGB,Location,OS,OSType  | Sort-object PartnerName,AccountId | format-table
 
-    $ResponseDetail | select-object Partnername,deviceid,DeviceName,groupid,time,count,message,file | where-object {$_.time -ge $filterdate}  | sort-object partnername,deviceid,groupid | format-table   
-
-    if ($Script:GridView) {  
-
-        $ResponseDetail | select-object Partnername,deviceid,DeviceName,groupid,time,count,message,file | where-object {$_.time -ge $filterdate}  | sort-object partnername,deviceid,groupid | Out-GridView -Title " Devices with Errors Since $Filterdate"
+        If ($Script:Export) {
+            $Script:csvoutputfile = "$ExportPath\$($CurrentDate)_Statistics_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
+            $Script:SelectedDevices | Select-object * | Export-CSV -path "$csvoutputfile" -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF}
+            
     }
-
-    if ($Script:Export) {
-        $Script:csvoutputfile = "$ExportPath\$($CurrentDate)_DeviceErrors_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
-        $script:ResponseDetail | select-object Partnername,deviceid,DeviceName,groupid,time,count,message,file | where-object {$_.time -ge $filterdate}  | Export-CSV -path "$csvoutputfile" -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF8 -append
 
     ## Generate XLS from CSV
     
+    if ($csvoutputfile) {
         $xlsoutputfile = $csvoutputfile.Replace("csv","xlsx")
         Save-CSVasExcel $csvoutputfile
-      
-        Write-output $Script:strLineSeparator
+    }
+    Write-output $Script:strLineSeparator
 
     ## Launch CSV or XLS if Excel is installed  (Required -Launch Parameter)
         
-        if ($Launch) {
-            If (test-path HKLM:SOFTWARE\Classes\Excel.Application) { 
-                Start-Process "$xlsoutputfile"
-                Write-output $Script:strLineSeparator
-                Write-Output "  Opening XLS file"
-                }else{
-                Start-Process "$csvoutputfile"
-                Write-output $Script:strLineSeparator
-                Write-Output "  Opening CSV file"
-                Write-output $Script:strLineSeparator            
-                }
+    if ($Launch) {
+        If (test-path HKLM:SOFTWARE\Classes\Excel.Application) { 
+            Start-Process "$xlsoutputfile"
+            Write-output $Script:strLineSeparator
+            Write-Output "  Opening XLS file"
+            }else{
+            Start-Process "$csvoutputfile"
+            Write-output $Script:strLineSeparator
+            Write-Output "  Opening CSV file"
+            Write-output $Script:strLineSeparator            
             }
-        Write-output $Script:strLineSeparator
-        Write-Output "  CSV Path = $Script:csvoutputfile"
-        Write-Output "  XLS Path = $Script:xlsoutputfile"
-        Write-Output ""
-        Start-Sleep -seconds 10
-    }
+        }
+    Write-output $Script:strLineSeparator
+    Write-Output "  CSV Path = $Script:csvoutputfile"
+    Write-Output "  XLS Path = $Script:xlsoutputfile"
+    Write-Output ""
 
+    Start-Sleep -seconds 10
