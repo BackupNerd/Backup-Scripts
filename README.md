@@ -60,7 +60,13 @@ GetDeviceStatistics.ps1
 
 	Script to Enumerate Device Statistics.
 	Predefined to Include Multiple Columns from the Management Console, can be expanded to include custom columns.
-        Useful for automating an export of data for billing or reporting.	
+        Useful for automating an export of data for billing or reporting.
+
+GetM365DeviceStatistics.ps1
+
+	Script to Enumerate Microsoft 365 Device Statistics.
+	Predefined to Include Mail, OnDrive and Sharepoint Statistics and Protected Users.
+        Useful for automating an export of data for billing or reporting.
 	
 GetSessionFiles.ps1	
 
