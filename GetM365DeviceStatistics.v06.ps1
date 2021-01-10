@@ -1,4 +1,4 @@
-﻿<## ----- About: ----
+﻿<# ----- About: ----
     # Get M365 Device Stats
     # Revision v06 - 2021-01-06
     # Author: Eric Harless, Head Backup Nerd - SolarWinds 
@@ -24,7 +24,7 @@
     # Check partner level/ Enumerate partners/ GUI select partner
     # Enumerate devices/ GUI select M365 devices
     # Optionally export to XLS/CSV
-     #
+    #
     # Use the -AllPartners switch parameter to skip GUI partner selection
     # Use the -AllDevices switch parameter to skip GUI device selection
     # Use the -DeviceCount ## (default=5000) parameter to define the maximum number of devices returned
@@ -47,8 +47,8 @@
         [Parameter(Mandatory=$False)] [int]$DeviceCount = 5000,                     ## Set maximum number of device results to return
         [Parameter(Mandatory=$False)] [switch]$GridView,                            ## Display output via Powershell Out-Gridview
         [Parameter(Mandatory=$False)] [switch]$ExportIndividual,                    ## Generate individual End Customer XLS/CSV output files for M365 users
-        [Parameter(Mandatory=$False)] [switch]$ExportCombined,                      ## Generate combined XLS/CSV output files for M365 devices and users
-        [Parameter(Mandatory=$False)] [switch]$Launch,                              ## Launch combined XLS/CSV outputfile if generated
+        [Parameter(Mandatory=$False)] [switch]$ExportCombined = $true,              ## Generate combined XLS/CSV output files for M365 devices and users
+        [Parameter(Mandatory=$False)] [switch]$Launch = $true,                      ## Launch combined XLS/CSV outputfile if generated
         [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS/CSV file   
         [Parameter(Mandatory=$False)] $ExportPath = "$PSScriptRoot",                ## Export Path
         [Parameter(Mandatory=$False)] [switch]$ClearCredentials                     ## Remove Stored API Credentials at start of script
@@ -65,7 +65,7 @@
     Write-output "  -DeviceCount     = $DeviceCount"
     Write-output "  -GridView        = $GridView"
     Write-output "  -ExportCombined  = $ExportCombined"
-    Write-output "  -ExportIndvidual = $ExportIndvidual"
+    Write-output "  -ExportIndvidual = $ExportIndividual"
     Write-output "  -Launch          = $Launch"
     Write-output "  -ExportPath      = $ExportPath"
     Write-output "  -Delimiter       = $Delimiter"
