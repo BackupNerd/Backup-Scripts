@@ -22,12 +22,14 @@
 
 <# ----- Behavior: ----
     # Set local exclusion filter for LSV and seed drives. "None added" is a vaild response if the fiter has already been applied
-    # Note, this method is not supported with profile based filters
+    #   Note, this method is not supported with profile based filters
     # Set Registry exclusion filter for LSV and seed drives. "HKLM\SYSTEM\ControlSet001\Control\BackupRestore\FilesNotToBackup"
-    # Note, this method is supported with profile based filters
+    #   Note, this method is supported with profile based filters
+    # Alterntely, you can simply add *\storage\cabs\gen*\* as a profile filter 
     #
     # Excludes local and network attached path containung LSV and seed data
     #
+    # https://www.solarwindsmsp.com/blog/backup-monitoring-part-5-tuning-your-backup-selections
     # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/reg-add
     # https://docs.microsoft.com/en-us/windows/win32/backup/registry-keys-for-backup-and-restore#filesnottobackup 
     # https://documentation.solarwindsmsp.com/backup/documentation/Content/backup-manager/backup-manager-guide/command-line.htm?
