@@ -41,10 +41,7 @@
     $scriptpath = $MyInvocation.MyCommand.Path
     $dir = Split-Path $scriptpath
     Push-Location $dir
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $Script:strLineSeparator = "  ---------"
-    $CurrentDate = Get-Date -format "yyy-MM-dd_hh-mm-ss"
-    $urljson = "https://api.backup.management/jsonapi"
 
 #endregion ----- Environment, Variables, Names and Paths ----
 
