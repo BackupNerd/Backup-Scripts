@@ -299,7 +299,7 @@ Function Send-GetPartnerInfo ($PartnerName) {
         [String]$Script:PartnerName = $Partner.result.result.Name
 
         Write-Output $Script:strLineSeparator
-        Write-output "  $String:PartnerName - $partnerId - $Uid"
+        Write-output "  $PartnerName - $partnerId - $Uid"
         Write-Output $Script:strLineSeparator
         }else{
         Write-Output $Script:strLineSeparator
