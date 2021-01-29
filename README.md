@@ -46,6 +46,11 @@ ExcludeUSB.ps1
 	Script to exclude USB attached disks from backup.
 	Identify disks attached via USB bus type and exclude those device volumes using backup filter or the FilesNotToBackup registry key.
 
+ForceLogout.ps1
+
+	Background script to force a custom inactivity logout period for the Backup.Management console
+	Can be modified to force logout of other supported SSO products like the TakeControl and the RMM web consoles
+
 GetDeviceErrors.ps1
 
 	Script to pull recent Device Errors and output to the console or update a Custom Column in the Management Console
