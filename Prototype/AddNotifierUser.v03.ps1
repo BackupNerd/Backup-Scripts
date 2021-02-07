@@ -19,6 +19,9 @@
 # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
+    # Add a NonInteractive, Notifier level user/ email address that can be selected for use with Scheduled Email views
+    # NonInteractive, Notifier level users do not have login access SSO or https://backup.management 
+    # 
     # Check/ Get/ Store secure credentials 
     # Authenticate to https://backup.management console
     # Check partner level/ Enumerate partners/ GUI select partner
