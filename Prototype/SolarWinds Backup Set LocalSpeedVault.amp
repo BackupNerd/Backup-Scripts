@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="5fe6b309-94d3-4979-b0bc-9f7a61f9e86b" Name="SolarWinds Backup Set LocalSpeedVault" Description="U29sYXJXaW5kcyBCYWNrdXAgU2V0IExvY2FsU3BlZWRWYXVsdA0KRW5hYmxlIC8gRGlzYWJsZQ0KTG9jYWwgLyBOZXR3b3Jr" Version="2.15.1.1" RemoteCategory="0" ExecutionType="Local" MinimumPSVersionRequired="0.0.0">
+  <Object ID="{58ba72a4-b6da-470a-80e0-25d7dd778c13}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml&gt;&lt;Parameters&gt;&lt;Parameter ParameterName=&quot;LSV_Enabled&quot; Label=&quot;LSV On = 1 | Off = 0&quot; ParameterType=&quot;string&quot; Value=&quot;0 | 1&quot; /&gt;&lt;Parameter ParameterName=&quot;LSV_Path&quot; Label=&quot;Network | local path | &amp;quot;null&amp;quot; if disabled&quot; ParameterType=&quot;string&quot; Value=&quot;\\server\share | q:\data\speedvault&quot; /&gt;&lt;Parameter ParameterName=&quot;LSV_Net_User&quot; Label=&quot;LSV user | &amp;quot;null&amp;quot; if local path&quot; ParameterType=&quot;string&quot; Value=&quot;domain\user | 10.10.10.21\nasuser | null&quot; /&gt;&lt;Parameter ParameterName=&quot;LSV_Net_Password&quot; Label=&quot;LSV password | &amp;quot;null&amp;quot; if local path&quot; ParameterType=&quot;password&quot; Value=&quot;&quot; /&gt;&lt;/Parameters&gt;&lt;/xml&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System" />
+  </LinkManager>
+  <Activity mc:Ignorable="sads sap" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>491.2,570.4</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="491.2,570.4" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.15.1.1, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="454.4,347.2" Moniker="fe719772-d09f-43a8-8a30-c2ac1d7f9229" OutPut_64="[RunPowerShellScript_OutPut_64]" Result="[RunPowerShellScript_Result]" ResultString="[RunPowerShellScript_ResultString]" Results_x64="[RunPowerShellScript_Results_x64]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="e79a2bec-966d-4c8d-a143-4230df52a13d" m_bTextLinkChange="False" script="JABjAGwAaQBlAG4AdABvAG8AbAAgAD0AIAAiAGMAOgBcAHAAcgBvAGcAcgBhAG0AIABmAGkAbABlAHMAXABiAGEAYwBrAHUAcAAgAG0AYQBuAGEAZwBlAHIAXABjAGwAaQBlAG4AdAB0AG8AbwBsAC4AZQB4AGUAIgANAAoADQAKAGkAZgAgACgAJABMAFMAVgBfAEUAbgBhAGIAbABlAGQAIAAtAGUAcQAgADEAKQAgAHsAJABMAFMAVgBFAG4AYQBiAGwAZQBkACAAPQAgACAAIgAtAG4AYQBtAGUAIABMAG8AYwBhAGwAUwBwAGUAZQBkAFYAYQB1AGwAdABFAG4AYQBiAGwAZQBkACAALQB2AGEAbAB1AGUAIAAxACIAfQBlAGwAcwBlAHsAJABMAFMAVgBFAG4AYQBiAGwAZQBkACAAPQAgACAAIgAtAG4AYQBtAGUAIABMAG8AYwBhAGwAUwBwAGUAZQBkAFYAYQB1AGwAdABFAG4AYQBiAGwAZQBkACAALQB2AGEAbAB1AGUAIAAwACIAfQANAAoAaQBmACAAKAAkAEwAUwBWAF8AUABhAHQAaAApACAAewAkAEwAUwBWAFAAYQB0AGgAIAA9ACAAIgAtAG4AYQBtAGUAIABMAG8AYwBhAGwAUwBwAGUAZQBkAFYAYQB1AGwAdABMAG8AYwBhAHQAaQBvAG4AIAAtAHYAYQBsAHUAZQAgACQATABTAFYAXwBQAGEAdABoACIAfQANAAoAaQBmACAAKAAkAEwAUwBWAF8ATgBlAHQAXwBVAHMAZQByACkAIAB7ACQATABTAFYAVQBzAGUAcgAgAD0AIAAiAC0AbgBhAG0AZQAgAEwAbwBjAGEAbABTAHAAZQBlAGQAVgBhAHUAbAB0AFUAcwBlAHIAIAAtAHYAYQBsAHUAZQAgACQATABTAFYAXwBOAGUAdABfAFUAcwBlAHIAIgB9AA0ACgBpAGYAIAAoACQATABTAFYAXwBOAGUAdABfAFAAYQBzAHMAdwBvAHIAZAApACAAewAkAEwAUwBWAFAAYQBzAHMAdwBvAHIAZAAgAD0AIAAiAC0AbgBhAG0AZQAgAEwAbwBjAGEAbABTAHAAZQBlAGQAVgBhAHUAbAB0AFAAYQBzAHMAdwBvAHIAZAAgAC0AdgBhAGwAdQBlACAAJABMAFMAVgBfAE4AZQB0AF8AUABhAHMAcwB3AG8AcgBkACIAfQANAAoADQAKAHMAdABhAHIAdAAtAHAAcgBvAGMAZQBzAHMAIAAtAEYAaQBsAGUAUABhAHQAaAAgACQAYwBsAGkAZQBuAHQAbwBvAGwAIAAtAEEAcgBnAHUAbQBlAG4AdABMAGkAcwB0ACAAIgBjAG8AbgB0AHIAbwBsAC4AcwBlAHQAdABpAG4AZwAuAG0AbwBkAGkAZgB5ACAAJABMAFMAVgBFAG4AYQBiAGwAZQBkACAAJABMAFMAVgBQAGEAdABoACAAJABMAFMAVgBVAHMAZQByACAAJABMAFMAVgBQAGEAcwBzAHcAbwByAGQAIgAgAC0AVwBpAG4AZABvAHcAUwB0AHkAbABlACAATQBpAG4AaQBtAGkAegBlAGQA">
+          <p:RunPowerShellScript.InArgs>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="LSV_Enabled" ArgType="string" DisplayArg="Input Parameters.LSV On = 1 | Off = 0" DisplayName="0 = Off | 1 = On" Name="LSV_Enabled" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[LSV_Enabled]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="LSV_Path" ArgType="string" DisplayArg="Input Parameters.Network | local path" DisplayName="Network or local path" Name="LSV_Path" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[LSV_Path]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="LSV_Net_User" ArgType="string" DisplayArg="Input Parameters.LSV user | &quot;null&quot; if local path" DisplayName="Network user" Name="LSV_Net_User" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[LSV_Net_User]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="LSV_Net_Password" ArgType="password" DisplayArg="Input Parameters.LSV password | &quot;null&quot; if local path" DisplayName="Network password" Name="LSV_Net_Password" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="p:Password">[LSV_Net_Password]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+          </p:RunPowerShellScript.InArgs>
+          <p:RunPowerShellScript.OutArgs>
+            <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+          </p:RunPowerShellScript.OutArgs>
+        </p:RunPowerShellScript>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString" />
+        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64" />
+        <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result" />
+        <Variable x:TypeArguments="x:String" Default="0" Name="LSV_Enabled" />
+        <Variable x:TypeArguments="x:String" Default="null" Name="LSV_Path" />
+        <Variable x:TypeArguments="x:String" Default="null" Name="LSV_Net_User" />
+        <Variable x:TypeArguments="p:Password" Name="LSV_Net_Password">
+          <Variable.Default>
+            <Literal x:TypeArguments="p:Password">
+              <p:Password PasswordValue="0W1scCe4j36MQIJqOUubfg==" />
+            </Literal>
+          </Variable.Default>
+        </Variable>
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>
