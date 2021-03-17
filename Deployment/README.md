@@ -1,6 +1,6 @@
 # READ ME
 
-## TO DOWNLOAD INDIVIDUAL FILES (RIGHT CLICK) on the file and select (Save link as...)
+## TO DOWNLOAD INDIVIDUAL FILES Click the file name, then Right Click on the Raw Button and then select Save link as...)
 
 ### Sample scripts are not supported under any SolarWinds support program or service.
 ### The sample scripts are provided AS IS without warranty of any kind.
