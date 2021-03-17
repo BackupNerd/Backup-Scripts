@@ -1,6 +1,6 @@
 # READ ME
 
-## TO DOWNLOAD INDIVIDUAL FILES (RIGHT CLICK) on the file and select (Save link as...)
+## TO DOWNLOAD INDIVIDUAL FILES Click the file name, then Right Click on the Raw Button and then select Save link as...)
 
 ### Sample scripts are not supported under any SolarWinds support program or service.
 ### The sample scripts are provided AS IS without warranty of any kind.
@@ -10,11 +10,3 @@
 ### Please review, test and understand any scripts you download before implementing them in production!
 
 # SolarWinds Backup - Standalone Editon ###
-
-BulkSetGUIPassword.ps1
-
-	Script to bulk set/wipe a GUI Password for multiple devices. This is useful for limiting local and remote access to the Backup Manager client.
-
-ForceLogout.ps1
-
-	Script to automatically logout of the Backup.Management Console after an idle period
