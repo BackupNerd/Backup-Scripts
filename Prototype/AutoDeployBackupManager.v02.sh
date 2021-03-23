@@ -78,9 +78,3 @@ curl -o $filename https://cdn.cloudbackup.management/maxdownloads/$runfile
 
 chmod +x $filename
 ./$filename
-
-
-CUID="6079722f-408c-replace-me-aa57f4773b21"; PROFILE='11223344'; INSTALL="swibm#$CUID#$PROFILE#.run" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-linux-x86_64.run && chmod +x $INSTALL && ./$INSTALL
-
-
-
