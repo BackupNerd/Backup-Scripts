@@ -1,3 +1,10 @@
+## Syntax
+# run from SSH terminal / Powershell
+# Download latest installer
+# AutoDeploy to customer specifed by $CUID
+# Apply ProfileID specified by $PROFILE use 0 for No Profile
+# Optionally assign Product specified by $PRODUCT for Windows deployments
+
 ## Single Line Linux Install
 
 CUID="6079722f-408c-473e-b991-aa57f4773b20"; PROFILE='115652'; INSTALL="swibm#$CUID#$PROFILE#.run" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-linux-x86_64.run && chmod +x $INSTALL && sudo -s ./$INSTALL; rm ./swibm#*.run -f
