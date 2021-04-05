@@ -45,6 +45,7 @@
     Param (
         [Parameter(Mandatory=$False)] [switch]$MaxValue = $true,                    ## Lookup Monthly Max Value Report
         [Parameter(Mandatory=$False)] [switch]$AllPartners = $true,                 ## Skip partner selection
+        [Parameter(Mandatory=$False)] [datetime]$Period = (Get-Date),               ## Lookup Date yyyy-MM or MM-yyyy
         [Parameter(Mandatory=$False)] [switch]$Export = $true,                      ## Generate CSV / XLS Output Files
         [Parameter(Mandatory=$False)] [switch]$Launch,                              ## Launch XLS or CSV file 
         [Parameter(Mandatory=$False)] [string]$Delimiter = ',',                     ## specify ',' or ';' Delimiter for XLS & CSV file   
@@ -216,7 +217,7 @@ if ($authenticate.visa) {
             $Script:websession = $websession
             $Script:Partner = $webrequest | convertfrom-json
 
-        $RestrictedPartnerLevel = @("Root","SubRoot","Distributor")
+        $RestrictedPartnerLevel = @("Root","SubRoot")
 
         if ($Partner.result.result.Level -notin $RestrictedPartnerLevel) {
             [String]$Script:Uid = $Partner.result.result.Uid
@@ -390,7 +391,7 @@ if ($authenticate.visa) {
 
     if (($Export) -and ($MaxValue))  {
 
-        $csvoutputfile = "$ExportPath\$($CurrentDate)_RecentlyDeletedDevices_$($period.ToString('yyyy-MM'))_Statistics_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
+        $csvoutputfile = "$ExportPath\$($CurrentDate)_RecentlyDeletedDevices_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
         $xlsoutputfile = $csvoutputfile.Replace("csv","xlsx")
         $Deleted = $Script:MVReport | Where-object {$_.DeviceDeletiondate -ge 1} | Select-object Parent1Name,Parent1Id,CustomerName,CustomerId,ComputerName,DeviceName,DeviceId,OsType,CustomerState,CreationDate,ProductionDate,DeviceDeletionDate,SelectedSizeGb,UsedStorageGb,O365Users
         $Script:MVReport | Where-object {$_.DeviceDeletiondate -ge 1} | Select-object Parent1Name,Parent1Id,CustomerName,CustomerId,ComputerName,DeviceName,DeviceId,OsType,CustomerState,CreationDate,ProductionDate,DeviceDeletionDate,SelectedSizeGb,UsedStorageGb,O365Users | Export-CSV -path "$csvoutputfile" -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF8
@@ -406,7 +407,7 @@ if ($authenticate.visa) {
         $Subject = "$($CurrentDate) | $($deleted.count) Recently Deleted Backup Devices for Partner $($Partnername) | Id $($PartnerId)"
         $Body = "<b>$($deleted.count)</b> recently deleted backup devices found for partner <b>$PartnerName</b> between <b>$($start)</b> and <b>$($end)</b>.<br /><br />"
         $Body += "You should contact backup technical support immediately if any listed devices are believed to have been accidentially, unintentionally or maliciously deleted.<br /><br />"
-        $Body += $deleted | sort-object DeviceDeletionDate | Select-object CustomerName,DeviceName,CreationDate,DeviceDeletiondate | ConvertTo-Html | Out-String
+        $Body += $deleted | sort-object DeviceDeletionDate | Select-object Parent1Name,CustomerName,DeviceName,CreationDate,DeviceDeletiondate | ConvertTo-Html | Out-String
         $SMTPServer = "smtp.gmail.com"
         $SMTPPort = "587"
         Send-MailMessage -From $From -to $To -Cc $Cc -Subject $Subject `
