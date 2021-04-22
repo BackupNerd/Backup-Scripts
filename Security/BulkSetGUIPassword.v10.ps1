@@ -53,7 +53,7 @@
 #region ----- Environment, Variables, Names and Paths ----
     Clear-Host
     Write-output "  Bulk Set GUI Password `n"
-    $Syntax = Get-Command $PSCommandPath -Syntax ; Write-Output "  Script Parameter Syntax:`n`n  $Syntax"
+    $Syntax = Get-Command $PSCommandPath -Syntax ; Write-Output "Script Parameter Syntax:`n`n  $Syntax"
     Write-output "  Current Parameters:"
     Write-output "  -AllPartners     = $AllPartners"
     Write-output "  -AllDevices      = $AllDevices"
