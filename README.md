@@ -156,13 +156,13 @@ MSPB_CLOUD_CHECK_v1.amp
 
 MSPB_LSV_CHECK_v1.amp
 
-	3 AMP files and PDF documentation to enhance monitoring of SolarWinds Backup (Ncentral Integrated or Standalone Editions).
+	3 AMP files and PDF documentation to enhance monitoring of N-able Backup (Ncentral Integrated or Standalone Editions).
 
 N-able Backup Migration Prep.amp
 
 N-able Backup Migration Cleanup.amp
 
-	2 AMP files for use when working with SolarWinds on an approved migration from Ncentral Integrated Backup to the Standalone Edition.
+	2 AMP files for use when working with N-able on an approved migration from Ncentral Integrated Backup to the Standalone Edition.
 	Migration Prep will store your local Backup Manager credentials and block Ncentral from being able to uninstall the Backup Manager. 
 	Migration Cleanup will revert changes made to block Ncentral from being able to uninstall the Backup Manager. 
 
