@@ -62,10 +62,9 @@
     Push-Location $dir
     $CurrentDate = Get-Date -format "yyy-MM-dd_hh-mm-ss"
     $ShortDate = Get-Date -format "yyy-MM-dd"
-    if ($ExportPath) {$ExportPath = Join-path -path $ExportPath -childpath "Export_$shortdate"}else{$ExportPath = Join-path -path $dir -childpath "Export_$shortdate"}
+    if ($ExportPath) {$ExportPath = Join-path -path $ExportPath -childpath "DR_$shortdate"}else{$ExportPath = Join-path -path $dir -childpath "DR_$shortdate"}
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $Script:strLineSeparator = "  ---------"
-    If ($export) {mkdir -force -path $ExportPath | Out-Null}
     $urljson = "https://api.backup.management/jsonapi"
 
     Write-output "  Current Parameters:"
@@ -406,29 +405,6 @@ Function Save-CSVasExcel {
         
     }  ## EnumeratePartners API Call
 
-    Function Get-DRStatistics.old {
-        Param ([Parameter(Mandatory=$False)][Int]$PartnerId) #end param
-      
-        $Script:url2 = "https://api.backup.management/draas/actual-statistics/v1/dashboard/?offset=0&limit=100&fields=backup_cloud_partner_name,backup_cloud_partner_id,backup_cloud_device_name,backup_cloud_device_id,backup_cloud_device_machine_name,current_recovery_status,plan_device_id,plan_name,last_recovery_session_id,last_recovery_timestamp,last_recovery_status,last_recovery_boot_status,last_recovery_errors_count,last_recovery_screenshot_presented,last_recovery_selected_size,last_recovery_restored_size,last_recovery_selected_files_count,last_recovery_restored_files_count,last_recovery_duration,backup_cloud_device_machine_os_type,region_name,data_sources,colorbar,backup_cloud_device_alias&sort=last_recovery_timestamp&filter%5Bpartner_materialized_path.contains%5D=/$($PartnerId)/"
-        $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Cookie", "__cfduid=d7cfe7579ba7716fe73703636ea50b1251593338423; visa=$Script:visa")
-
-        Write-output  "$url2"
-
-        $Script:DRStatisticsResponse = Invoke-RestMethod -Uri $url2 `
-        -Method GET `
-        -Headers $headers `
-        -ContentType 'application/json' `
-        -WebSession $websession `
-      
-        $Script:DRStatistics = $Script:DRStatisticsResponse.data.attributes | Select-object * 
-        
-        $Script:DRStatistics | foreach-object { $_.last_recovery_selected_size = [Math]::Round([Decimal]($($_.last_recovery_selected_size) /1GB),2) }
-        $Script:DRStatistics | foreach-object { $_.last_recovery_restored_size = [Math]::Round([Decimal]($($_.last_recovery_restored_size) /1GB),2) }
-        $Script:DRStatistics | foreach-object { $_.last_recovery_timestamp = Convert-UnixTimeToDateTime $($_.last_recovery_timestamp) }
-
-    } 
-
     Function Get-DRStatistics {
         Param ([Parameter(Mandatory=$False)][Int]$PartnerId) #end param
       
@@ -490,6 +466,7 @@ Function Save-CSVasExcel {
         $script:SelectedDevices |  Select-Object backup_cloud_partner_name,backup_cloud_partner_id,backup_cloud_device_name,backup_cloud_device_id,backup_cloud_device_machine_name,current_recovery_status,plan_device_id,plan_name,last_recovery_session_id,last_recovery_timestamp,last_recovery_status,last_recovery_boot_status,last_recovery_errors_count,last_recovery_screenshot_presented,last_recovery_selected_size,last_recovery_restored_size,last_recovery_selected_files_count,last_recovery_restored_files_count,last_recovery_duration,backup_cloud_device_machine_os_type,region_name,data_sources,colorbar,backup_cloud_device_alias | Sort-object PartnerName,AccountId | format-table
 
         If ($Script:Export) {
+            mkdir -force -path $ExportPath | Out-Null
             $Script:csvoutputfile = "$ExportPath\$($CurrentDate)_DRStatistics_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
             $Script:SelectedDevices | Select-object * | Export-CSV -path "$csvoutputfile" -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF8}
             
