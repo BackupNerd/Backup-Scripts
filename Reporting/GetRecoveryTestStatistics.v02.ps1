@@ -3,6 +3,7 @@
     # Revision v02 - 2021-06-13
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
+    # Reddit https://www.reddit.com/r/Nable/
 # -----------------------------------------------------------#>  ## About
 
 <# ----- Legal: ----
@@ -15,7 +16,8 @@
 # -----------------------------------------------------------#>  ## Legal
 
 <# ----- Compatibility: ----
-    # For use with the Standalone edition of SolarWinds Backup
+    # For use with the Standalone edition of N-able Backup
+    # Sample scripts may contain non-public API calls which are subject to change without notification
 # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
