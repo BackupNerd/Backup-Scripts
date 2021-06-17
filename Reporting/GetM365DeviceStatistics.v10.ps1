@@ -1,6 +1,6 @@
 ﻿<# ----- About: ----
     # Get M365 Device Stats
-    # Revision v19 - 2021-06-15
+    # Revision v19 - 2021-06-17
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -67,7 +67,7 @@
     Write-Output "  Script Parameter Syntax:`n`n  $Syntax"
     $dir = Split-Path $scriptpath
     Push-Location $dir
-    $CurrentDate = Get-Date -format "yyy-MM-dd_hh-mm-ss"
+    $CurrentDate = Get-Date -format "yyy-MM-dd_HH-mm-ss"
     $ShortDate = Get-Date -format "yyy-MM-dd"
     if ($ExportPath) {$ExportPath = Join-path -path $ExportPath -childpath "M365_$shortdate"}else{$ExportPath = Join-path -path $dir -childpath "M365_$shortdate"}
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -620,7 +620,7 @@ Function Save-CSVasExcel {
 
         $Script:M365Users = Join-Object -left $script:M365UserStatistics -LeftJoinProperty UserGuid -right $script:devicestatistics -RightJoinProperty userId -Prefix 'Ext_' -Type AllInLeft -RightProperties SharePoint
 
-        $Script:M365UserStatistics = $Script:M365Users | Select-Object -property * -ExcludeProperty UserGuid
+        $Script:M365UserStatistics = $Script:M365Users | Select-Object -property *
 
     }
 
