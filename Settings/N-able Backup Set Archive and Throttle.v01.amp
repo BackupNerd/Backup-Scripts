@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="c198ebf2-ce4c-47be-99c0-43df510231bb" Name="N-able Backup Set Archive and Throttle.v01" Description="Ti1hYmxlIEJhY2t1cCBTZXQgQXJjaGl2ZSBhbmQgVGhyb3R0bGUudjAxDQpTZXQgQXJjaGl2ZQ0KU2V0IFRocm90dGxl" Version="2.16.0.1" MinRequiredVersion="2.16.0.1" RemoteCategory="0" ExecutionType="Local" MinimumPSVersionRequired="0.0.0">
+  <Object ID="{5d945c25-32b5-49ef-b912-9f399db93e87}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml&gt;&lt;Parameters&gt;&lt;Parameter ParameterName=&quot;Archive_Enabled&quot; Label=&quot;Set Archiving (true|false)&quot; ParameterType=&quot;string&quot; Value=&quot;false&quot; /&gt;&lt;Parameter ParameterName=&quot;Set_Archive_Day&quot; Label=&quot;Archive Day of Month&quot; ParameterType=&quot;string&quot; Value=&quot;1,15 or Last&quot; /&gt;&lt;Parameter ParameterName=&quot;Bandwidth_Throttle&quot; Label=&quot;Set Bandwidth (true|false)&quot; ParameterType=&quot;string&quot; Value=&quot;false&quot; /&gt;&lt;Parameter ParameterName=&quot;Throttle_Start&quot; Label=&quot;Throttle Start&quot; ParameterType=&quot;string&quot; Value=&quot;08:00&quot; /&gt;&lt;Parameter ParameterName=&quot;Throttle_Stop&quot; Label=&quot;Throttle Stop&quot; ParameterType=&quot;string&quot; Value=&quot;17:00&quot; /&gt;&lt;Parameter ParameterName=&quot;UP_KB&quot; Label=&quot;Upload Kbps&quot; ParameterType=&quot;string&quot; Value=&quot;5120&quot; /&gt;&lt;Parameter ParameterName=&quot;DOWN_KB&quot; Label=&quot;Download Kbps&quot; ParameterType=&quot;string&quot; Value=&quot;Unlimited&quot; /&gt;&lt;/Parameters&gt;&lt;/xml&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System" />
+  </LinkManager>
+  <Diagnostics OriginalVersion="2.18.1.8" />
+  <Activity mc:Ignorable="sads sap" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>561.6,1504.8</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="561.6,1504.8" MinRequiredVersion="2.16.0.1" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:IsAppInstalled ApplicationName_ItemProp="{x:Null}" ApplicationName="Backup Manager" ApplicationName_DisplayArg="Backup Manager" ApplicationName_Item="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" Conditional="[IsAppInstalled_Conditional]" DisplayName="Is Application Installed" sap:VirtualizedContainerService.HintSize="524.8,88" MinRequiredVersion="2.10.0.19" Moniker="f16f80ed-f84b-4680-ae79-2c482039d65c" Result="[IsAppInstalled_Result]" ResultString="[IsAppInstalled_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="IsAppInstalled" m_bTextLinkChange="False" />
+        <p:IsServiceRunning Service_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" Conditional="[IsServiceRunning_Conditional]" DisplayName="Is Service Running" sap:VirtualizedContainerService.HintSize="524.8,88" MinRequiredVersion="2.16.0.1" Moniker="39fb6752-686c-451b-9161-4ae126b99a50" Result="[IsServiceRunning_Result]" ResultString="[IsServiceRunning_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" Service="Backup Service Controller" Service_DisplayArg="Backup Service Controller" Service_Item="{x:Null}" TypeName="IsServiceRunning" m_bTextLinkChange="False">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+        </p:IsServiceRunning>
+        <p:IsProcessRunning Process_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" Conditional="[IsProcessRunning_Conditional]" DisplayName="Is Process Running" sap:VirtualizedContainerService.HintSize="524.8,88" MinRequiredVersion="2.10.0.19" Moniker="cc20a0f2-abba-4b6f-ad7e-46a5814e7b6a" Process="BackupFP" Process_DisplayArg="BackupFP" Process_Item="{x:Null}" Result="[IsProcessRunning_Result]" ResultString="[IsProcessRunning_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="IsProcessRunning" m_bTextLinkChange="False" />
+        <p:IfObject CaseSensitive_ItemProp="{x:Null}" Condition_ItemProp="{x:Null}" Value_Item="{x:Null}" Value_ItemProp="{x:Null}" Variable_ItemProp="{x:Null}" VerboseOutput_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" CaseSensitive="False" CaseSensitive_DisplayArg="false" CaseSensitive_Item="{x:Null}" Condition="equals" Condition_DisplayArg="equals" Condition_Item="{x:Null}" DisplayName="If" sap:VirtualizedContainerService.HintSize="524.8,897.6" MinRequiredVersion="2.16.0.1" Moniker="64fd4940-9fad-4828-90e5-31d543fab0a7" Result="[IfObject_Result]" ResultString="[IfObject_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="IfObject" Value_DisplayArg="True" Value_Type="x:String" Variable="[IsProcessRunning_Conditional]" Variable_DisplayArg="Is Process Running.Conditional" Variable_Item="{x:Null}" Variable_Type="x:String" VerboseOutput="False" VerboseOutput_DisplayArg="" VerboseOutput_Item="{x:Null}" m_bTextLinkChange="False">
+          <p:IfObject.IfOption>
+            <p:SequenceActivity DisplayName="Then" sap:VirtualizedContainerService.HintSize="492.8,625.6" Name="SequenceActivity">
+              <p:SequenceActivity.Activities>
+                <p:Wait WaitTime_Item="{x:Null}" WaitTime_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.4.0.43, Culture=neutral, PublicKeyToken=null" DisplayName="Wait" sap:VirtualizedContainerService.HintSize="454.4,88" MinRequiredVersion="2.10.0.19" Moniker="803b5234-a0dc-4a76-bf01-f6d894217a08" Result="[Wait_Result]" ResultString="[Wait_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="Wait" WaitTime="20" WaitTime_DisplayArg="20" m_bTextLinkChange="False" />
+                <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="454.4,347.2" MinRequiredVersion="2.10.0.19" Moniker="50b823b5-3708-4ded-88b1-32368f118bf6" OutPut_64="[RunPowerShellScript_OutPut_64_2]" Result="[RunPowerShellScript_Result_2]" ResultString="[RunPowerShellScript_ResultString_2]" Results_x64="[RunPowerShellScript_Results_x64_2]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="210b0715-26fc-4a09-ab04-10641fa19a16" m_bTextLinkChange="False" script="IAAgACAAIAAgACAAIAAgACQAYwBsAGkAZQBuAHQAdABvAG8AbAAgAD0AIAAiAGMAOgBcAHAAcgBvAGcAcgBhAG0AIABmAGkAbABlAHMAXABiAGEAYwBrAHUAcAAgAG0AYQBuAGEAZwBlAHIAXABjAGwAaQBlAG4AdAB0AG8AbwBsAC4AZQB4AGUAIgAgACAAIAAgAA0ACgAgACAAIAAgACAAIAAgACAAVwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAAiACAAIABTAGUAdAB0AGkAbgBnACAAQQByAGMAaABpAHYAZQAgAFMAZQB0AHQAaQBuAGcAcwBgAG4AIgANAAoAIAAgACAAIAAgACAAIAAgAEkAZgAgACgAJABBAHIAYwBoAGkAdgBlAF8ARQBuAGEAYgBsAGUAZAAgAC0AZQBxACAAIgBmAGEAbABzAGUAIgApACAAewANAAoACQAiAEEAcgBjAGgAaQB2AGUAIABEAGkAcwBhAGIAbABlAGQAIgANAAoACQB9AEUAbABzAGUAewANAAoAIAAgACAAIAAgACAAIAAgAAkAJgAgACIAJABjAGwAaQBlAG4AdAB0AG8AbwBsACIAIABjAG8AbgB0AHIAbwBsAC4AYQByAGMAaABpAHYAaQBuAGcALgBhAGQAZAAgAC0AbgBhAG0AZQAgACIAIwBNAG8AbgB0AGgAbAB5ACAALQAgAEEAcgBjAGgAaQB2AGUAIwAiACAALQBkAGEAeQBzAC0AbwBmAC0AbQBvAG4AdABoACAAJABTAGUAdABfAEEAcgBjAGgAaQB2AGUAXwBEAGEAeQANAAoACQAmACAAIgAkAGMAbABpAGUAbgB0AHQAbwBvAGwAIgAgAGMAbwBuAHQAcgBvAGwALgBhAHIAYwBoAGkAdgBpAG4AZwAuAGwAaQBzAHQADQAKACAAIAAgACAAIAAgACAAIAB9AA0ACgANAAoAIAAgACAAIABJAGYAIAAoACQAQQBjAHQAaQB2AGUAIAAtAGUAcQAgACIAZgBhAGwAcwBlACIAKQAgAHsADQAKACAAIAAgACAAIAAgACAAIABXAHIAaQB0AGUALQBPAHUAdABwAHUAdAAgACIAYABuACAAIABCAGEAbgBkAFcAaQBkAHQAaAAgAFQAaAByAG8AdAB0AGwAZQAgAEQAaQBzAGEAYgBsAGUAZAAiAA0ACgAJAH0ARQBsAHMAZQBpAGYAIAAoACQAQQBjAHQAaQB2AGUAIAAtAGUAcQAgACIAdAByAHUAZQAiACkAIAB7AA0ACgAgACAAIAAgACAAIAAgACAAVwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAAiAGAAbgAgACAAUwBlAHQAdABpAG4AZwAgAEIAYQBuAGQAdwBpAGQAdABoACAAVABoAHIAbwB0AHQAbABlACIADQAKACAAIAAgACAAIAAgACAAIABpAGYAIAAoACQARABPAFcATgBfAEsAQgAgAC0AZQBxACAAIgBVAG4AbABpAG0AaQB0AGUAZAAiACkAIAB7ACQARABPAFcATgBfAEsAQgAgAD0AIAAiAC0AMQAiAH0ADQAKAAkAIAAgACAAIABpAGYAIAAoACQAVQBQAF8ASwBCACAALQBlAHEAIAAiAFUAbgBsAGkAbQBpAHQAZQBkACIAKQAgAHsAJABVAFAAXwBLAEIAIAA9ACAAIgAtADEAIgB9AA0ACgANAAoAIAAgACAAIAAgACAAIAAgACQAaABlAGEAZABlAHIAcwAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAIgBTAHkAcwB0AGUAbQAuAEMAbwBsAGwAZQBjAHQAaQBvAG4AcwAuAEcAZQBuAGUAcgBpAGMALgBEAGkAYwB0AGkAbwBuAGEAcgB5AFsAWwBTAHQAcgBpAG4AZwBdACwAWwBTAHQAcgBpAG4AZwBdAF0AIgANAAoAIAAgACAAIAAgACAAIAAgACQAaABlAGEAZABlAHIAcwAuAEEAZABkACgAIgBDAG8AbgB0AGUAbgB0AC0AVAB5AHAAZQAiACwAIAAiAGEAcABwAGwAaQBjAGEAdABpAG8AbgAvAGoAcwBvAG4AIgApAA0ACgAgACAAIAAgACAAIAAgACAAJABiAG8AZAB5ACAAPQAgACIAewBgACIAaQBkAGAAIgA6AGAAIgBqAHMAbwBuAHIAcABjAGAAIgAsAGAAIgBqAHMAbwBuAHIAcABjAGAAIgA6ACAAYAAiADIALgAwAGAAIgAsAGAAIgBtAGUAdABoAG8AZABgACIAOgBgACIAUwBhAHYAZQBCAGEAbgBkAHcAaQBkAHQAaABPAHAAdABpAG8AbgBzAGAAIgAsAGAAIgBwAGEAcgBhAG0AcwBgACIAOgAgAHsAYAAiAGwAaQBtAGkAdABCAGEAbgBkAFcAaQBkAHQAaABgACIAOgAkAEEAYwB0AGkAdgBlACAALABgACIAdAB1AHIAbgBPAG4AQQB0AGAAIgA6AGAAIgAkAFQAaAByAG8AdAB0AGwAZQBfAFMAdABhAHIAdABgACIALABgACIAdAB1AHIAbgBPAGYAZgBBAHQAYAAiADoAYAAiACQAVABoAHIAbwB0AHQAbABlAF8AUwB0AG8AcABgACIALABgACIAbQBhAHgAVQBwAGwAbwBhAGQAUwBwAGUAZQBkAGAAIgA6ACQAVQBQAF8ASwBCACwAYAAiAG0AYQB4AEQAbwB3AG4AbABvAGEAZABTAHAAZQBlAGQAYAAiADoAJABEAE8AVwBOAF8ASwBCACwAYAAiAGQAYQB0AGEAVABoAHIAbwB1AGcAaABwAHUAdABVAG4AaQB0AHMAYAAiADoAYAAiAEsAQgBpAHQAcwBgACIALABgACIAdQBuAGwAaQBtAGkAdABlAGQARABhAHkAcwBgACIAOgBbAGAAIgBTAGEAdAB1AHIAZABhAHkAYAAiACwAYAAiAFMAdQBuAGQAYQB5AGAAIgBdACwAYAAiAHAAbAB1AGcAaQBuAHMAVABvAEMAYQBuAGMAZQBsAGAAIgA6AFsAXQB9ACAAfQAiAA0ACgAgACAAIAAgACAAIAAgACAAJAByAGUAcwBwAG8AbgBzAGUAIAA9ACAASQBuAHYAbwBrAGUALQBSAGUAcwB0AE0AZQB0AGgAbwBkACAAJwBoAHQAdABwADoALwAvAGwAbwBjAGEAbABoAG8AcwB0ADoANQAwADAAMAAvAGoAcwBvAG4AcgBwAGMAdgAxACcAIAAtAE0AZQB0AGgAbwBkACAAJwBQAE8AUwBUACcAIAAtAEgAZQBhAGQAZQByAHMAIAAkAGgAZQBhAGQAZQByAHMAIAAtAEIAbwBkAHkAIAAkAGIAbwBkAHkADQAKACAAIAAgACAADQAKACAAIAAgACAAIAAgACAAIABbAHYAbwBpAGQAXQA6ADoAJAByAGUAcwBwAG8AbgBzAGUAIAB8ACAAYwBvAG4AdgBlAHIAdAB0AG8ALQBqAHMAbwBuAA0ACgAgACAAIAAgACAAIAAgACAAaQBmACAAKAAkAHIAZQBzAHAAbwBuAHMAZQAuAGUAcgByAG8AcgApACAAewAkAHIAZQBzAHAAbwBuAHMAZQAuAGUAcgByAG8AcgAuAG0AZQBzAHMAYQBnAGUAfQANAAoAIAAgACAAIAAgACAAIAAgAGUAbABzAGUAIAB7AA0ACgAgACAAIAAgACAAIAAgACAAIAAgACAAIAAkAHYAYQBsACAAPQAgACQAYgBvAGQAeQAgAHwAIABjAG8AbgB2AGUAcgB0AGYAcgBvAG0ALQBqAHMAbwBuAA0ACgAgACAAIAAgACAAIAAgACAAIAAgACAAIAAkAHYAYQBsAC4AbQBlAHQAaABvAGQADQAKACAAIAAgACAAIAAgACAAIAAgACAAIAAgACQAdgBhAGwALgBwAGEAcgBhAG0AcwANAAoAIAAgACAAIAAgACAAIAAgAH0ADQAKACAAIAAgACAAfQBFAGwAcwBlAHsAVwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAAiAGAAbgAgACAASQBuAHYAYQBsAGkAZAAgAEIAYQBuAGQAVwBpAGQAdABoACAAVABoAHIAbwB0AHQAbABlACAAUwBlAHQAdABpAG4AZwAiAH0ADQAKAA0ACgAgACAAIAAgACAAIAAgACAAaQBmACAAKAAoAGcAZQB0AC0AcAByAG8AYwBlAHMAcwAgACIAQgBhAGMAawB1AHAARgBQACIAIAAtAGUAYQAgAFMAaQBsAGUAbgB0AGwAeQBDAG8AbgB0AGkAbgB1AGUAKQAgAC0AZQBxACAAJABOAHUAbABsACkAIAB7ACAAVwByAGkAdABlAC0AbwB1AHQAcAB1AHQAIAAiAEIAYQBjAGsAdQBwACAATQBhAG4AYQBnAGUAcgAgAE4AbwB0ACAAUgB1AG4AbgBpAG4AZwAiACAAfQBlAGwAcwBlAHsAIAB0AHIAeQAgAHsAIAAkAEUAcgByAG8AcgBBAGMAdABpAG8AbgBQAHIAZQBmAGUAcgBlAG4AYwBlACAAPQAgACcAUwB0AG8AcAAnADsAIAAkAGkAbgBpAHQAZQByAHIAbwByACAAPQAgACYAIAAiAEMAOgBcAFAAcgBvAGcAcgBhAG0AIABGAGkAbABlAHMAXABCAGEAYwBrAHUAcAAgAE0AYQBuAGEAZwBlAHIAXABDAGwAaQBlAG4AdABUAG8AbwBsAC4AZQB4AGUAIgAgAGMAbwBuAHQAcgBvAGwALgBpAG4AaQB0AGkAYQBsAGkAegBhAHQAaQBvAG4ALQBlAHIAcgBvAHIALgBnAGUAdAAgACAAfAAgAGMAbwBuAHYAZQByAHQAZgByAG8AbQAtAGoAcwBvAG4AfQBjAGEAdABjAGgAewAgAFcAcgBpAHQAZQAtAG8AdQB0AHAAdQB0ACAAIgBFAFIAUgBPAFIAOgAgACQAXwAiACAAfQB9AA0ACgAgACAAIAAgACAAIAAgACAAaQBmACAAKAAkAGkAbgBpAHQAZQByAHIAbwByAC4AYwBvAGQAZQAgAC0AZwB0ACAAMAApACAAewB3AHIAaQB0AGUALQBvAHUAdABwAHUAdAAgACIARQBSAFIATwBSADoAIAAkACgAJABpAG4AaQB0AGUAcgByAG8AcgAuAE0AZQBzAHMAYQBnAGUAKQAiAH0AZQBsAHMAZQB7ACAAVwByAGkAdABlAC0AbwB1AHQAcAB1AHQAIAAiAEMAbABvAHUAZAAgAEkAbgBpAHQAaQBhAGwAaQB6AGUAZAAiAH0A">
+                  <p:RunPowerShellScript.InArgs>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="Set_Archive_Day" ArgType="string" DisplayArg="Input Parameters.Archive Day of Month" DisplayName="Set_Archive_Day" Name="Set_Archive_Day" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[Set_Archive_Day]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="Active" ArgType="string" DisplayArg="Input Parameters.Set Bandwidth (true|false)" DisplayName="Active" Name="Active" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[Bandwidth_Throttle]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="Throttle_Stop" ArgType="string" DisplayArg="Input Parameters.Throttle Stop" DisplayName="Throttle_Stop" Name="Throttle_Stop" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[Throttle_Stop]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="Throttle_Start" ArgType="string" DisplayArg="Input Parameters.Throttle Start" DisplayName="Throttle_Start" Name="Throttle_Start" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[Throttle_Start]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="UP_KB" ArgType="string" DisplayArg="Input Parameters.Upload Kbps" DisplayName="UP_KB" Name="UP_KB" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[UP_KB]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="DOWN_KB" ArgType="string" DisplayArg="Input Parameters.Download Kbps" DisplayName="DOWN_KB" Name="DOWN_KB" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[DOWN_KB]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="Archive_Enabled" ArgType="string" DisplayArg="Input Parameters.Set Archiving (true|false)" DisplayName="Archive_Enabled" Name="Archive_Enabled" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:Object">[Archive_Enabled]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                  </p:RunPowerShellScript.InArgs>
+                  <p:RunPowerShellScript.OutArgs>
+                    <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+                  </p:RunPowerShellScript.OutArgs>
+                </p:RunPowerShellScript>
+              </p:SequenceActivity.Activities>
+              <p:SequenceActivity.Variables>
+                <Variable x:TypeArguments="x:Double" Name="Wait_Result" />
+                <Variable x:TypeArguments="x:String" Name="Wait_ResultString" />
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64_2" />
+                <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result_2" />
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString_2" />
+                <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64_2" />
+              </p:SequenceActivity.Variables>
+            </p:SequenceActivity>
+          </p:IfObject.IfOption>
+          <p:IfObject.Value>
+            <InArgument x:TypeArguments="x:Object">
+              <p:ObjectLiteral Value="True" />
+            </InArgument>
+          </p:IfObject.Value>
+        </p:IfObject>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:String" Name="IsAppInstalled_Conditional" />
+        <Variable x:TypeArguments="x:String" Name="IsAppInstalled_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IsAppInstalled_Result" />
+        <Variable x:TypeArguments="x:String" Name="IfObject_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IfObject_Result" />
+        <Variable x:TypeArguments="x:String" Name="IsProcessRunning_Conditional" />
+        <Variable x:TypeArguments="x:String" Name="IsProcessRunning_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IsProcessRunning_Result" />
+        <Variable x:TypeArguments="x:String" Name="IsServiceRunning_Conditional" />
+        <Variable x:TypeArguments="x:String" Name="IsServiceRunning_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IsServiceRunning_Result" />
+        <Variable x:TypeArguments="x:String" Default="true" Name="Archive_Enabled" />
+        <Variable x:TypeArguments="x:String" Default="Last" Name="Set_Archive_Day" />
+        <Variable x:TypeArguments="x:String" Default="true" Name="Bandwidth_Throttle" />
+        <Variable x:TypeArguments="x:String" Default="08:00" Name="Throttle_Start" />
+        <Variable x:TypeArguments="x:String" Default="17:00" Name="Throttle_Stop" />
+        <Variable x:TypeArguments="x:String" Default="5120" Name="UP_KB" />
+        <Variable x:TypeArguments="x:String" Default="Unlimited" Name="DOWN_KB" />
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>
