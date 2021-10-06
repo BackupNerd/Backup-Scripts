@@ -1,0 +1,44 @@
+// ----- About: ----
+//    # Standalone Backup Automated Deployment
+//    # Revision v02 - 2021-07-17
+//    # Author: Eric Harless, Head Backup Nerd - N-able 
+//    # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
+//    # Reddit https://www.reddit.com/r/Nable/
+// -----------------------------------------------------------
+//
+// ----- Legal: ----
+//    # Sample scripts are not supported under any N-able support program or service.
+//    # The sample scripts are provided AS IS without warranty of any kind.
+//    # N-able expressly disclaims all implied warranties including, warranties
+//    # of merchantability or of fitness for a particular purpose. 
+//    # In no event shall N-able or any other party be liable for damages arising
+//    # out of the use of or inability to use the sample scripts.
+// -----------------------------------------------------------
+
+// ----- Behavior: ----
+//    # Upload Deployment Script
+//    # Unblock script
+//    # Execute install script with embedded CUID, profile and default parameters
+//    # Restrict scripts
+//    # Remove Script
+//    # Results
+// -----------------------------------------------------------
+
+// Upload deploy script
+writefile ("VSASharedFiles\DeployBackupManager.v21.Default.ps1", "c:\windows\temp\DeployBackupManager.ps1", "All Operating Systems", "Halt on Fail")
+// Unblock script for execution
+executePoweshell Command64BitSystem (" ", "unblock-file -path "c:\windows\temp\DeployBackupManager.ps1", false, "All Operating Systems", "Halt on Fail")
+// Set script execution policy to Unrestricted
+executePoweshell Command64BitSystem (" ", "set-executionpolicy unrestricted", false, "All Operating Systems", "Halt on Fail")
+// Run script with AutoDeploy switch and GUID entered on step 1
+executePoweshell Command64BitSystem ("c:\windows\temp\DeployBackupManager.ps1", false, "All Operating Systems", "Halt on Fail")
+// Set script execution policy back to Restricted
+executePoweshell Command64BitSystem (" ", "set-executionpolicy restricted", false, "All Operating Systems", "Halt on Fail")
+// Delete relevent files
+deleteFile ("c:\windows\temp\DeployBackupManager.ps1", "All Operating Systems", "Halt on Fail")
+executeShellCommandsToVariable ("time/t", "System", true, "All Operating Systems", "Halt on Fail")
+executeShellCommandsToVariable ("date/t", "System", true, "All Operating Systems", "Halt on Fail")
+if isServiceRunning("Backup Service Controller")
+    updateSystemInfo("N-able Backup", "Installed on #global:cmdresults#, "All Operating Systems", "Halt on Fail")
+else 
+    updateSystemInfo("N-able Backup", "Failed Install on #global:cmdresults#, "All Operating Systems", "Halt on Fail")
