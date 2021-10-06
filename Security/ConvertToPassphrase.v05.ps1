@@ -25,6 +25,8 @@
     # Lookup local N-able Backup device name to get partner CUID
     # Perform Clienttool Takeover to convert Private Key Encryption to Passphrase
     # *** Note: Once executed you can not convert back to private key encryption ***
+    #
+    # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/convert-to-passphrase.htm
 # -----------------------------------------------------------#>  ## Behavior
 
 # ----- Variables and Paths ----
