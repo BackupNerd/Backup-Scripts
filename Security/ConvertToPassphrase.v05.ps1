@@ -24,7 +24,7 @@
     # Authenticate to https://backup.management console
     # Lookup local N-able Backup device name to get partner CUID
     # Perform Clienttool Takeover to convert Private Key Encryption to Passphrase
-    # *** Note: Once executed you can not convert back to private key encyption ***
+    # *** Note: Once executed you can not convert back to private key encryption ***
 # -----------------------------------------------------------#>  ## Behavior
 
 # ----- Variables and Paths ----
