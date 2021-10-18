@@ -14,7 +14,7 @@
     # of merchantability or of fitness for a particular purpose. 
     # In no event shall N-able or any other party be liable for damages arising
     # out of the use of or inability to use the sample scripts.
-# -----------------------------------------------------------#>  ## Legal
+# -----------------------------------------------------------#>
 
 <# ----- Behavior: ----
     # [-Documents] [-Uid] <string>

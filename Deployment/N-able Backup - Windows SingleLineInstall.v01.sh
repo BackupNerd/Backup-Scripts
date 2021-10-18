@@ -1,22 +1,47 @@
-## Syntax
-# run from SSH terminal / Powershell
-# Download latest installer
-# AutoDeploy to customer specifed by $CUID
-# Apply ProfileID specified by $PROFILE use 0 for No Profile
-# Optionally assign Product specified by $PRODUCT for Windows deployments
+<<-----About----
+    # N-able Backup for Windows - Automatic Deployment
+    # Revision v02 - 2021-10-17
+    # Author: Eric Harless, Head Backup Nerd - N-able 
+    # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
+    # Reddit https://www.reddit.com/r/Nable/
+-----About----
 
-## Single Line Linux Install
+<<-----Legal----
+    # Sample scripts are not supported under any N-able support program or service.
+    # The sample scripts are provided AS IS without warranty of any kind.
+    # N-able expressly disclaims all implied warranties including, warranties
+    # of merchantability or of fitness for a particular purpose. 
+    # In no event shall N-able or any other party be liable for damages arising
+    # out of the use of or inability to use the sample scripts.
+-----Legal----
 
-CUID="6079722f-408c-473e-b991-aa57f4773b20"; PROFILE='115652'; INSTALL="swibm#$CUID#$PROFILE#.run" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-linux-x86_64.run && chmod +x $INSTALL && sudo -s ./$INSTALL; rm ./swibm#*.run -f
+<<-----Compatibility----
+    # For use with the Standalone edition of N-able Backup
+    # Tested with N-able Backup 21.10
+-----Compatibility----
 
-## Single Line Linux Uninstall
+<<-----Behavior----
+    # Downloads and deploys a new Backup Manager as a Passphrase compatible device with an assigned Profile
+    # Replace UID and PROFILEID variables at the begining of the script
+    # Optionally replace 'All-in' as tje default Product specified for Windows deployments
+    # Run this Script from the TakeControl Shell or PowerShell 
+    #
+    # Name: UID
+    # Type: String Variable 
+    # Value: 9696c2af4-678a-4727-9b6b-example
+    # Note: Found @ Backup.Management | Customers
+    #
+    # Name: PROFILEID
+    # Type: Integer Variable 
+    # Value: ProfileID #
+    # Note: Found @ Backup.Management | Profiles (use 0 for No Profile)
+    #
+    # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/regular-install.htm
+    # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/silent.htm
+    # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/reinstallation.htm
+    # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/uninstall-win-silent.htm
+-----Behavior----
 
-sudo -s /opt/MXB/sbin/uninstall-fp.sh -s
+# Begin Install Script
 
-## Single Line macOS Install
-
-CUID="6079722f-408c-473e-b991-aa57f4773b20"; PROFILE='115652'; INSTALL="swibm#$CUID#$PROFILE#.pkg" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && sudo installer -pkg $INSTALL -target /Applications; rm -f ./swibm#*.pkg
-
-## Single Line Windows Install
-
-$CUID="6079722f-408c-473e-b991-aa57f4773b20"; $PROFILE='115652'; $PRODUCT='All-In [60 Day]'; $INSTALL="c:\windows\temp\swibm#$CUID#$PROFILE#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("http://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL -product-name `"$PRODUCT`"
+$UID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; $PROFILEID'128555'; $PRODUCT='All-In'; $INSTALL="c:\windows\temp\bm#$UID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL -product-name `"$PRODUCT`"
