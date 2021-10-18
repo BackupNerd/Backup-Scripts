@@ -27,7 +27,7 @@
     # Run this Script from the TakeControl System Shell, Terminal or Putty
     # Remember to enable Full Disk Access for the Backup Manager
     #
-    # Name: UID
+    # Name: BACKUP_UID
     # Type: String Variable 
     # Value: 9696c2af4-678a-4727-9b6b-example
     # Note: Found @ Backup.Management | Customers
@@ -47,5 +47,5 @@
 
 # Begin Install Script
 
-UID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; PROFILEID='128555'; INSTALL="/Applications/bm#$UID#$PROFILEID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
+BACKUP_UID="1d10b9ee-2a24-4868-9ceb-5e3272124cf0"; PROFILEID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILEID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
 

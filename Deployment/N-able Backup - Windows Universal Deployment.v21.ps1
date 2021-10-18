@@ -145,7 +145,7 @@
     Write-Output "  Script location:"
     Write-Output "  cd `"$PSScriptRoot`""
     Write-Output ""
-    cd "$PSScriptRoot"
+    Set-Location "$PSScriptRoot"
  
     Function EncodeTo-Base64($InputString) {
         $BytesString = [System.Text.Encoding]::UTF8.GetBytes($InputString)
@@ -161,7 +161,7 @@
 
     Function Download-BackupManager {
         "  Downloading Backup Manager"
-        (New-Object System.Net.WebClient).DownloadFile("http://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","c:\windows\temp\mxb-windows-x86_x64.exe")
+        (New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","c:\windows\temp\mxb-windows-x86_x64.exe")
     }
 
     Function Autodeploy-Passphrase {

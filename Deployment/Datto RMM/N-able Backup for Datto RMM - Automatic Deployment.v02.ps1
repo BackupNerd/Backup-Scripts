@@ -21,13 +21,13 @@
     # Copy this Script into DATTO RMM
     # Create the following varibles in DATTO RMM to Pass through to the Script at run time
     #
-    # Name: UID
+    # Name: BACKUP_UID
     # Type: Variable
     # Value: 9696c2af4-678a-4727-9b6b-example
     # Note: Found @ Backup.Management | Customers
     #
     # Name: Set_Profile
-    # Type: Boolian
+    # Type: Boolean
     # Value: True
     # Note: True to pass a Profile Name
     #
@@ -37,11 +37,11 @@
     # Note: Case sensitive, Found @ Backup.Management | Profiles
     #
     # Name: Set_Product
-    # Type: Boolian
+    # Type: Boolean
     # Value: True
     # Note: True to pass a Product Name
     #
-    # Name: Profile
+    # Name: Product
     # Type: Variable
     # Value: All-In
     # Note: Case sensitive, Found @ Backup.Management | Products
@@ -69,6 +69,6 @@ if ( $env:Set_Profile -eq "true" ) { $BackupProfile = "-profile-name `"$env:Prof
 
 if ( $env:Set_Product -eq "true" ) { $BackupProduct = "-product-name `"$env:Product`"" }        ## $env: required to pass external varible from DATTO RMM to script
 
-Start-Process -FilePath "c:\windows\temp\mxb-windows-x86_x64.exe" -ArgumentList "-unattended-mode -silent -partner-uid $env:UID $BackupProfile $BackupProduct" -passthru
+Start-Process -FilePath "c:\windows\temp\mxb-windows-x86_x64.exe" -ArgumentList "-unattended-mode -silent -partner-uid $env:BACKUP_UID $BackupProfile $BackupProduct" -passthru
 
 ###END SCRIPT###

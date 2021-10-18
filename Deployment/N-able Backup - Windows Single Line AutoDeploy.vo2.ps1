@@ -48,4 +48,4 @@
 
 # Begin Install Script
 
-$UID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; $PROFILEID'128555'; $PRODUCT='All-In'; $INSTALL="c:\windows\temp\bm#$UID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL -product-name `"$PRODUCT`"
+$UID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; $PROFILEID='128555'; $PRODUCT='All-In'; $INSTALL="c:\windows\temp\bm#$UID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL -product-name `"$PRODUCT`"
