@@ -1,5 +1,5 @@
 <<-----About----
-    # N-able Backup for macOS - Automatic Deployment
+    # N-able Backup for Linux - Automatic Deployment
     # Revision v02 - 2021-10-17
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
@@ -18,14 +18,12 @@
 <<-----Compatibility----
     # For use with the Standalone edition of N-able Backup
     # Tested with N-able Backup 21.10
-    # Tested with N-able TakeControl System Shell and Terminal on macOS 11.6 & 10.15
 -----Compatibility----
 
 <<-----Behavior----
     # Downloads and deploys a new Backup Manager as a Passphrase compatible device with an assigned Profile
     # Replace UID and PROFILEID variables at the begining of the script
-    # Run this Script from the TakeControl System Shell, Terminal or Putty
-    # Remember to enable Full Disk Access for the Backup Manager
+    # Run this Script from the TakeControl System Shell, Terminal, SSH or Putty
     #
     # Name: UID
     # Type: String Variable 
@@ -35,7 +33,7 @@
     # Name: PROFILEID
     # Type: Integer Variable 
     # Value: ProfileID #
-    # Note: Found @ Backup.Management | Profiles
+    # Note: Found @ Backup.Management | Profiles (use 0 for No Profile)
     #
     # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/regular-install.htm
     # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/silent-mac.htm
@@ -45,7 +43,12 @@
 
 -----Behavior----
 
+
 # Begin Install Script
 
-UID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; PROFILEID='128555'; INSTALL="/Applications/bm#$UID#$PROFILEID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
+UID="6079722f-408c-473e-b991-aa57f4773b20"; PROFILEID='115652'; INSTALL="bm#$UID#$PROFILEID#.run" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-linux-x86_64.run && chmod +x $INSTALL && sudo -s ./$INSTALL; rm ./bm#*.run -f
+
+## Single Line Linux Uninstall
+
+sudo -s /opt/MXB/sbin/uninstall-fp.sh -s
 
