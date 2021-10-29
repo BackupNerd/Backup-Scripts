@@ -18,6 +18,7 @@
 <# ----- Compatibility: ----
     # For use with the Standalone edition of N-able Backup
     # Sample scripts may contain non-public API calls which are subject to change without notification
+  
 # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
@@ -69,6 +70,7 @@
 
 #region ----- Environment, Variables, Names and Paths ----
     Clear-Host
+    #Requires -Version 5.1
     $ConsoleTitle = "Get M365 Device Statistics"
     $host.UI.RawUI.WindowTitle = $ConsoleTitle
     $scriptpath = $MyInvocation.MyCommand.Path
@@ -740,7 +742,8 @@ Function Save-CSVasExcel {
                 Install-Module -Name Join-Object   -Confirm:$True -Force
             }
             catch [Exception] {
-                $_.message 
+                $_.message
+                Write-Warning "  PS Module 'Join-Object' not found, run with Administrator rights to install" 
                 exit
             }
         }
