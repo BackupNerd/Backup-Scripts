@@ -1,6 +1,6 @@
 <<-----About----
     # N-able Backup for macOS - Automatic Deployment
-    # Revision v02 - 2021-10-17
+    # Revision v02 - 2021-12-03
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -23,7 +23,7 @@
 
 <<-----Behavior----
     # Downloads and deploys a new Backup Manager as a Passphrase compatible device with an assigned Profile
-    # Replace UID and PROFILEID variables at the begining of the script
+    # Replace BACKUP_UID and PROFILE_ID variables at the begining of the script
     # Run this Script from the TakeControl System Shell, Terminal or Putty
     # Remember to enable Full Disk Access for the Backup Manager
     #
@@ -32,7 +32,7 @@
     # Value: 9696c2af4-678a-4727-9b6b-example
     # Note: Found @ Backup.Management | Customers
     #
-    # Name: PROFILEID
+    # Name: PROFILE_ID
     # Type: Integer Variable 
     # Value: ProfileID #
     # Note: Found @ Backup.Management | Profiles
@@ -45,7 +45,21 @@
 
 -----Behavior----
 
-# Begin Install Script
+# Begin Install Script Current macOS versions from ROOT user
 
-BACKUP_UID="1d10b9ee-2a24-4868-9ceb-5e3272124cf0"; PROFILEID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILEID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
+    BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /; rm -f $INSTALL
+
+# Begin Install Script Some Legacy macOS versions from ROOT user
+
+    BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
+
+
+# Begin Install Script Current macOS versions from Sudo elevated user
+
+    BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo 'PASSWORD' | sudo -S installer -pkg $INSTALL -target /; rm -f $INSTALL
+
+# Begin Install Script Some Legacy macOS versions from Sudo elevated user
+
+    BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo 'PASSWORD' | sudo -S installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
+
 
