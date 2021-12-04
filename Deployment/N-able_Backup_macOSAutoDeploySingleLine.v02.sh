@@ -24,7 +24,7 @@
 <<-----Behavior----
     # Downloads and deploys a new Backup Manager as a Passphrase compatible device with an assigned Profile
     # Replace BACKUP_UID and PROFILE_ID variables at the begining of the script
-    # Run this Script from the TakeControl System Shell, Terminal or Putty
+    # Run this Script from the TakeControl System Shell, Terminal, SSH or Putty
     # Remember to enable Full Disk Access for the Backup Manager
     #
     # Name: BACKUP_UID
@@ -45,20 +45,20 @@
 
 -----Behavior----
 
-# Begin Install Script Current macOS versions from ROOT user
+# Begin Install Script Current macOS versions from ROOT user or (Take Control System Shell)
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /; rm -f $INSTALL
 
-# Begin Install Script Some Legacy macOS versions from ROOT user
+# Begin Install Script Some Legacy macOS versions from ROOT user or (Take Control System Shell)
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
 
 
-# Begin Install Script Current macOS versions from Sudo elevated user
+# Begin Install Script Current macOS versions from Sudo elevated user or (macOS Terminal, SSH or Putty)
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo 'PASSWORD' | sudo -S installer -pkg $INSTALL -target /; rm -f $INSTALL
 
-# Begin Install Script Some Legacy macOS versions from Sudo elevated user
+# Begin Install Script Some Legacy macOS versions from Sudo elevated user or (macOS Terminal, SSH or Putty)
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo 'PASSWORD' | sudo -S installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
 

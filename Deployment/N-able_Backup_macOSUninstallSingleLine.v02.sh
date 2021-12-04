@@ -1,6 +1,6 @@
 <<-----About----
     # N-able Backup for macOS - Uninstall
-    # Revision v02 - 2021-10-17
+    # Revision v02 - 2021-12-03
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -23,12 +23,17 @@
 
 <<-----Behavior----
     # Uninstalls N-able Backup on macOS
-    # Run this Script from the TakeControl System Shell, Terminal or Putty
+    # Run this Script from the TakeControl System Shell, Terminal, SSH or Putty
     #
     # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/uninstall-mac.htm
 
 -----Behavior----
 
-# Begin Uninstall Script
+# Begin Uninstall Script from ROOT user or (Take Control System Shell)
 
-cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS; sudo bash ./Uninstall.sh; cd /
+    cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS; sudo bash ./Uninstall.sh; cd /
+
+# Begin Uninstall Script from Sudo elevated user or (macOS Terminal, SSH or Putty)
+
+    cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS && echo 'PASSWORD' | sudo -S bash ./Uninstall.sh && cd /
+
