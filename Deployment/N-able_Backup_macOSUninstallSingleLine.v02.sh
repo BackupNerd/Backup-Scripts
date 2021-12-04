@@ -29,11 +29,11 @@
 
 -----Behavior----
 
-# Begin Uninstall Script from ROOT user or (Take Control System Shell)
+# Begin Uninstall Script from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
 
     cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS; sudo bash ./Uninstall.sh; cd /
 
-# Begin Uninstall Script from Sudo elevated user or (macOS Terminal, SSH or Putty)
+# Begin Uninstall Script from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
 
     cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS && echo 'PASSWORD' | sudo -S bash ./Uninstall.sh && cd /
 

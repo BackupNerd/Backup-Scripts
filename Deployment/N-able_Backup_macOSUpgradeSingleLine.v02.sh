@@ -33,6 +33,20 @@
 
 -----Behavior----
 
-# Begin Upgrade Script
+# Begin Upgrade Script Current macOS versions from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
 
-UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/.../mxb-macosx-x86_64.pkg; sudo installer -pkg $UPGRADE -target /Applications; rm -f $UPGRADE
+    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $UPGRADE -target /; rm -f $UPGRADE
+
+# Begin Upgrade Script Current macOS versions from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
+
+    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; && echo 'PASSWORD' | sudo -S installer -pkg $UPGRADE -target /; rm -f $UPGRADE
+
+
+
+# Begin Upgrade Script Some Legacy macOS versions from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
+
+    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $UPGRADE -target /Applications; rm -f $UPGRADE
+
+# Begin Upgrade Script Some Legacy macOS versions from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
+
+    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; && echo 'PASSWORD' | sudo -S installer -pkg $UPGRADE -target /Applications; rm -f $UPGRADE

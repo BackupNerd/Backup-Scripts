@@ -45,20 +45,21 @@
 
 -----Behavior----
 
-# Begin Install Script Current macOS versions from ROOT user or (Take Control System Shell)
+# Begin Install Script Current macOS versions from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /; rm -f $INSTALL
 
-# Begin Install Script Some Legacy macOS versions from ROOT user or (Take Control System Shell)
-
-    BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
-
-
-# Begin Install Script Current macOS versions from Sudo elevated user or (macOS Terminal, SSH or Putty)
+# Begin Install Script Current macOS versions from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo 'PASSWORD' | sudo -S installer -pkg $INSTALL -target /; rm -f $INSTALL
 
-# Begin Install Script Some Legacy macOS versions from Sudo elevated user or (macOS Terminal, SSH or Putty)
+
+
+# Begin Install Script Some Legacy macOS versions from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
+
+    BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
+
+# Begin Install Script Some Legacy macOS versions from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
 
     BACKUP_UID="16079722f-408c-473e-b991-aa57f4773b21"; PROFILE_ID='128555'; INSTALL="/Applications/bm#$BACKUP_UID#$PROFILE_ID#.pkg"; curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo 'PASSWORD' | sudo -S installer -pkg $INSTALL -target /Applications; rm -f $INSTALL
 
