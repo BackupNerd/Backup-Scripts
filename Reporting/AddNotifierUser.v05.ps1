@@ -51,7 +51,7 @@
     #
 # -----------------------------------------------------------#>  ## Behavior
 
-[CmdletBinding(DefaultParameterSetName="ListUsers")]
+[CmdletBinding(DefaultParameterSetName="AddUsers")]
     Param (
         [Parameter(ParameterSetName="AddUsers",Mandatory=$False)] [Switch]$Add,                     ## Add Notifier level user
         [Parameter(ParameterSetName="ListUsers",Mandatory=$False)] [Switch]$List,                   ## List Notifier level users
