@@ -57,4 +57,4 @@
 
 # Begin Install Script (administrative user w/ piped password to sudo, i.e. macOS terminal, SSH, Putty, etc.) **LESS SECURE - Enter sudo password in SUDOPW variable ** 
 
-    SUDOPW='PASSWORD'; BACKUP_UID="52a304d8-a2eb-489a-9168-8845e0a846dc0"; PROFILE_ID='1285550'; SUDOPW='PASSWORD'; INSTALL="bm#$BACKUP_UID#$PROFILE_ID#.pkg"; cd ~/Downloads; curl -o ./$INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo $SUDOPW | sudo -S installer -pkg ./$INSTALL -target /Applications; rm ./$INSTALL && cd /
+    BACKUP_UID="52a304d8-a2eb-489a-9168-8845e0a846dc0"; PROFILE_ID='1285550'; SUDOPW='PASSWORD'; INSTALL="bm#$BACKUP_UID#$PROFILE_ID#.pkg"; cd ~/Downloads; curl -o ./$INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo $SUDOPW | sudo -S installer -pkg ./$INSTALL -target /Applications; rm ./$INSTALL && cd /
