@@ -1,6 +1,6 @@
 <<-----About----
     # N-able Backup for macOS - Uninstall
-    # Revision v02 - 2021-12-03
+    # Revision v03 - 2021-12-12
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -22,6 +22,7 @@
 -----Compatibility----
 
 <<-----Behavior----
+    # 3 Script examples based on authentication level
     # Uninstalls N-able Backup on macOS
     # Run this Script from the TakeControl System Shell, Terminal, SSH or Putty
     #
@@ -29,11 +30,16 @@
 
 -----Behavior----
 
-# Begin Uninstall Script from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
+# Begin Uninstall Script (root authentication, i.e. using N-able TakeControl System Shell, etc.)
+
+	cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS; bash ./Uninstall.sh; cd /
+
+# Begin Uninstall Script (administrative user with sudo prompt for password, i.e. macOS terminal, SSH, Putty, etc.)
 
     cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS; sudo bash ./Uninstall.sh; cd /
 
-# Begin Uninstall Script from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
+# Begin Uninstall Script (administrative user w/ piped password to sudo, i.e. macOS terminal, SSH, Putty, etc.) **LESS SECURE - Enter sudo password in SUDOPW variable ** 
 
-    cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS && echo 'PASSWORD' | sudo -S bash ./Uninstall.sh && cd /
+    SUDOPW='PASSWORD'; cd /Applications/Backup\ Manager.app/Contents/Resources/Uninstall.app/Contents/MacOS && echo $SUDOPW | sudo -S bash ./Uninstall.sh && cd /
+
 

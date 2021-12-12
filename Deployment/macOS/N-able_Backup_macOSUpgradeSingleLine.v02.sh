@@ -1,6 +1,6 @@
 <<-----About----
     # N-able Backup for macOS - Upgrade
-    # Revision v02 - 2021-10-17
+    # Revision v03 - 2021-12-12
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -22,6 +22,7 @@
 -----Compatibility----
 
 <<-----Behavior----
+    # 3 Script examples based on authentication level
     # Downloads and deploys latest Backup Manager over existing installations
     # Run this Script from the TakeControl System Shell, Terminal or Putty
     #
@@ -33,20 +34,15 @@
 
 -----Behavior----
 
-# Begin Upgrade Script Current macOS versions from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
+# Begin Upgrade Script (root authentication, i.e. using N-able TakeControl System Shell, etc.)
 
-    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $UPGRADE -target /; rm -f $UPGRADE
+    UPGRADE="mxb-macosx-x86_64.pkg"; cd /tmp; curl -o ./$UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; installer -pkg ./$UPGRADE -target /Applications; rm -f ./$UPGRADE; cd / 
 
-# Begin Upgrade Script Current macOS versions from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
+# Begin Upgrade Script (administrative user with sudo prompt for password, i.e. macOS terminal, SSH, Putty, etc.)
 
-    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; && echo 'PASSWORD' | sudo -S installer -pkg $UPGRADE -target /; rm -f $UPGRADE
+    UPGRADE="mxb-macosx-x86_64.pkg"; cd ~/Downloads; curl -o ./$UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && sudo -s installer -pkg ./$UPGRADE -target /Applications; rm -f ./$UPGRADE && cd / 
 
+# Begin Upgrade Script (administrative user w/ piped password to sudo, i.e. macOS terminal, SSH, Putty, etc.) **LESS SECURE - Enter sudo password in SUDOPW variable **
 
+	SUDOPW='PASSWORD'; UPGRADE="mxb-macosx-x86_64.pkg"; cd ~/Downloads; curl -o ./$UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg && echo $SUDOPW | sudo -S installer -pkg ./$UPGRADE -target /Applications; rm -f ./$UPGRADE && cd / 
 
-# Begin Upgrade Script Some Legacy macOS versions from ROOT user (Take Control System Shell) or Sudo elevated user (macOS Terminal, SSH or Putty) and prompt for password
-
-    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; sudo installer -pkg $UPGRADE -target /Applications; rm -f $UPGRADE
-
-# Begin Upgrade Script Some Legacy macOS versions from Sudo elevated user (macOS Terminal, SSH or Putty) and pipe password to Sudo in script (less secure)
-
-    UPGRADE="/Applications/mxb-macosx-x86_64.pkg"; curl -o $UPGRADE https://cdn.cloudbackup.management/maxdownloads/mxb-macosx-x86_64.pkg; && echo 'PASSWORD' | sudo -S installer -pkg $UPGRADE -target /Applications; rm -f $UPGRADE
