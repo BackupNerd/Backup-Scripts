@@ -343,7 +343,9 @@ Write-output "partnername`tostype`tosversion`tcreation`tlastsuccess`ttimestamp`t
 
         $Script:Passphrase = [string]$GetPassphraseSession.result.result
 
-        If (($d.OSVersion -match "macos") -or ($d.OSVersion -match "OS X"))  {
+        If (($d.OSVersion -eq "") -and ($passphrase -ne $null)) {
+            Write-output ("$partnername`t$ostype`t$osversion`t$creation`t$lastsuccess`t$timestamp`t$id`t$computername`t$devicename`t$password`t$passphrase`t$Windownload;" + '& c:\windows\temp\' + "mxb-windows-x86_x64.exe -silent -user `"$DeviceName`" -password `"$password`" -passphrase `"$passphrase`"") | Out-file $csvcommands -append
+        }elseif (($d.OSVersion -match "macos") -or ($d.OSVersion -match "OS X"))  {
             Write-output ("$partnername`t$ostype`t$osversion`t$creation`t$lastsuccess`t$timestamp`t$id`t$computername`t$devicename`t$password`t$passphrase`t$MACdownload`t$macinstaller") | Out-file $csvcommands -append
         }elseif (($d.OSVersion -notmatch "macos") -and ($d.OSVersion -notmatch "OS X") -and ($d.OSVersion -notmatch "Windows")) {
             Write-output ("$partnername`t$ostype`t$osversion`t$creation`t$lastsuccess`t$timestamp`t$id`t$computername`t$devicename`t$password`t$passphrase`tManual`tManual") | Out-file $csvcommands -append
