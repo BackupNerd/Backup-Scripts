@@ -89,7 +89,6 @@ else{
     ## $env: prefix required to pass external variable from DATTO RMM to script
 
     Start-Process -FilePath "c:\windows\temp\mxb-windows-x86_x64.exe" -ArgumentList "-unattended-mode -silent -partner-uid $env:Backup_UID $BackupProfile $BackupProduct" -passthru
-
  
 }  
 ###END SCRIPT###
