@@ -1,6 +1,6 @@
 ﻿<# ----- About: ----
     # N-able Backup Windows Automatic Redeploy
-    # Revision v07 - 2022-04-23 
+    # Revision v08 - 2022-05-04 
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -16,7 +16,7 @@
 # -----------------------------------------------------------#>  ## Legal
 
 <# ----- Compatibility: ----
-    # For use with the Standalone edition of N-able Backup
+    # For use with Cove Data Protection from N-able (Formerly the Standalone editon of N-able Backup)
     # Requires Superuser access credentials with Security Officer and API flag
 # -----------------------------------------------------------#>  ## Compatibility
 
