@@ -58,11 +58,18 @@
 
 # ----- Define Variables ----
     $Global:strLineSeparator = "  ---------"
-    $ArchiveValue = ($months * -1)
-    $filterDate = (Get-Date).Addmonths($ArchiveValue)
+
 # ----- End Define Variables ----
 
 #region ----- Functions ----
+
+if ($months -lt 12) { 
+    Write-Warning "Archive Retention Expiration of < 12 Month Is Not Allowed"; Break
+}else{
+    $filterDate = (Get-Date).Addmonths($months * -1)
+    Write-Output "  Looking for archvie sessions older than $filterdate"
+}
+
     Function Get-LocalTime($UTCTime) {
         $strCurrentTimeZone = (Get-WmiObject win32_timezone).StandardName
         $TZ = [System.TimeZoneInfo]::FindSystemTimeZoneById($strCurrentTimeZone)
@@ -132,7 +139,6 @@
     }
 # ----- End Check for RMM & Standalone Backup Installation Type ----
 
-
 }  ## Check for RMM / Ncentral / Standalone Backup Installation Type
 
     CheckInstallationType
@@ -148,7 +154,8 @@
         }else{ 
             try { $ErrorActionPreference = 'Stop'; $UIToken = & $clienttool in-agent-authentication-token.get -config-path $config | convertfrom-json 
             }catch{ 
-                Write-Warning "Oops: $_" 
+                Write-Warning "Oops: $_"
+                Break 
             }
         }
     
@@ -328,7 +335,7 @@ Get-FPvisa
     Write-Output "  $(Get-TimeStamp) Found $($ArchiveSessionsToClean.ID.count) archive session(s) older than $Filterdate" | Out-file $ScriptLog -append
     $ArchiveSessionsToClean | Select-Object -Property ID,DataSource,StartTime,State,Type,SelectedSize,Flags| Sort-Object StartTime | format-table | Out-file $ScriptLog -append
 
-    [int32[]]$global:ArchiveSessionIDsToClean = $ArchiveSessionsToClean.id
+    [int32[]]$global:ArchiveSessionIDsToClean = $ArchiveSessionsToClean.filterdate
 
     Write-Output $Global:strLineSeparator
     Write-Output "  Sessions to Clean" $ArchiveSessionIDsToClean
