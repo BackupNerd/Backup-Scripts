@@ -1,5 +1,5 @@
 # ----- About: ----
-    # N-able Cove Data Protection Trottle Metered Connection  
+    # N-able Cove Data Protection Throttle Metered Connection  
     # Revision v02 - 2022-07-04
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
