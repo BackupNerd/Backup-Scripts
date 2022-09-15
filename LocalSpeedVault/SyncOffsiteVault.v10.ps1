@@ -29,7 +29,7 @@
     #   Use the -NetworkUser parameter to set the user name for the network path, otherwise you will be prompted
     #   Use the -NetworkPW parameter to set the password for the network path, otherwise you will be prompted
     #   ** Important: Care should be taken at any time network credentials are embeded or passed in a script parameter.
-    #   ** Failure to pass credentials in the script or via parameter will cause a sercure prompt for credentials
+    #   ** Failure to pass credentials in the script or via parameter will cause a secure prompt for credentials
     #
     # Use the -Local switch parameter to designate Direct Attached Storage (DAS)
     #   Use the -LocalPath parameter to set the base network path, otherwise a default parameter path is used
@@ -57,7 +57,7 @@
 
     <# Sample CSV Format
 
-    Device name,Installation key
+    Device name,Installation key,
     2019-man_hpw2c,7f86da88730e
     2019-lis_drbpu,3828260aae8b
     2019-dus_hwf7d,7b7a6b322b3b
