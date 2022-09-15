@@ -36,7 +36,7 @@
     # Use the -ThreadCount parameter to set the number of download connections to use (1-50), otherwise a default parameter is used
     # Use the -RetryCount parameter to set the number of retry attempts to perform(1-5), otherwise a default parameter is used
     # Use the -DeviceList parameter to specify the path to a CSV file with "Device Name" and "Installation Key" for each device, otherwise a default path
-    # Use the -SelectDevices switch parameter to force GUI sevice selection
+    # Use the -SelectDevices switch parameter to force GUI device selection
     # 
     # Usage: 
     # .\SyncOffsiteVault.v10.ps1 -local 
@@ -122,13 +122,13 @@
     Function Download-ServerTool {
         $script:ServerToolURL          = "https://cdn.cloudbackup.management/maxdownloads/mxb-st-windows-x64.zip"
 
-        Write-Output "  Downloading Latest Cove Data Protection Servertool build`n"
+        Write-Output "  Downloading Latest Cove Data Protection Servertool Build`n"
         (New-Object System.Net.WebClient).DownloadFile($ServerToolURL,$ServerToolDownloadPath)
 
         Function Expand-ServerTool {
-            Write-Output "  Extracting Latest Cove Data Protection Servertool build`n"
+            Write-Output "  Extracting Latest Cove Data Protection Servertool Build`n"
             if (!(Test-Path -Path $ServerToolExtractPath)) {
-                Write-output "  Creating ServerTool installation Path"
+                Write-output "  Creating ServerTool Installation Path"
                 [void] (New-Item -ItemType Directory -Force -Path $ServerToolExtractPath)
             }
             Expand-Archive -Path $ServerToolDownloadPath -DestinationPath $ServerToolExtractPath -Force
