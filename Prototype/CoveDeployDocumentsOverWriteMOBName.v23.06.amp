@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="c198ebf2-ce4c-47be-99c0-43df510231bb" Name="CoveDeployDocuments.v23.06" Description="Q292ZSBEYXRhIFByb3RlY3Rpb24gDQpEZXBsb3kgRG9jdW1lbnRzIHYyMy4wNg0KT3ZlcndyaXRlIE1PQiBkZXZpY2UgbmFtZQ==" Version="2.16.0.1" MinRequiredVersion="2.16.0.1" RemoteCategory="0" ExecutionType="Local" MinimumPSVersionRequired="0.0.0">
+  <Object ID="{29fd87e4-e98b-4889-be93-03917bcc75d4}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml&gt;&lt;Parameters&gt;&lt;Parameter ParameterName=&quot;GUID&quot; Label=&quot;Customer UID&quot; ParameterType=&quot;string&quot; Value=&quot;Example: f2abc5ed-2cf9-b687-cdd87d774894&quot; /&gt;&lt;/Parameters&gt;&lt;/xml&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System" />
+  </LinkManager>
+  <Diagnostics OriginalVersion="2.60.0.3" />
+  <Activity mc:Ignorable="sads sap" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>560,1243</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="560,1243" MinRequiredVersion="2.16.0.1" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:IsAppInstalled ApplicationName_ItemProp="{x:Null}" ApplicationName="Backup Manager" ApplicationName_DisplayArg="Backup Manager" ApplicationName_Item="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" Conditional="[IsAppInstalled_Conditional]" DisplayName="Is Backup Installed" sap:VirtualizedContainerService.HintSize="524,88" MinRequiredVersion="2.10.0.19" Moniker="c115a220-76a0-4eaa-94c3-1b7c43bed184" Result="[IsAppInstalled_Result]" ResultString="[IsAppInstalled_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="IsAppInstalled" m_bTextLinkChange="False" />
+        <p:IfObject CaseSensitive_ItemProp="{x:Null}" Condition_ItemProp="{x:Null}" Value_Item="{x:Null}" Value_ItemProp="{x:Null}" Variable_ItemProp="{x:Null}" VerboseOutput_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.18.1.8, Culture=neutral, PublicKeyToken=null" CaseSensitive="False" CaseSensitive_DisplayArg="false" CaseSensitive_Item="{x:Null}" Condition="equals" Condition_DisplayArg="equals" Condition_Item="{x:Null}" DisplayName="If Backup Not Installed" sap:VirtualizedContainerService.HintSize="524,892" MinRequiredVersion="2.16.0.1" Moniker="436a2918-1eaa-4e3f-9bf9-001e98b8b969" Result="[IfObject_Result]" ResultString="[IfObject_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="IfObject" Value_DisplayArg="True" Value_Type="x:String" Variable="[IsAppInstalled_Conditional]" Variable_DisplayArg="Is Backup Installed.Conditional" Variable_Item="{x:Null}" Variable_Type="x:String" VerboseOutput="False" VerboseOutput_DisplayArg="" VerboseOutput_Item="{x:Null}" m_bTextLinkChange="False">
+          <p:IfObject.IfOption>
+            <p:SequenceActivity DisplayName="Then" sap:VirtualizedContainerService.HintSize="492,619" Name="SequenceActivity">
+              <p:SequenceActivity.Activities>
+                <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.1.2.19, Culture=neutral, PublicKeyToken=null" DisplayName="Run Installer" sap:VirtualizedContainerService.HintSize="454,348" MinRequiredVersion="2.10.0.19" Moniker="61ed3def-3077-48df-a49c-d333f1e17cfe" OutPut_64="[RunPowerShellScript_OutPut_64]" Result="[RunPowerShellScript_Result]" ResultString="[RunPowerShellScript_ResultString]" Results_x64="[RunPowerShellScript_Results_x64]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="060a8d09-6e3c-40ef-918f-571dfd9323d4" m_bTextLinkChange="False" script="RgB1AG4AYwB0AGkAbwBuACAARwBlAHQALQBEAGUAdgBpAGMAZQBOAGEAbQBlACAAewANAAoAIAAgACAAIAAkAEMAbwB2AGUAUABhAHQAaAAgAD0AIAAiAEMAOgBcAFAAcgBvAGcAcgBhAG0ARABhAHQAYQBcAE0AWABCAFwAQgBhAGMAawB1AHAAIABNAGEAbgBhAGcAZQByAFwAcwB0AG8AcgBhAGcAZQAiACAAIAANAAoAIAAgACAAIABpAGYAIAAoAFQAZQBzAHQALQBQAGEAdABoACAAJABDAG8AdgBlAFAAYQB0AGgAIAAtAFAAYQB0AGgAVAB5AHAAZQAgAEMAbwBuAHQAYQBpAG4AZQByACkAIAB7AA0ACgAgACAAIAAgACAAIAAgACAAJABzAGMAcgBpAHAAdAA6AEEAYwBjAG8AdQBuAHQATgBhAG0AZQAgAD0AIAAoAFsAYQByAHIAYQB5AF0AKABHAGUAdAAtAEMAaABpAGwAZABJAHQAZQBtACAALQBQAGEAdABoACAAJABDAG8AdgBlAFAAYQB0AGgAIAB8ACAAUwBvAHIAdAAtAE8AYgBqAGUAYwB0ACAATABhAHMAdABXAHIAaQB0AGUAVABpAG0AZQApAFsALQAxAF0AKQAuAE4AYQBtAGUALgBzAHAAbABpAHQAKAAnAF8AJwAsADIAKQAgACMAIwAgAE0ATwBCACAARABlAHYAaQBjAGUAIABOAGEAbQBlACAAaQBzACAAMwA0ACAAYwBoAGEAcgBhAGMAdABlAHIAcwANAAoAIAAgACAAIAAgACAAIAAgACQAcwBjAHIAaQBwAHQAOgBhAGMAYwBvAHUAbgB0AG4AYQBtAGUAWwAwAF0ADQAKACAAIAAgACAAIAAgACAAIAAkAHMAYwByAGkAcAB0ADoAYQBjAGMAbwB1AG4AdABuAGEAbQBlAFsAMABdAC4AbABlAG4AZwB0AGgADQAKACAAIAAgACAAfQBlAGwAcwBlAHsAVwByAGkAdABlAC0AdwBhAHIAbgBpAG4AZwAgACIAUAByAGkAbwByACAAQwBvAHYAZQAgAEkAbgBzAHQAYQBsAGwAYQB0AGkAbwBuACAATgBvAHQAIABGAG8AdQBuAGQAIgA7AEIAcgBlAGEAawB9AA0ACgB9ACAAIAAjACMAIABHAGUAdAAgAE0ATwBCACAAZABlAHYAaQBjAGUAIABuAGEAbQBlACAAZgByAG8AbQAgAG0AbwBzAHQAIAByAGUAYwBlAG4AdAAgAHMAdABvAHIAYQBnAGUAIABmAG8AbABkAGUAcgBuAGEAbQBlACAAIAANAAoADQAKAEcAZQB0AC0ARABlAHYAaQBjAGUATgBhAG0AZQANAAoADQAKAGkAZgAgACgAJABzAGMAcgBpAHAAdAA6AGEAYwBjAG8AdQBuAHQAbgBhAG0AZQBbADAAXQAuAGwAZQBuAGcAdABoACAALQBlAHEAIAAzADQAKQAgAHsADQAKAA0ACgAgACAAIAAgAFsATgBlAHQALgBTAGUAcgB2AGkAYwBlAFAAbwBpAG4AdABNAGEAbgBhAGcAZQByAF0AOgA6AFMAZQBjAHUAcgBpAHQAeQBQAHIAbwB0AG8AYwBvAGwAIAA9ACAAWwBOAGUAdAAuAFMAZQBjAHUAcgBpAHQAeQBQAHIAbwB0AG8AYwBvAGwAVAB5AHAAZQBdADoAOgBUAGwAcwAxADIADQAKACAAIAAgACAAJABVAHIAbAAgAD0AIAAiAGgAdAB0AHAAcwA6AC8ALwBjAGQAbgAuAGMAbABvAHUAZABiAGEAYwBrAHUAcAAuAG0AYQBuAGEAZwBlAG0AZQBuAHQALwBtAGEAeABkAG8AdwBuAGwAbwBhAGQAcwAvAG0AeABiAC0AdwBpAG4AZABvAHcAcwAtAHgAOAA2AF8AeAA2ADQALgBlAHgAZQAiAA0ACgAgACAAIAAgACQAUABhAHQAaAAgAD0AIAAiAEMAOgBcAHcAaQBuAGQAbwB3AHMAXAB0AGUAbQBwAFwAbQB4AGIALQB3AGkAbgBkAG8AdwBzAC0AeAA4ADYAXwB4ADYANAAuAGUAeABlACIADQAKACAAIAAgACAAJABVAHMAZQByAG4AYQBtAGUAIAA9ACAAIgAiAA0ACgAgACAAIAAgACQAUABhAHMAcwB3AG8AcgBkACAAPQAgACIAIgANAAoAIAAgACAAIAANAAoAIAAgACAAIAAkAFcAZQBiAEMAbABpAGUAbgB0ACAAPQAgAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABTAHkAcwB0AGUAbQAuAE4AZQB0AC4AVwBlAGIAQwBsAGkAZQBuAHQADQAKACAAIAAgACAAJABXAGUAYgBDAGwAaQBlAG4AdAAuAEMAcgBlAGQAZQBuAHQAaQBhAGwAcwAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAE4AZQB0AHcAbwByAGsAYwByAGUAZABlAG4AdABpAGEAbAAoACQAVQBzAGUAcgBuAGEAbQBlACwAIAAkAFAAYQBzAHMAdwBvAHIAZAApAA0ACgAgACAAIAAgACQAVwBlAGIAQwBsAGkAZQBuAHQALgBEAG8AdwBuAGwAbwBhAGQARgBpAGwAZQAoACAAJABVAHIAbAAsACAAJABQAGEAdABoACAAKQANAAoADQAKACAAIAAgACAAUwB0AGEAcgB0AC0AUAByAG8AYwBlAHMAcwAgAC0ARgBpAGwAZQBQAGEAdABoACAAIgBjADoAXAB3AGkAbgBkAG8AdwBzAFwAdABlAG0AcABcAG0AeABiAC0AdwBpAG4AZABvAHcAcwAtAHgAOAA2AF8AeAA2ADQALgBlAHgAZQAiACAALQBBAHIAZwB1AG0AZQBuAHQATABpAHMAdAAgACIALQB1AG4AYQB0AHQAZQBuAGQAZQBkAC0AbQBvAGQAZQAgAC0AcwBpAGwAZQBuAHQAIAAtAHAAYQByAHQAbgBlAHIALQB1AGkAZAAgACQARwBVAEkARAAgAC0AcAByAG8AZgBpAGwAZQAtAG4AYQBtAGUAIABEAG8AYwB1AG0AZQBuAHQAcwAiACAALQBwAGEAcwBzAHQAaAByAHUADQAKAA0ACgAgACAAIAAgAFMAdABhAHIAdAAtAFMAbABlAGUAcAAgAC0AUwBlAGMAbwBuAGQAcwAgADEAMgAwAA0ACgB9AGUAbABzAGUAewBXAHIAaQB0AGUALQB3AGEAcgBuAGkAbgBnACAAIgBQAHIAaQBvAHIAIABNAE8AQgAgAHQAbwAgAEMAbwB2AGUAIABJAG4AcwB0AGEAbABsAGEAdABpAG8AbgAgAG4AbwB0ACAAcAByAGUAcwBlAG4AdAAgAG8AcgAgAGEAbAByAGUAYQBkAHkAIAByAGUAZABlAHAAbABvAHkAZQBkACAAYQBzACAAZABvAGMAdQBtAGUAbgB0AHMAIgA7AEIAcgBlAGEAawB9AA0ACgA=">
+                  <p:RunPowerShellScript.InArgs>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="GUID" ArgType="string" DisplayArg="Input Parameters.Customer UID" DisplayName="Customer UID" Name="GUID" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:String">[GUID]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                  </p:RunPowerShellScript.InArgs>
+                  <p:RunPowerShellScript.OutArgs>
+                    <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+                  </p:RunPowerShellScript.OutArgs>
+                  <sap:WorkflowViewStateService.ViewState>
+                    <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                      <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                    </scg:Dictionary>
+                  </sap:WorkflowViewStateService.ViewState>
+                </p:RunPowerShellScript>
+                <p:DeleteFile FileName_ItemProp="{x:Null}" Recurse_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.4.0.43, Culture=neutral, PublicKeyToken=null" DisplayName="Delete BM Installer" FileName="C:\Windows\Temp\mxb-windows-x86_x64.exe" FileName_DisplayArg="C:\Windows\Temp\mxb-windows-x86_x64.exe" FileName_Item="{x:Null}" sap:VirtualizedContainerService.HintSize="454,81" MinRequiredVersion="2.10.0.19" Moniker="8020b23f-b9a8-4592-807e-62a5956f6f64" Recurse="True" Recurse_DisplayArg="" Recurse_Item="{x:Null}" Result="[DeleteFile_Result]" ResultString="[DeleteFile_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="DeleteFile" m_bTextLinkChange="False">
+                  <sap:WorkflowViewStateService.ViewState>
+                    <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                      <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                    </scg:Dictionary>
+                  </sap:WorkflowViewStateService.ViewState>
+                </p:DeleteFile>
+              </p:SequenceActivity.Activities>
+              <p:SequenceActivity.Variables>
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64" />
+                <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result" />
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString" />
+                <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64" />
+                <Variable x:TypeArguments="x:Double" Name="DeleteFile_Result" />
+                <Variable x:TypeArguments="x:String" Name="DeleteFile_ResultString" />
+              </p:SequenceActivity.Variables>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+            </p:SequenceActivity>
+          </p:IfObject.IfOption>
+          <p:IfObject.Value>
+            <InArgument x:TypeArguments="x:Object">
+              <p:ObjectLiteral Value="True" />
+            </InArgument>
+          </p:IfObject.Value>
+        </p:IfObject>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:String" Name="IsAppInstalled_Conditional" />
+        <Variable x:TypeArguments="x:String" Name="IsAppInstalled_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IsAppInstalled_Result" />
+        <Variable x:TypeArguments="x:String" Name="IfObject_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IfObject_Result" />
+        <Variable x:TypeArguments="x:String" Default="123" Name="GUID" />
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>
