@@ -38,7 +38,7 @@
     # Name: PRODUCT
     # Type: Integer String 
     # Value: Product Name
-    # Note: Found @ Backup.Management | Product ('All-In'is the case-sensitive default product with 28 days retention)
+    # Note: Found @ Backup.Management | Product ('All-In' is the case-sensitive default product with 28 days retention)
     #
     # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/regular-install.htm
     # https://documentation.n-able.com/backup/userguide/documentation/Content/backup-manager/backup-manager-installation/silent.htm
