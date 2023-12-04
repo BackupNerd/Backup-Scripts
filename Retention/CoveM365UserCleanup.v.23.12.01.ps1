@@ -853,7 +853,7 @@ Function ExitRoutine {
                 UpdateDataSource $item.AccountToken $item.UserGuid $item.MailBoxSelection $item.ExchangeAutoInclude "Excluded" $item.OneDriveAutoInclude
 
                 Write-output "Attempting OneDrive removal for Shared Mailbox $($item.accounttoken) $($item.UserGuid) $($item.emailAddress)"
-                #Remove-BackupHistory "OneDrive" $item.accounttoken $item.UserGuid
+                Remove-BackupHistory "OneDrive" $item.accounttoken $item.UserGuid
             }
         }
     }
@@ -878,8 +878,8 @@ Function ExitRoutine {
                 UpdateDataSource $item.AccountToken $item.UserGuid "Excluded" $item.ExchangeAutoInclude "Excluded" $item.OneDriveAutoInclude
 
                 Write-output "Attempting removal for Deleted Mailbox$($item.accounttoken) $($item.UserGuid) $($item.emailAddress)"
-                #Remove-BackupHistory "Exchange" $item.accounttoken $item.UserGuid
-                #Remove-BackupHistory "OneDrive" $item.accounttoken $item.UserGuid
+                Remove-BackupHistory "Exchange" $item.accounttoken $item.UserGuid
+                Remove-BackupHistory "OneDrive" $item.accounttoken $item.UserGuid
             }
         }
     }
