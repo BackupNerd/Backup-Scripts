@@ -434,10 +434,10 @@
             Get-VisaTime    
             AuditDeviceGUIPassword $DeviceResult.AccountId    
 
-            if ($CustomColumn) {
-                Write-Output "  Updating Custom Column $Columncode"
-                UpdateCustomColumn $DeviceResult.AccountId ($Columncode.replace("AA","")) $cleanresponse
-            }
+      
+            Write-Output "  Updating Custom Column $Columncode"
+            UpdateCustomColumn $DeviceResult.AccountId ($Columncode.replace("AA","")) $cleanresponse
+    
             
             $Script:DeviceDetail += New-Object -TypeName PSObject -Property @{ AccountID      = [String]$DeviceResult.AccountId;
                                                                         PartnerID      = [string]$DeviceResult.PartnerId;
