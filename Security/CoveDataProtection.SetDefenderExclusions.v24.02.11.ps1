@@ -43,7 +43,7 @@
                         "C:\ProgramData\MXB",
 
                         "*\StandbyImage",
-                        "*\OnDemandRestore"
+                        "*\OneTimeRestore"
                         )
 
     $ExcludeProcess = @("C:\Program Files\Backup Manager\BackupFP.exe",
