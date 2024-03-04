@@ -408,9 +408,7 @@
 
             foreach ($selectedView in $Script:Selectedviews) {
 
-                if ($export) {
-                    $selectedView | Select-Object * | ConvertTo-Json -depth 10 | out-file "$($ExportPath)\User_$($selectedView.UserId)_$(($SelectedUser.emailaddress -split("@"))[0])_View_$($selectedView.Id)_$($selectedView.name -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9 -]`",`"`")).json"
-                }
+                $selectedView | Select-Object * | ConvertTo-Json -depth 10 | out-file "$($ExportPath)\User_$($selectedView.UserId)_$(($SelectedUser.emailaddress -split("@"))[0])_View_$($selectedView.Id)_$($selectedView.name -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9 -]`",`"`")).json"
 
             }
     
