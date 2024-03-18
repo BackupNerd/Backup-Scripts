@@ -16,6 +16,11 @@
   Email:            eric.harless@n-able.com
   Twitter:          @backup_nerd
   Reddit:           https://www.reddit.com/r/Nable/
+.NOTES
+  Revision:         v23.08.30
+  Purpose/Change:   Had an instance of Backup Manager installed under Program Files x86, added conditions to handle this
+  Editor:           David Pierce, Systems Engineer - Tech-ii/Adnet
+  Email:            dpierce@tech-ii.com
 .NOTES 
   Sample scripts are not supported under any N-able support program or service.
   The sample scripts are provided AS IS without warranty of any kind.
@@ -67,7 +72,15 @@ Function Copy-Config {
 
     If ($Script:IsIntegrated -eq "True" ) {
 
-        $Script:BMConfig = "C:\Program Files\Backup Manager\config.ini"
+        if(Test-Path -Path "C:\Program Files (x86)\Backup Manager\config.ini" -PathType Leaf)
+        {
+            $Script:BMConfig = "C:\Program Files (x86)\Backup Manager\config.ini"
+        }
+        else
+        {
+            $Script:BMConfig = "C:\Program Files\Backup Manager\config.ini"
+        }
+
         $Script:BMConfigCopy = "C:\programdata\MXB\config.ini.copy"
 
         if ((Test-Path $Script:BMConfig -PathType leaf) -eq $false) {
@@ -81,8 +94,16 @@ Function Copy-Config {
 }   ## Copy Config.ini to ProgramData foder
 
 Function Update-BackupManager {
+    
+    if(Test-Path -Path "C:\Program Files (x86)\Backup Manager\BackupIP.exe" -PathType Leaf)
+    {
+        $Script:BackupIP = "C:\Program Files (x86)\Backup Manager\BackupIP.exe"
+    }
+    else
+    {
+        $Script:BackupIP = "C:\Program Files\Backup Manager\BackupIP.exe"
+    }
 
-    $Script:BackupIP = "c:\Program Files\Backup Manager\BackupIP.exe"
            
     If (((Test-Path $Script:BackupIp -PathType leaf) -eq $true) -and ($Script:IsIntegrated -eq "True" )) {
 
@@ -116,8 +137,17 @@ Function Update-BackupManager {
 
 Function Rename-BackupIP {
 
-    $Script:BackupIP = "c:\Program Files\Backup Manager\BackupIP.exe"
-    $Script:DisabledBackupIP = "c:\Program Files\Backup Manager\BackupIP.disabled.exe"
+    if(Test-Path -Path "C:\Program Files (x86)\Backup Manager\BackupIP.exe" -PathType Leaf)
+    {
+        $Script:BackupIP = "C:\Program Files (x86)\Backup Manager\BackupIP.exe"
+        $Script:DisabledBackupIP = "c:\Program Files (x86)\Backup Manager\BackupIP.disabled.exe"
+    }
+    else
+    {
+        $Script:BackupIP = "C:\Program Files\Backup Manager\BackupIP.exe"
+        $Script:DisabledBackupIP = "c:\Program Files\Backup Manager\BackupIP.disabled.exe"
+    }
+
 
     if ((Test-Path $Script:BackupIp -PathType leaf) -eq $false) {      
         Write-Output "`nBackupIP.exe is not present or is already disabled"
@@ -145,7 +175,15 @@ Function Get-TimeStamp {
 
 Function Get-JobStatus {
 
-    $clienttool = "C:\Program Files\Backup Manager\ClientTool.exe"
+    if(Test-Path -Path "C:\Program Files (x86)\Backup Manager\ClientTool.exe" -PathType Leaf)
+    {
+        $clienttool = "C:\Program Files (x86)\Backup Manager\ClientTool.exe"
+    }
+    else
+    {
+        $clienttool = "C:\Program Files\Backup Manager\ClientTool.exe"
+    }
+
 
     try { $ErrorActionPreference = 'Stop'; $Script:JobStatus = & $clienttool control.status.get }catch{ Write-Warning "ERROR     : $_" }
 
@@ -159,8 +197,17 @@ Function Get-JobStatus {
 
 Function Set-Alias {
 
-    $BMConfig = "C:\Program Files\Backup Manager\config.ini"
-    $clienttool = "C:\Program Files\Backup Manager\clienttool.exe"  
+        if(Test-Path -Path "C:\Program Files (x86)\Backup Manager\ClientTool.exe" -PathType Leaf)
+    {
+        $clienttool = "C:\Program Files (x86)\Backup Manager\ClientTool.exe"
+        $BMConfig = "C:\Program Files (x8)\Backup Manager\config.ini"
+    }
+    else
+    {
+        $clienttool = "C:\Program Files\Backup Manager\ClientTool.exe"
+        $BMConfig = "C:\Program Files\Backup Manager\config.ini"
+    }
+ 
 
     if ((Test-Path $BMConfig -PathType leaf) -eq $true) {
         
