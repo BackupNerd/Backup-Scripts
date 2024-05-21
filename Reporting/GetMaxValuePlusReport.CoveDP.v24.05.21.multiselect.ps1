@@ -23,11 +23,10 @@
 <# ----- Behavior: ----
     # Check/ Get/ Store secure credentials 
     # Authenticate to https://backup.management console
-    # Check partner level/ Enumerate partners/ GUI select partner
+    # Check partner level/ Enumerate partners/ GUI select multiple partners
     # Get Current Device Statistics
     # Get Cove Maximum Value Usage Report for Period
     # Export usage to CSV/XLS & Pivot Table
-    # Connect and update usage in ConnectWise Manage (CWM) PSA
     #
     # Use the -Period switch parameter to define Usage Dates (yyyy-MM or MM-yyyy)
     # Use the -DeviceCount ## (default=15000) parameter to define the maximum number of devices returned
@@ -35,9 +34,6 @@
     # Use the -Delimiter (default=',') parameter to set the delimiter for XLS/CSV output (i.e. use ';' for The Netherlands)
     # Use the -ExportPath (?:\Folder) parameter to specify XLS/CSV file path. Default is the execution path of the script.
     # Use the -DebugCDP switch to display debug info for Cove Data Protection usage and statistics lookup
-    # Use the -DebugCWM switch to display debug info for ConnectWise Manage data lookup
-    # Use the -SendToCWM switch to push Cove usage data ConnectWise Manage
-    # Use the -CWMAgreementName parameter to specifiy the ConnectWise Manage Agreement Name for Cove Data Protection usage
     # Use the -ClearCredentials parameter to remove stored Cove API credentials at start of script
     #
     # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/service-management/json-api/home.htm
@@ -47,10 +43,7 @@
     # https://www.n-able.com/legal/cove-data-protection-fair-use-policy
     # https://www.n-able.com/legal/cove-data-protection-fair-use-policy-dpp
     #
-    # Special thanks to Chris Taylor for the PS Module for ConnectWise Manage.
-    # https://www.powershellgallery.com/packages/ConnectWiseManageAPI
-    # https://github.com/christaylorcodes/ConnectWiseManageAPI
-    
+   
 # -----------------------------------------------------------#>  ## Behavior
 
 [CmdletBinding()]
