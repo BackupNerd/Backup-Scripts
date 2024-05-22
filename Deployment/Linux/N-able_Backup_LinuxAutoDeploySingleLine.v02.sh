@@ -22,10 +22,10 @@
 
 <<-----Behavior----
     # Downloads and deploys a new Backup Manager as a Passphrase compatible device with an assigned Profile
-    # Replace UID and PROFILEID variables at the begining of the script
+    # Replace CUID and PROFILEID variables at the begining of the script
     # Run this Script from the TakeControl System Shell, Terminal, SSH or Putty
     #
-    # Name: UID
+    # Name: CUID
     # Type: String Variable 
     # Value: 9696c2af4-678a-4727-9b6b-example
     # Note: Found @ Backup.Management | Customers
@@ -45,5 +45,5 @@
 
 # Begin Install Script
 
-UID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; PROFILEID='128555'; INSTALL="bm#$UID#$PROFILEID#.run" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-linux-x86_64.run && chmod +x $INSTALL && sudo -s ./$INSTALL; rm ./bm#*.run -f
+CUID="01d10b9ee-2a24-4868-9ceb-5e3272124cf0"; PROFILEID='128555'; INSTALL="bm#$CUID#$PROFILEID#.run" && curl -o $INSTALL https://cdn.cloudbackup.management/maxdownloads/mxb-linux-x86_64.run && chmod +x $INSTALL && sudo -s ./$INSTALL; rm ./bm#*.run -f
 
