@@ -46,7 +46,7 @@
     Param (
         [Parameter(Mandatory=$False, Position=0)]
             [ValidateSet("ActiveErrors","LastErrors","Mac","Custom")] [String]$Action = "ActiveErrors",    ## Get ActiveError or LastError per device
-        [Parameter(Mandatory=$False)] [int]$Days = 30,                                                      ## Number of days to search for Errors
+        [Parameter(Mandatory=$False)] [int]$Days = 14,                                                      ## Number of days to search for Errors
         [Parameter(Mandatory=$False)] [int]$DeviceCount = 2000,                                            ## Change Maximum Number of devices results to return
         [Parameter(Mandatory=$False)] [switch]$GridView,                                                    ## Display Output via Powershell Out-Gridview
         [Parameter(Mandatory=$False)] [switch]$Export,                                              ## Generate CSV / XLS Output Files
