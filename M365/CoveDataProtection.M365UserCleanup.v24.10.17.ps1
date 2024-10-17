@@ -108,8 +108,10 @@
     Write-output "  -ExportCombined  = $ExportCombined"
     Write-output "  -ExportShared    = $ExportSharedBillable"
     Write-output "  -CleanupShared   = $CleanupSharedBillable"
+    Write-output "  -OneDriveAge     = $OneDriveAge"
     Write-output "  -ExportDeleted   = $ExportDeleted"
     Write-output "  -CleanupDeleted  = $CleanupDeleted"
+    Write-output "  -DeletedAge      = $DeletedAge"
     Write-output "  -ExportPath      = $ExportPath"
     Write-output "  -Delimiter       = $delimiter"
     
