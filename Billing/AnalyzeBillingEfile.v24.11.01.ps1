@@ -21,7 +21,7 @@
     # For use with the N-able monthly billing efile
     # Sample scripts are subject to change without notification
     # Some script elements may be developed, tested or documented using AI
-  # -----------------------------------------------------------#>  ## Compatibility
+# -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
     # This script analyzes N-able billing efile data.
@@ -40,6 +40,30 @@
     #
     # https://me.n-able.com/s/article/How-to-see-billing-and-invoice-information-for-MSP-products
 # -----------------------------------------------------------#>  ## Behavior
+
+<# ----- Example Execution: ----
+    # This section provides examples of how to execute the script from a command prompt or PowerShell prompt with various parameters.
+    #
+    # Example 1: Run the script with default parameters
+    # Command Prompt (cmd.exe):
+    #    powershell -File .\AnalyzeBillingEfile.v24.11.01.ps1
+    # PowerShell: 
+    #    .\AnalyzeBillingEfile.v24.11.01.ps1
+    #
+    # Example 2: Run the script and specify an export path
+    # PowerShell:
+    #    .\AnalyzeBillingEfile.v24.11.01.ps1 -ExportPath "C:\Exports"
+    #
+    # Example 3: Run the script and include Per GB products in the reports
+    # PowerShell:
+    #    .\AnalyzeBillingEfile.v24.11.01.ps1 -IncludePerGB
+    #
+    # Example 4: Run the script with both an export path and including Per GB products
+    # PowerShell:
+    #    .\AnalyzeBillingEfile.v24.11.01.ps1 -ExportPath "C:\Exports" -IncludePerGB
+    #
+    # Note: Ensure that the script is unblocked and the execution policy is set correctly before running the script.
+# -----------------------------------------------------------#>  ## Example Execution
 
 <# ----- Troubleshooting: ----
     # If you encounter issues running the script, ensure that the script is unblocked and the execution policy is set correctly.
@@ -67,6 +91,9 @@
     #       Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
     #       This setting is temporary and only applies to the current PowerShell session.
 # -----------------------------------------------------------#>  ## Troubleshooting
+
+
+
 
 [CmdletBinding()]
     Param (
