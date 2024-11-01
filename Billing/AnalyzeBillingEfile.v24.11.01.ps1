@@ -92,15 +92,11 @@
     #       This setting is temporary and only applies to the current PowerShell session.
 # -----------------------------------------------------------#>  ## Troubleshooting
 
-
-
-
 [CmdletBinding()]
     Param (
         [Parameter(Mandatory=$False)][string]$ExportPath = "$PSScriptRoot",                     ## Export Path
         [Parameter(Mandatory=$False)][switch]$IncludePerGB                                      ## Set to $false to exclude Per GB products from reports
     )
-
 
 #region ----- Environment, Variables, Names and Paths ----
 Clear-Host
