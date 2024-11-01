@@ -39,8 +39,34 @@
     # If you encounter any issues, you can create a case with N-able’s Customer Care team for further assistance.
     #
     # https://me.n-able.com/s/article/How-to-see-billing-and-invoice-information-for-MSP-products
+# -----------------------------------------------------------#>  ## Behavior
 
-    # -----------------------------------------------------------#>  ## Behavior
+<# ----- Troubleshooting: ----
+    # If you encounter issues running the script, ensure that the script is unblocked and the execution policy is set correctly.
+    # You may need to login as an adminsitrator to perform these tasks.
+    #
+    # To unblock the script:
+    # 1. Right-click the script file in File Explorer and select 'Properties'.
+    # 2. In the 'General' tab, check the 'Unblock' checkbox if it is present.
+    # 3. Click 'Apply' and then 'OK'.
+    #
+    # Alternatively, you can unblock the script using PowerShell:
+    # 1. Open PowerShell as an administrator.
+    # 2. Run the following command to unblock the script:
+    #    Unblock-File -Path "C:\Path\To\Your\Script.ps1"
+    #
+    # To set the execution policy to allow scripts to run:
+    # 1. Open PowerShell as an administrator.
+    # 2. Run the following command to set the execution policy:
+    #    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+    # 3. If prompted, confirm the change by typing 'Y' and pressing Enter.
+    #
+    # Note: Setting the execution policy to 'Unrestricted' allows all scripts to run, which is less secure but can be useful for troubleshooting.
+    #       Alternatively, you can use 'Bypass' to completely bypass the execution policy for the current session:
+    #       Run the following command to set the execution policy to 'Bypass':
+    #       Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+    #       This setting is temporary and only applies to the current PowerShell session.
+# -----------------------------------------------------------#>  ## Troubleshooting
 
 [CmdletBinding()]
     Param (
