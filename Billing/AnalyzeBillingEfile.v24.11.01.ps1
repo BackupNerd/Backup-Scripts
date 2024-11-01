@@ -82,26 +82,40 @@ if (Get-Module -ListAvailable -Name ImportExcel) {
     }
 }
 
-Function Open-FileName($initialDirectory,[switch]$multiselect) {
-    [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
+function Show-ElapsedTime {
+    $currentTime = Get-Date
+    $elapsedTime = $currentTime - $scriptStartTime
+    Write-Output "Elapsed time: $($elapsedTime.Hours)h $($elapsedTime.Minutes)m $($elapsedTime.Seconds)s"
+}  ## Function to display the elapsed time
+
+
+Function Open-FileName {
+    param (
+        [string]$initialDirectory,
+        [switch]$multiselect
+    )
+    Add-Type -AssemblyName System.Windows.Forms
     $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
-    $OpenFileDialog.initialDirectory = $initialDirectory
-    $OpenFileDialog.filter = "N-able Billing efile(*efile*.csv;*efile*.xlsx)|*efile*.csv;*efile*.xlsx"
-    $OpenFileDialog.title = "Select N-able Billing efile to Analyze (*.csv, *.xlsx)"
-    $OpenFileDialog.Multiselect = $true
-    $result = $OpenFileDialog.ShowDialog((New-Object System.Windows.Forms.Form -Property @{TopMost = $true }))
-    $OpenFileDialog.FileNames
-} ## GUI Prompt for Filename to open
+    $OpenFileDialog.InitialDirectory = $initialDirectory
+    $OpenFileDialog.Filter = "N-able Billing efile(Efile_*.csv;efile_*.xlsx)|efile_*.csv;efile_*.xlsx"
+    $OpenFileDialog.Title = "Select one or more N-able Billing Efiles to Analyze (*.csv, *.xlsx)"
+    $OpenFileDialog.Multiselect = $multiselect
+    if ($OpenFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        return $OpenFileDialog.FileNames
+    } else {
+        return @()
+    }
+}
 
 Function Process-EFile  ($usageeData) {
     # Group by unique fields and calculate subtotal
     $subtotalDataa = $usageData | Group-Object -Property "Usage Customer", "Customer Site", Product | ForEach-Object {
         [PSCustomObject]@{
             UsageCustomer = $_.Group[-1]."Usage Customer"
-            CustomerSite = $_.Group[-1]."Customer Site"
+            CustomerSite = if ($_.Group[-1]."Customer Site" -eq $_.Group[-1]."Usage Customer") { "" } else { $_.Group[-1]."Customer Site" }
             Product = $_.Group[-1].Product
-            From = if (($_.Group[-1]."Period From" -ne $null) -and ($_.Group[-1]."Period From" -ne "")) {get-date -Date $_.Group[-1]."Period From" -Format "dd-MMM" -ErrorAction SilentlyContinue } else {}
-            To = if (($_.Group[-1]."Period To" -ne $null) -and ($_.Group[-1]."Period To" -ne "")) {get-date -Date $_.Group[-1]."Period To" -Format "dd-MMM-yyyy" -ErrorAction SilentlyContinue } else {}
+            From = if (($null -ne $_.Group[-1]."Period From") -and ($_.Group[-1]."Period From" -ne "")) {get-date -Date $_.Group[-1]."Period From" -Format "dd-MMM" -ErrorAction SilentlyContinue } else {}
+            To = if (($null -ne $_.Group[-1]."Period To") -and ($_.Group[-1]."Period To" -ne "")) {get-date -Date $_.Group[-1]."Period To" -Format "dd-MMM-yyyy" -ErrorAction SilentlyContinue } else {}
             RatingMethod = $_.Group[-1]."Rating Method"
             UOM = $_.Group[-1].UOM
             Quantity = ($_.Group | Measure-Object -Property Quantity -Sum).Sum
@@ -138,8 +152,8 @@ Function Process-EFile  ($usageeData) {
         [PSCustomObject]@{
     
             Product = $_.Group[0].Product
-            From = if (($_.Group[-1]."Period From" -ne $null) -and ($_.Group[-1]."Period From" -ne "")) {get-date -Date $_.Group[-1]."Period From" -Format "dd-MMM" -ErrorAction SilentlyContinue } else {}
-            To = if (($_.Group[-1]."Period To" -ne $null) -and ($_.Group[-1]."Period To" -ne "")) {get-date -Date $_.Group[-1]."Period To" -Format "dd-MMM-yyyy" -ErrorAction SilentlyContinue } else {}
+            From = if (($null -ne $_.Group[-1]."Period From") -and ($_.Group[-1]."Period From" -ne "")) {get-date -Date $_.Group[-1]."Period From" -Format "dd-MMM" -ErrorAction SilentlyContinue } else {}
+            To = if (($null -ne $_.Group[-1]."Period To") -and ($_.Group[-1]."Period To" -ne "")) {get-date -Date $_.Group[-1]."Period To" -Format "dd-MMM-yyyy" -ErrorAction SilentlyContinue } else {}
             RatingMethod = $_.Group[0]."Rating Method"
             UOM = $_.Group[0].UOM
             Quantity = ($_.Group | Measure-Object -Property Quantity -Sum).Sum
@@ -171,6 +185,7 @@ Function Process-EFile  ($usageeData) {
     Write-output "File saved to $outfilename"
 
 }
+
 Open-FileName -initialDirectory $PSScriptRoot -multiselect | ForEach-Object {
     if ($_.EndsWith(".csv")) {
         $usageData = Import-Csv -Path $_
@@ -187,4 +202,5 @@ Open-FileName -initialDirectory $PSScriptRoot -multiselect | ForEach-Object {
     } else {
         Process-EFile -usageData $usageData
     }
+    Show-ElapsedTime 
 }
