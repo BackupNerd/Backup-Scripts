@@ -1,5 +1,5 @@
 <# ----- About: ----
-    # N-able | Cove Data Protection | Monitor (globalpolicy)
+    # N-able | Cove Data Protection | Monitor Full
     # Revision v19 - 2024-08-23
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
