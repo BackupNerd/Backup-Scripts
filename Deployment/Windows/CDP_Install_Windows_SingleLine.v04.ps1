@@ -58,7 +58,7 @@
 $CUID="01d10b9ee-change-me-4868-9ceb-5e3272124cf0"; $PROFILEID='128555'; $INSTALL="c:\windows\temp\bm#$CUID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL
 
 # Example 2 - Download and install a full edition of Cove - Custom Profile - Uses the classic 'All-In' Retention Policy
-$CUID="254ebc40-f638-4f97-b1a2-fce5515a405e"; $PROFILEID='36628'; $RETENTIONPOLICY='All-In'; $INSTALL="c:\windows\temp\bm#$CUID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL -product-name "$RETENTIONPOLICY"
+$CUID="01d10b9ee-change-me-4868-9ceb-5e3272124cf0"; $PROFILEID='128555'; $RETENTIONPOLICY='All-In'; $INSTALL="c:\windows\temp\bm#$CUID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL -product-name "$RETENTIONPOLICY"
 
 # Example 3 - Download and install a Documents edition of Cove
 $CUID="01d10b9ee-change-me-4868-9ceb-5e3272124cf0"; $PROFILEID='5038'; $INSTALL="c:\windows\temp\bm#$CUID#$PROFILEID#.exe"; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;(New-Object System.Net.WebClient).DownloadFile("https://cdn.cloudbackup.management/maxdownloads/mxb-windows-x86_x64.exe","$($INSTALL)"); & $INSTALL
