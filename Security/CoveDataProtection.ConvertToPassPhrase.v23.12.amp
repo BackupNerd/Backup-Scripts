@@ -131,8 +131,8 @@
         <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_InstallationType" />
         <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_DevicePartnerName" />
         <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_uid" />
-        <Variable x:TypeArguments="x:String" Default="HEH Computing IT" Name="PartnerName" />
-        <Variable x:TypeArguments="x:String" Default="eric.harless+heh@n-able.com" Name="UserName" />
+        <Variable x:TypeArguments="x:String" Name="PartnerName" />
+        <Variable x:TypeArguments="x:String" Name="UserName" />
         <Variable x:TypeArguments="p:Password" Name="Password">
           <Variable.Default>
             <Literal x:TypeArguments="p:Password">
