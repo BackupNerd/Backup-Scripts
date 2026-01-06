@@ -64,10 +64,10 @@ pwsh
 **Usage:**
 ```powershell
 # Basic monitoring
-.\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "Acme Technologies"
+.\Cove2CWM-SyncTickets.v## -PartnerName "Acme Technologies"
 
 # With custom configuration
-.\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "Acme Technologies" `
+.\Cove2CWM-SyncTickets.v## -PartnerName "Acme Technologies" `
     -TicketBoard "Service Desk" `
     -TicketPriorityServer "Priority 1 - Emergency Response" `
     -TicketPriorityWorkstation "Priority 3 - Normal Response"
@@ -84,7 +84,7 @@ pwsh
 
 ---
 
-### 2. **Cove2CWM-SetTicketsConfig.v##.ps1** (Configuration Helper)
+### 2. **Cove2CWM-SetTicketsConfig.v##** (Configuration Helper)
 
 **Purpose:** Interactive GUI tool to configure monitoring script parameters
 
@@ -97,7 +97,7 @@ pwsh
   - Server priority level (with recommendations)
   - Workstation priority level (with recommendations)
   - M365 priority level (with recommendations)
-- Updates parameters in `Cove2CWM-SyncTickets.v##.ps1`
+- Updates parameters in `Cove2CWM-SyncTickets.v##`
 - Validates all changes were applied correctly
 - Saves configuration for easy re-use
 
@@ -111,7 +111,7 @@ pwsh
 **Usage:**
 ```powershell
 # Interactive configuration
-.\Cove2CWM-SetTicketsConfig.ps1
+.\Cove2CWM-SetTicketsConfig.v##.ps1
 
 # Follow the GridView prompts to select:
 # 1. Board (e.g., "Service Desk")
@@ -455,8 +455,8 @@ Register-ScheduledTask -TaskName "Cove Backup Monitoring" `
 - **DPAPI Security:** Credentials are encrypted per-user and per-machine - cannot be decrypted by different users
 - **Password Required:** You'll need to provide the user's password when registering the task to enable "Run whether user is logged on or not"
 - **Script Execution:** The main monitoring script (`Cove2CWM-SyncTickets.v##.ps1`) will automatically call helper scripts if needed:
-  - Calls `Cove2CWM-SyncCustomers.ps1` if a ConnectWise company is missing
-  - Uses `Cove2CWM-SetTicketsConfig.ps1` for interactive configuration (run manually as needed)
+  - Calls `Cove2CWM-SyncCustomers.v##.ps1` if a ConnectWise company is missing
+  - Uses `Cove2CWM-SetTicketsConfig.v##.ps1` for interactive configuration (run manually as needed)
 - **First Run:** Always run `Cove2CWM-SyncTickets.v##.ps1` interactively first to create credential files before scheduling
 
 ---
@@ -467,7 +467,7 @@ Register-ScheduledTask -TaskName "Cove Backup Monitoring" `
 **Solution:** Run `Cove2CWM-SyncTickets.v##.ps1` interactively first to create credentials
 
 ### Issue: "ConnectWise company not found for device"
-**Solution:** Run `Cove2CWM-SyncCustomers.ps1` to create missing companies
+**Solution:** Run `Cove2CWM-SyncCustomers.v##.ps1` to create missing companies
 
 ### Issue: Validation errors after configuration change
 **Solution:** Check `SetTicketsConfig` output for specific parameter mismatch, restore from backup if needed
@@ -509,5 +509,6 @@ Sample scripts provided as-is. Not supported under any N-able support program or
 
 - [Cove API Documentation](https://documentation.n-able.com/backup/userguide/documentation/Content/service-management/json-api/)
 - [ConnectWise Manage API](https://developer.connectwise.com/Products/Manage/REST)
+
 
 
