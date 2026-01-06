@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CoveMonitoring-2-CWMTickets script uses a **multi-tier caching and matching strategy** to link Cove customers with ConnectWise companies. The system is designed to be **self-healing** with intelligent caching - after the first successful match, it stores references at multiple levels that make all future matches instant.
+The Cove2CWM-SyncTickets script uses a **multi-tier caching and matching strategy** to link Cove customers with ConnectWise companies. The system is designed to be **self-healing** with intelligent caching - after the first successful match, it stores references at multiple levels that make all future matches instant.
 
 **v10 Performance Enhancements:**
 - **EndCustomer Cache:** Eliminates redundant CWM API calls when multiple devices share the same EndCustomer
@@ -21,19 +21,20 @@ The script checks in this order (fastest → slowest):
 **Accuracy:** 100%
 
 **How it works:**
-- After ANY successful CWM company match, caches: `EndCustomer Name → CWM Company ID`
+- After ANY successful CWM company match, caches: `EndCustomer Name → Full CWM Company Object`
 - Checked BEFORE all other strategies (including session cache)
 - Eliminates CWM API calls entirely for devices sharing same EndCustomer
+- **Stores complete company object** (ID, Name, Identifier, deletedFlag, etc.) - not just the ID
 
 **Example:**
 ```powershell
 # First device for "Acme Inc" EndCustomer
-Device 1 (SERVER01): EndCustomer cache MISS → proceeds to matching strategies → matches CWM:1234
-  → Adds to cache: "Acme Inc" → 1234
+Device 1 (SERVER01): EndCustomer cache MISS → proceeds to matching strategies → matches CWM company object
+  → Adds to cache: "Acme Inc" → [Company Object: ID=1234, Name="Acme Inc", Identifier="AcmeInc"]
 
 # Second device for same EndCustomer
-Device 2 (DESKTOP01): EndCustomer cache HIT → returns CWM:1234 instantly (no API call)
-Device 3 (DESKTOP02): EndCustomer cache HIT → returns CWM:1234 instantly (no API call)
+Device 2 (DESKTOP01): EndCustomer cache HIT → returns full company object instantly (no API call)
+Device 3 (DESKTOP02): EndCustomer cache HIT → returns full company object instantly (no API call)
 ```
 
 **Performance Impact:**
@@ -42,8 +43,8 @@ Device 3 (DESKTOP02): EndCustomer cache HIT → returns CWM:1234 instantly (no A
 
 **Debug Output:**
 ```powershell
-[DEBUG] EndCustomer cache HIT: 'Acme Inc' → CWM Company ID 1234
-  ✓ EndCustomer cache hit - returning cached company: [1234] Acme Inc
+[DEBUG] Cache HIT: 'Acme Inc' → [1234] Acme Inc
+  ✓ Returning cached company object (no API call)
 ```
 
 ---
@@ -60,12 +61,12 @@ Device 3 (DESKTOP02): EndCustomer cache HIT → returns CWM:1234 instantly (no A
 
 **Example - Preventing Duplicate Creation:**
 ```powershell
-# Two devices for new company "GraphGroup" processed simultaneously
+# Two devices for new company "ExampleGroup" processed simultaneously
 Device 1: No cache hit → Strategy 1-4 fail → Auto-create initiated
-  → [CACHE] Added placeholder for 'GraphGroup' to prevent duplicate creation
+  → [CACHE] Added placeholder for 'ExampleGroup' to prevent duplicate creation
   → Sync script creates company → [CACHE] Updated placeholder with actual company ID: 1478
 
-Device 2: Session cache hit → Found PLACEHOLDER for 'GraphGroup'
+Device 2: Session cache hit → Found PLACEHOLDER for 'ExampleGroup'
   → [WAIT] Waiting for company creation to complete... (2 seconds)
   → [WAIT] Placeholder resolved! Company created with ID: 1478
   → Returns cached company without duplicate creation attempt
@@ -78,8 +79,8 @@ Device 2: Session cache hit → Found PLACEHOLDER for 'GraphGroup'
 
 **Debug Output:**
 ```powershell
-Strategy 0: Found 'Acme Inc' in session cache [ID: 1234]
-  ✓ Session cache hit - returning cached company: [1234] Acme Inc
+[DEBUG] Strategy 0: Found 'Acme Inc' in session cache [ID: 1234]
+  ✓ Session cache hit - returning cached company object: [1234] Acme Inc (no API call)
 ```
 
 ---
@@ -100,12 +101,12 @@ Cove Customer Reference: "PSA-ACME-2024 | CWM:1478"
                                           ^^^^^^^^
                                           Extracts ID: 1478
 ConnectWise Lookup: Get-CWMCompany -condition "id=1478"
-Result: ✅ Instant match to [1478] The Graph Group
+Result: ✅ Instant match to [1478] Example Corp
 ```
 
 **Debug Output:**
 ```powershell
-Matched via ExternalCode CWM:1478 - [1478] The Graph Group
+Matched via ExternalCode CWM:1478 - [1478] Example Corp
 ```
 
 ---
@@ -129,7 +130,7 @@ ConnectWise Lookup: Get-CWMCompany -condition "id=1234"
 Result: ✅ Match to [1234] Acme Corporation
 ```
 
-**After Match:** Writes `CWM:1234` to Customer Reference for future fast matching
+**After Match:** Writes `CWM:1234` to Customer Reference (only if `-UpdateCoveReferences` enabled)
 
 ---
 
@@ -140,21 +141,42 @@ Result: ✅ Match to [1234] Acme Corporation
 
 **How it works:**
 - Uses Cove **EndCustomer** name (resolved from hierarchy)
+- **Automatically truncates to 50 characters** if name is longer (matches CWM's 50-char limit)
 - Performs exact string match against ConnectWise company names
 - Case-sensitive comparison
 
 **Example:**
 ```
-Cove EndCustomer: "The Graph Group"
-ConnectWise Lookup: Get-CWMCompany -condition "name=\"The Graph Group\""
-Result: ✅ Match to [1478] The Graph Group
+Cove EndCustomer: "Example Corp"
+Truncated to: "Example Corp" (no truncation needed - under 50 chars)
+ConnectWise Lookup: Get-CWMCompany -condition "name=\"Example Corp\" and deletedFlag = false"
+Result: ✅ Match to [1478] Example Corp
 ```
 
-**After Match:** Writes `CWM:1478` to Customer Reference for future fast matching
+**Long Name Example:**
+```
+Cove EndCustomer: "DataSafe Solutions International Technology Services Group"
+Truncated to: "DataSafe Solutions International Technology Serv" (50 chars)
+ConnectWise Lookup: Get-CWMCompany -condition "name=\"DataSafe Solutions International Technology Serv\" and deletedFlag = false"
+Result: ✅ Match to [1479] DataSafe Solutions International Technology Serv
+```
+
+**After Match:** 
+- **Writes `CWM:1478` to Customer Reference** (only if `-UpdateCoveReferences` switch is enabled)
+- **Adds to EndCustomer cache:** `"Example Corp" → Full Company Object`
+- **Adds to Session cache:** Stores full company object for current run
+
+**Note:** By default, Customer Reference updates are **disabled** (`-UpdateCoveReferences $false`). Enable with:
+```powershell
+.\Cove2CWM-SyncTickets.v##.ps1 -UpdateCoveReferences
+```
 
 **Debug Output:**
 ```powershell
-Matched via End Customer Name: [1478] The Graph Group
+[DEBUG] Strategy 3: Query name="Example Corp" (active companies only)
+[DEBUG]   Get-CWMcompany returned 1 result(s)
+  Matched via End Customer Name: [1478] Example Corp
+[DEBUG]   [CACHE] Added EndCustomer 'Example Corp' → CWM Company [1478] Example Corp
 ```
 
 ---
@@ -179,7 +201,7 @@ ConnectWise Lookup: Get-CWMCompany -condition "name=\"Acme Corporation\""
 Result: ✅ Match to [1234] Acme Corporation
 ```
 
-**After Match:** Writes `CWM:1234` to Customer Reference for future fast matching
+**After Match:** Writes `CWM:1234` to Customer Reference (only if `-UpdateCoveReferences` enabled)
 
 ---
 
@@ -194,7 +216,7 @@ If **EndCustomer cache, session cache, and all 4 matching strategies fail** and 
 # CRITICAL: Add placeholder to cache to prevent duplicate creation
 $placeholderCompany = [PSCustomObject]@{
     CompanyId = -1  # Placeholder ID (updated after creation)
-    CompanyName = "The Graph Group"
+    CompanyName = "Example Corp"
     IsPlaceholder = $true
 }
 $Script:CompaniesCreated += $placeholderCompany
@@ -209,24 +231,24 @@ $Script:CompaniesCreated += $placeholderCompany
 The Sync-CoveToConnectWise script generates a smart 25-character identifier:
 
 **Priority:**
-1. **Full clean name** (if ≤25 chars): `"TheGraphGroup"` ✅ Most descriptive
-2. **Truncated name** (if >25 chars): `"MuseumofChineseinAmeri"` (25 chars max)
-3. **First word** (if unique): `"Huntington"` (5-25 chars)
-4. **Acronym** (fallback): `"HHC"` (3+ chars)
+1. **Full clean name** (if ≤25 chars): `"ExampleCorp"` ✅ Most descriptive
+2. **Truncated name** (if >25 chars): `"DataSafeSolutionsInter"` (25 chars max)
+3. **First word** (if unique): `"Acme"` (5-25 chars)
+4. **Acronym** (fallback): `"ABC"` (3+ chars)
 
 **Examples:**
 ```
-"The Graph Group"              → Identifier: "TheGraphGroup" (13 chars)
-"Museum of Chinese in America" → Identifier: "MuseumofChineseinAmeri" (25 chars)
-"LB Pharmaceuticals"            → Identifier: "LBPharmaceuticals" (17 chars)
-"Systech MSP Internal"          → Identifier: "SystechMSPInternal" (18 chars)
+"Example Corp"                 → Identifier: "ExampleCorp" (11 chars)
+"DataSafe Solutions Intl"      → Identifier: "DataSafeSolutionsIntl" (21 chars)
+"Acme Technologies"            → Identifier: "AcmeTechnologies" (16 chars)
+"Tech Services Group"          → Identifier: "TechServicesGroup" (17 chars)
 ```
 
 ### Step 3: Company Creation
 
 ```powershell
-New-CWMCompany -identifier "TheGraphGroup" `
-               -name "The Graph Group" `
+New-CWMCompany -identifier "ExampleCorp" `
+               -name "Example Corp" `
                -status @{id=1} `  # Active
                -type @{id=1} `    # Customer
                -site @{name="Main"}
@@ -234,8 +256,8 @@ New-CWMCompany -identifier "TheGraphGroup" `
 
 **Result:**
 ```
-✓ Created company [ID: 1478] The Graph Group
-  Identifier: TheGraphGroup
+✓ Created company [ID: 1478] Example Corp
+  Identifier: ExampleCorp
 ```
 
 ### Step 4: Wait for CWM Propagation (v10 Fix)
@@ -247,7 +269,19 @@ Write-Host "[WAIT] Pausing 5 seconds for CWM to sync new company..." -Foreground
 Start-Sleep -Seconds 5
 
 # Now query to get the newly created company
-$CWMcompanyResults = Get-CWMcompany -condition "name=`"The Graph Group`" and deletedFlag = false"
+# CRITICAL: Handle 50-char truncation for long names
+if ($matchName.Length -gt 50) {
+    # Use exact match with truncated name (no ... suffix)
+    $searchName = $matchName.Substring(0, 50)
+    $CWMcompanyResults = Get-CWMcompany -condition "name=`"$searchName`" and deletedFlag = false"
+} else {
+    # Use exact match for non-truncated names
+    $CWMcompanyResults = Get-CWMcompany -condition "name=`"$matchName`" and deletedFlag = false"
+}
+
+# Example:
+# Short name:  Get-CWMcompany -condition "name=`"Example Corp`" and deletedFlag = false"
+# Long name:   Get-CWMcompany -condition "name=`"DataSafe Solutions International Technology Serv`" and deletedFlag = false"
 ```
 
 **Why this matters:**
@@ -260,14 +294,16 @@ $CWMcompanyResults = Get-CWMcompany -condition "name=`"The Graph Group`" and del
 
 **After successful creation, update all caches:**
 ```powershell
-# 1. Update placeholder with actual company data
+# 1. Update placeholder with actual company data AND full object
 $placeholderCompany.CompanyId = 1478
+$placeholderCompany.CompanyName = "Example Corp"  # Actual CWM name (may be truncated)
+$placeholderCompany.CompanyObject = $CWMcompany  # Store full company object
 $placeholderCompany.IsPlaceholder = $false
-Write-Host "[CACHE] Updated placeholder with actual company ID: 1478" -ForegroundColor Cyan
+Write-Host "[CACHE] Updated placeholder with full company object: [1478] Example Corp" -ForegroundColor Cyan
 
-# 2. Add to EndCustomer cache for future lookups
-$Script:EndCustomerToCWMCompanyCache["The Graph Group"] = 1478
-Write-Host "[CACHE] Added EndCustomer 'The Graph Group' → CWM Company ID 1478" -ForegroundColor Cyan
+# 2. Add to EndCustomer cache for future lookups (full object, not just ID)
+$Script:EndCustomerToCWMCompanyCache["Example Corp"] = $CWMcompany  # Full company object
+Write-Host "[DEBUG]   [CACHE] Added EndCustomer 'Example Corp' → CWM Company [1478] Example Corp" -ForegroundColor Cyan
 ```
 
 **Next device with same EndCustomer:** Instant cache hit, no CWM API call required.
@@ -276,7 +312,9 @@ Write-Host "[CACHE] Added EndCustomer 'The Graph Group' → CWM Company ID 1478"
 
 ### Step 6: Bidirectional Link Creation
 
-**Immediately after creation**, the script writes `CWM:ID` back to Cove:
+**After successful creation** (only if `-UpdateCoveReferences` is enabled), the script writes `CWM:ID` back to Cove:
+
+**Note:** This step requires the `-UpdateCoveReferences` parameter (default: disabled)
 
 ```powershell
 # Current Cove Customer Reference: "" (empty)
@@ -294,24 +332,24 @@ ModifyPartner -PartnerIdToModify 123456 -ExternalCode "CWM:1478"
 
 ---
 
-## Real-World Example: SEDEMO Partner
+## Real-World Example: Acme Partner
 
 ### First Run - Initial Matching
 
-**Scenario:** SEDEMO has 3 EndCustomer partners, all already exist in ConnectWise
+**Scenario:** Acme Partner has 3 EndCustomer partners, all already exist in ConnectWise
 
 **Output:**
 ```
-Matched via End Customer Name: [1448] North American Technologies
-Matched via End Customer Name: [1449] United Kingdom Tech
-Matched via End Customer Name: [1445] German Industries
+Matched via End Customer Name: [1448] Alpha Technologies
+Matched via End Customer Name: [1449] Beta Systems
+Matched via End Customer Name: [1445] Gamma Industries
 ```
 
 **What happened:**
 1. ✅ EndCustomer cache MISS (first run, cache empty)
 2. ✅ Session cache MISS (first run, cache empty)
 3. ✅ Used **Strategy 3** (Exact Name Match) to find existing companies
-4. ✅ Updated Cove Customer Reference with `CWM:1448`, `CWM:1449`, `CWM:1445`
+4. ✅ Updated Cove Customer Reference with `CWM:1448`, `CWM:1449`, `CWM:1445` (if `-UpdateCoveReferences` enabled)
 5. ✅ **Populated EndCustomer cache** with 3 entries
 6. ⏱️ Execution time: 6 seconds (3 unique partners, 5 devices)
 
@@ -319,9 +357,9 @@ Matched via End Customer Name: [1445] German Industries
 
 **Output:**
 ```
-Matched via ExternalCode CWM:1448 - [1448] North American Technologies
-Matched via ExternalCode CWM:1449 - [1449] United Kingdom Tech
-Matched via ExternalCode CWM:1445 - [1445] German Industries
+Matched via ExternalCode CWM:1448 - [1448] Alpha Technologies
+Matched via ExternalCode CWM:1449 - [1449] Beta Systems
+Matched via ExternalCode CWM:1445 - [1445] Gamma Industries
 ```
 
 **What happened:**
@@ -337,36 +375,36 @@ Matched via ExternalCode CWM:1445 - [1445] German Industries
 
 ---
 
-## Real-World Example: Systech MSP Partner
+## Real-World Example: TechServ MSP Partner
 
 ### First Run - Mixed Matching (Some Exist, Some Don't)
 
-**Scenario:** Systech MSP has 9 EndCustomers:
+**Scenario:** TechServ MSP has 9 EndCustomers:
 - 8 already exist in ConnectWise
 - 1 new customer needs creation
 
 **Output:**
 ```
-Matched via End Customer Name: [1470] GNP-Brokerage
-Matched via End Customer Name: [1471] Systech MSP Internal
-Matched via End Customer Name: [1472] Alley Valley
-Matched via End Customer Name: [1473] Best Mechanical Plumbing
-Matched via End Customer Name: [1474] Complete Management
-Matched via End Customer Name: [1475] JDN Marketing
-Matched via End Customer Name: [1476] Mefoar Judaica
-Matched via End Customer Name: [1477] Prime Piping & Heating Inc
+Matched via End Customer Name: [1470] Delta Financial
+Matched via End Customer Name: [1471] TechServ Internal
+Matched via End Customer Name: [1472] Epsilon Consulting
+Matched via End Customer Name: [1473] Zeta Services
+Matched via End Customer Name: [1474] Theta Solutions
+Matched via End Customer Name: [1475] Iota Marketing
+Matched via End Customer Name: [1476] Kappa Retail
+Matched via End Customer Name: [1477] Lambda Industrial
 
-Creating company: The Graph Group
-  Identifier: TheGraphGroup
-✓ Created company [ID: 1478] The Graph Group
+Creating company: Example Corp
+  Identifier: ExampleCorp
+✓ Created company [ID: 1478] Example Corp
 ```
 
 **What happened:**
 1. ✅ EndCustomer cache MISS (first run, cache empty)
 2. ✅ Session cache MISS (first run, cache empty)  
 3. ✅ 8 companies matched via **Strategy 3** (Exact Name Match)
-4. ✅ 1 company created with intelligent identifier "TheGraphGroup" (placeholder pattern prevented duplicates)
-5. ✅ All 9 customers updated with `CWM:1470` through `CWM:1478` in Customer Reference
+4. ✅ 1 company created with intelligent identifier "ExampleCorp" (placeholder pattern prevented duplicates)
+5. ✅ All 9 customers updated with `CWM:1470` through `CWM:1478` in Customer Reference (if `-UpdateCoveReferences` enabled)
 6. ✅ **Populated EndCustomer cache** with 9 entries
 7. ⏱️ Execution time: 67 seconds (includes company creation + API calls)
 
@@ -374,15 +412,15 @@ Creating company: The Graph Group
 
 **Output:**
 ```
-Matched via ExternalCode CWM:1470 - [1470] GNP-Brokerage
-Matched via ExternalCode CWM:1471 - [1471] Systech MSP Internal
-Matched via ExternalCode CWM:1472 - [1472] Alley Valley
-Matched via ExternalCode CWM:1473 - [1473] Best Mechanical Plumbing
-Matched via ExternalCode CWM:1474 - [1474] Complete Management
-Matched via ExternalCode CWM:1475 - [1475] JDN Marketing
-Matched via ExternalCode CWM:1476 - [1476] Mefoar Judaica
-Matched via ExternalCode CWM:1477 - [1477] Prime Piping & Heating Inc
-Matched via ExternalCode CWM:1478 - [1478] The Graph Group
+Matched via ExternalCode CWM:1470 - [1470] Delta Financial
+Matched via ExternalCode CWM:1471 - [1471] TechServ Internal
+Matched via ExternalCode CWM:1472 - [1472] Epsilon Consulting
+Matched via ExternalCode CWM:1473 - [1473] Zeta Services
+Matched via ExternalCode CWM:1474 - [1474] Theta Solutions
+Matched via ExternalCode CWM:1475 - [1475] Iota Marketing
+Matched via ExternalCode CWM:1476 - [1476] Kappa Retail
+Matched via ExternalCode CWM:1477 - [1477] Lambda Industrial
+Matched via ExternalCode CWM:1478 - [1478] Example Corp
 ```
 
 **What happened:**
@@ -432,15 +470,20 @@ Matched via ExternalCode CWM:1478 - [1478] The Graph Group
 **Steps:**
 1. Run monitoring script with `-AutoCreateCompanies` (enabled by default):
    ```powershell
-   .\CoveMonitoring-2-CWMTickets.v10.ps1 -PartnerName "YourPartner" -CreateTickets
+   .\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "YourPartner" -CreateTickets
    ```
 
 2. Script automatically:
    - Matches existing companies via name
    - Creates missing companies with intelligent identifiers
-   - Updates Cove Customer Reference with `CWM:ID`
+   - Updates Cove Customer Reference with `CWM:ID` (if `-UpdateCoveReferences` enabled)
 
-3. Future runs use **Strategy 1** (instant matching)
+3. To enable reference updates, add `-UpdateCoveReferences`:
+   ```powershell
+   .\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "YourPartner" -CreateTickets -UpdateCoveReferences
+   ```
+
+4. Future runs use **Strategy 1** (instant matching)
 
 **Benefits:**
 - ✅ Zero manual intervention
@@ -454,7 +497,7 @@ Matched via ExternalCode CWM:1478 - [1478] The Graph Group
 **Steps:**
 1. Disable auto-creation:
    ```powershell
-   .\CoveMonitoring-2-CWMTickets.v10.ps1 -PartnerName "YourPartner" -AutoCreateCompanies:$false
+   .\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "YourPartner" -AutoCreateCompanies:$false
    ```
 
 2. Script exports missing companies to CSV
@@ -526,12 +569,12 @@ After:  "CWM:1478"  (No API call made)
 
 ### Real-World Execution Times
 
-**SEDEMO Partner (3 customers, 5 devices):**
+**Acme Partner (3 customers, 5 devices):**
 - First run (Strategy 3): 6 seconds
 - Second run (Strategy 1): 5 seconds
 - Improvement: ~17% faster
 
-**Systech MSP Partner (9 customers, 10 devices):**
+**TechServ MSP Partner (9 customers, 10 devices):**
 - First run (Strategy 3 + 1 creation): 67 seconds
 - Second run (EndCustomer cache): 6 seconds
 - CWM API calls eliminated: 9/9 (100%)
@@ -568,7 +611,7 @@ WARNING: No matching company found in ConnectWise for: Acme Inc | Ref:
 **Solutions:**
 1. Let auto-create handle it (default behavior)
 2. Manually create company in ConnectWise
-3. Update Cove Customer Reference with `CWM:ID`
+3. Update Cove Customer Reference with `CWM:ID` (requires `-UpdateCoveReferences` switch on next run)
 4. Run Sync-CoveToConnectWise.ps1 to review all matches
 
 ### ❌ Multiple Devices Match to Wrong Company
@@ -584,8 +627,8 @@ Matched via End Customer Name: [1234] Wrong Company
 **Solution:**
 1. Check ConnectWise for duplicate company names
 2. Rename duplicate to make unique
-3. Update Cove Customer Reference with correct `CWM:ID`
-4. Next run will use correct ID
+3. Update Cove Customer Reference with correct `CWM:ID` (requires `-UpdateCoveReferences` on next run)
+4. Next run will use correct ID via Strategy 1
 
 ### ✅ First Run Slow, Need to Speed Up
 
@@ -597,7 +640,7 @@ Matched via End Customer Name: [1234] Wrong Company
 .\Sync-CoveToConnectWise.ps1 -PartnerName "YourPartner"
 
 # Future monitoring runs at full speed (EndCustomer cache + ExternalCode)
-.\CoveMonitoring-2-CWMTickets.v10.ps1 -PartnerName "YourPartner"
+.\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "YourPartner"
 ```
 
 ### ✅ Need to Preserve Existing Reference Data
@@ -695,8 +738,8 @@ No action needed - preservation is automatic!
 ### Recommended Workflow
 
 **For New Deployments:**
-1. Run `Sync-CoveToConnectWise.ps1` once for initial bulk matching/creation
-2. Run `CoveMonitoring-2-CWMTickets.v10.ps1` for ongoing monitoring
+1. Run `Cove2CWM-SyncCustomers.v##.ps1` once for initial bulk matching/creation
+2. Run `Cove2CWM-SyncTickets.v##.ps1` for ongoing monitoring
 3. Enjoy instant matching on all future runs (v10 caches eliminate CWM API calls)
 
 **For Existing Deployments:**
@@ -706,16 +749,19 @@ No action needed - preservation is automatic!
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** 2026-01-01  
-**Script Version:** CoveMonitoring-2-CWMTickets.v10.2026.01.01.ps1  
-**Major Changes in v2.0:**
-- Documented v10 EndCustomer cache optimization (eliminates redundant CWM API calls)
-- Documented v10 Session cache with placeholder pattern (prevents duplicate creation)
-- Updated all script version references from v04 to v10
-- Added comprehensive cache performance metrics
-- Updated sync script filename references (now non-versioned)
+**Document Version:** 2.1  
+**Last Updated:** 2026-01-06  
+**Script Version:** Cove2CWM-SyncTickets.v##.ps1  
+**Major Changes in v2.1:**
+- **CRITICAL:** Clarified EndCustomer cache stores **full company objects**, not just IDs
+- **CRITICAL:** Clarified Session cache stores **CompanyObject property** with full CWM company data
+- Documented 50-character name truncation in Strategy 3 (End Customer Name Match)
+- Documented 50-character truncation handling in post-creation company queries
+- Updated all cache population examples to show full object storage
+- Updated debug output examples to match actual script behavior
+- Clarified "deletedFlag = false" filtering in all CWM queries
+- Updated script filename from "CoveMonitoring-2-CWMTickets" to "Cove2CWM-SyncTickets"
 
 <function_calls>
 <invoke name="run_in_terminal">
-<parameter name="command">.\CoveMonitoring-2-CWMTickets.v04.ps1 -PartnerName "SEDEMO" -CreateTickets -DaysBack 30 -DeviceCount 5 -DebugCWM | Select-String "Matched|Created|customer"
+<parameter name="command">.\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "Acme" -CreateTickets -DaysBack 30 -DeviceCount 5 -DebugCWM | Select-String "Matched|Created|customer"
