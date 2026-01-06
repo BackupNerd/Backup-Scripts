@@ -44,10 +44,10 @@ This suite of PowerShell scripts provides complete automation for monitoring Cov
 **Usage:**
 ```powershell
 # Basic monitoring
-.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "CMIT Solutions of Kelowna"
+.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "YourPartnerName"
 
 # With custom configuration
-.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "SEDEMO" `
+.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "YourPartnerName" `
     -TicketBoard "Service Desk" `
     -TicketPriorityServer "Priority 1 - Emergency Response" `
     -TicketPriorityWorkstation "Priority 3 - Normal Response"
@@ -154,18 +154,18 @@ SUCCESS: All parameters validated successfully!
 **Usage:**
 ```powershell
 # Interactive analysis - shows GridView with comparison
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "CMIT Solutions of Kelowna"
+.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName"
 
 # Use CSV from monitoring script
-.\Cove2CWM-SyncCustomers.ps1 -CSVPath ".\tickets\20251222_CoveMonitoring_v03.csv"
+.\Cove2CWM-SyncCustomers.ps1 -CSVPath ".\tickets\YYYYMMDD_CoveMonitoring_v03.csv"
 
 # Create specific company (called from monitoring script)
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "SEDEMO" `
+.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName" `
     -CreateCompany "Acme Corporation" `
     -NonInteractive
 
 # Preview mode
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "SEDEMO" -WhatIf
+.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName" -WhatIf
 ```
 
 **GridView Columns:**
@@ -175,6 +175,9 @@ SUCCESS: All parameters validated successfully!
 - **CWMCompany:** Matched company name (if found)
 - **CWMIdentifier:** Matched company identifier
 - **DeviceCount:** Number of devices with issues (if using CSV input)
+
+**Output:**
+- CSV comparison file: `.\Companies\CoveToConnectWise_Comparison_YYYYMMDD_HHMMSS.csv`
 
 **Comparison Results:**
 ```
@@ -193,10 +196,10 @@ Missing in CWM: 3 (6.7%)
 │                 Cove2CWM-SetTicketsConfig.ps1               │
 │                  (Configuration Helper)                     │
 │                                                             │
-│  • Loads current monitoring script config                  │
-│  • Shows GridView menus for parameter selection            │
-│  • Updates Cove2CWM-SyncTickets.v10.ps1 parameters         │
-│  • Validates changes were applied correctly                │
+│  • Loads current monitoring script config                   │
+│  • Shows GridView menus for parameter selection             │
+│  • Updates Cove2CWM-SyncTickets.v10.ps1 parameters          │
+│  • Validates changes were applied correctly                 │
 └────────────────────────┬────────────────────────────────────┘
                          │
                          │ Configures
@@ -293,9 +296,6 @@ Key column codes used by monitoring script:
 | **T0** | Last Session Status | 5=Success, 2=Failed, 8=CompletedWithErrors |
 | **I78** | Datasources | Configured datasource codes (D01=FileSystem, D19=Exchange, etc.) |
 | **OT** | OS Type | 1=Workstation, 2=Server |
-| **XT** | Device Type Text | "Servers" / "Workstations" |
-
-**Complete reference:** See [09-column-code-reference.md](../../.github/instructions/09-column-code-reference.md)
 
 ---
 
@@ -347,16 +347,12 @@ Key column codes used by monitoring script:
 ## 🗂️ File Structure
 
 ```
-CDP.CWM.PSA.ConnectWiseManage/
-└── CDP.CWM.Ticketing/
+CDP2PSA.ConnectWiseManage/
+└── CDP2CWM-Ticketing/
     ├── Cove2CWM-SyncTickets.v10.ps1      # Main monitoring script
     ├── Cove2CWM-SetTicketsConfig.ps1     # Configuration helper
     ├── Cove2CWM-SyncCustomers.ps1        # Company sync tool
     ├── README.md                          # This file
-    ├── ScriptBackups/                     # Timestamped backups
-    │   ├── Cove2CWM-SyncTickets.v10_20260106_030417.backup
-    │   ├── Cove2CWM-SetTicketsConfig_20260106_030417.backup
-    │   └── Cove2CWM-SyncCustomers_20260106_030417.backup
     └── tickets/                           # CSV exports
         └── YYYYMMDD_CoveMonitoring_v03.csv
 ```
@@ -368,34 +364,75 @@ CDP.CWM.PSA.ConnectWiseManage/
 ### 1. First Time Setup
 
 ```powershell
-# Step 1: Configure monitoring parameters
-cd "C:\Script Root\0-Script Master\CDP.CWM.PSA.ConnectWiseManage\CDP.CWM.Ticketing"
+# REQUIRED: Run the main monitoring script first (creates credentials and handles everything)
+.\Cove2CWM-SyncTickets.v10.ps1
+
+# OPTIONAL: Configure monitoring parameters via GUI (if you want to change defaults)
 .\Cove2CWM-SetTicketsConfig.ps1
 
-# Step 2: Sync customers to ConnectWise
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName"
-
-# Step 3: Run initial monitoring
-.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "YourPartnerName"
+# OPTIONAL: Pre-sync customers to ConnectWise (monitoring script will auto-create if missing)
+.\Cove2CWM-SyncCustomers.ps1
 ```
 
+**Important:** The monitoring script (`Cove2CWM-SyncTickets.v10.ps1`) should always be run first. It will:
+- Prompt for credentials on first run and create encrypted credential files
+- Automatically detect partner name from your Reseller-level Cove API credentials (no `-PartnerName` parameter needed)
+- Automatically call `Cove2CWM-SyncCustomers.ps1` if it encounters a missing ConnectWise company
+- Use default ticket board/status/priority settings (which can be changed later with `SetTicketsConfig.ps1`)
+
 ### 2. Schedule Automated Monitoring
+
+**IMPORTANT:** The monitoring script must run as the **same user** who first ran the scripts and created the credential files (DPAPI encryption is user+machine specific).
 
 **Create Task Scheduler job:**
 
 ```powershell
+# Run as the user who created the credentials (e.g., the user who first ran Cove2CWM-SyncTickets.v10.ps1)
+$taskUser = "$env:USERDOMAIN\$env:USERNAME"  # Or specify: "DOMAIN\Username"
+
 $action = New-ScheduledTaskAction -Execute "pwsh.exe" `
-    -Argument '-File "C:\Script Root\0-Script Master\CDP.CWM.PSA.ConnectWiseManage\CDP.CWM.Ticketing\Cove2CWM-SyncTickets.v10.ps1" -PartnerName "YourPartner"'
+    -Argument '-NoProfile -ExecutionPolicy Bypass -File "<ScriptPath>\Cove2CWM-SyncTickets.v10.ps1"'
 
-$trigger = New-ScheduledTaskTrigger -Daily -At "6:00AM"
+# Choose one of these trigger options:
 
+# Option 1: Every 4 hours
+$trigger = New-ScheduledTaskTrigger -Once -At "12:00AM" -RepetitionInterval (New-TimeSpan -Hours 4) -RepetitionDuration ([TimeSpan]::MaxValue)
+
+# Option 2: Every 12 hours (e.g., 6:00 AM and 6:00 PM)
+# $trigger = New-ScheduledTaskTrigger -Once -At "6:00AM" -RepetitionInterval (New-TimeSpan -Hours 12) -RepetitionDuration ([TimeSpan]::MaxValue)
+
+# Option 3: Daily at specific time
+# $trigger = New-ScheduledTaskTrigger -Daily -At "6:00AM"
+
+# Create task settings for reliability
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+
+# Register task - prompts for password to enable "Run whether user is logged on or not"
+$credential = Get-Credential -UserName $taskUser -Message "Enter password for scheduled task"
 Register-ScheduledTask -TaskName "Cove Backup Monitoring" `
-    -Action $action -Trigger $trigger `
-    -User "DOMAIN\ServiceAccount" `
+    -Action $action `
+    -Trigger $trigger `
+    -Settings $settings `
+    -User $taskUser `
+    -Password $credential.GetNetworkCredential().Password `
     -RunLevel Highest
 ```
 
-**Note:** Credentials are user+machine specific. Task must run as the user who created the credential files.
+**Note:** Providing the `-Password` parameter enables "Run whether user is logged on or not" mode. Without it, the task only runs when the user is logged in.
+
+**Trigger Interval Options:**
+- **Every 4 hours:** Recommended for active monitoring (6 checks per day)
+- **Every 12 hours:** Balanced approach (2 checks per day)
+- **Daily:** Minimal monitoring (1 check per day)
+
+**Critical Notes:**
+- **User Context:** Task MUST run as the same user who first ran the scripts and created the credentials
+- **DPAPI Security:** Credentials are encrypted per-user and per-machine - cannot be decrypted by different users
+- **Password Required:** You'll need to provide the user's password when registering the task to enable "Run whether user is logged on or not"
+- **Script Execution:** The main monitoring script (`Cove2CWM-SyncTickets.v10.ps1`) will automatically call helper scripts if needed:
+  - Calls `Cove2CWM-SyncCustomers.ps1` if a ConnectWise company is missing
+  - Uses `Cove2CWM-SetTicketsConfig.ps1` for interactive configuration (run manually as needed)
+- **First Run:** Always run `Cove2CWM-SyncTickets.v10.ps1` interactively first to create credential files before scheduling
 
 ---
 
@@ -447,5 +484,5 @@ Sample scripts provided as-is. Not supported under any N-able support program or
 
 - [Cove API Documentation](https://documentation.n-able.com/backup/userguide/documentation/Content/service-management/json-api/)
 - [ConnectWise Manage API](https://developer.connectwise.com/Products/Manage/REST)
-- [Column Code Reference](../../.github/instructions/09-column-code-reference.md)
-- [Task Scheduler DPAPI Guide](../../.github/Task-Scheduler-DPAPI-Guide.md)
+
+
