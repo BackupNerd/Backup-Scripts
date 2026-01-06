@@ -46,8 +46,8 @@
     # Use the -DaysBack parameter to define how many days to look back for backup failures (default=30)
     #   Devices with a Timestamp older than -DaysBack days are presumed orpahaned or obsolate and this will be ignored regarless of error status
     # Use the -DeviceCount parameter to define the maximum number of devices to query (default=5000)
-    # Use the -PartnerName parameter to specify exact Cove partner/customer name to monitor (e.g., "SEDEMO")
-    # Use the -TestDeviceName parameter to filter to a single device for testing (e.g., "desktop-ph5hqmb")
+    # Use the -PartnerName parameter to specify exact Cove partner/customer name to monitor (e.g., "MYPartner Inc (bob@myparter.com)") (optional - defaults to authenticated partner)
+    # Use the -TestDeviceName parameter to filter to a single device for testing (e.g., "desktop-pmb")
      Use the -MonitorSystems switch to enable monitoring of servers and workstations (default=$true)
     # Use the -StaleHoursServers parameter to define hours since last successful backup before considering stale for servers (default=24)
     # Use the -StaleHoursWorkstations parameter to define hours since last successful backup before considering stale for workstations (default=240)
@@ -131,8 +131,22 @@ Param (
     [Switch]$DebugCWM = $false                                    ## Enable Debug for ConnectWise Manage
 )
 
+#Requires -Version 7.0
+
+# PowerShell 7 version check with helpful error message
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    Write-Host "`n❌ ERROR: This script requires PowerShell 7 or later" -ForegroundColor Red
+    Write-Host "`nYour current version: PowerShell $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
+    Write-Host "`nTo install PowerShell 7:" -ForegroundColor Cyan
+    Write-Host "  • Download: https://aka.ms/powershell" -ForegroundColor White
+    Write-Host "  • Or run: winget install Microsoft.PowerShell" -ForegroundColor White
+    Write-Host "`nAfter installing, launch PowerShell 7 with: pwsh`n" -ForegroundColor Cyan
+    exit 1
+}
+
 Clear-Host
 $Script:ScriptVersion = "v10"
+Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)" -ForegroundColor Gray
 
 #region ----- Variable Cleanup (Prevent Cross-Contamination from Previous Runs) ----
 # Clear critical variables that could cause wrong customer selection if script is re-run in same session
@@ -282,20 +296,37 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
     }
     if ($TestMode) {
         Write-Host "  Test Mode                        : " -ForegroundColor White -NoNewline
-        Write-Host "ENABLED (50% Ticket Close Simulation)" -ForegroundColor Magenta
+        Write-Host 'ENABLED (50% Ticket Close Simulation)' -ForegroundColor Magenta
     }
     
     # Check for required external script if AutoCreateCompanies is enabled
     if ($AutoCreateCompanies) {
-        $syncScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SyncCustomers.ps1"
+        $syncScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SyncCustomers.v10.ps1"
+        
+        if (-not (Test-Path $syncScriptPath)) {
+            # Try to find any version of the script
+            $allVersions = Get-ChildItem -Path $PSScriptRoot -Filter "Cove2CWM-SyncCustomers*.ps1" -File | Sort-Object Name -Descending
+            
+            if ($allVersions.Count -eq 1) {
+                # Only one version found, use it automatically
+                $syncScriptPath = $allVersions[0].FullName
+                Write-Host "  Note: Using $($allVersions[0].Name) (v10 not found)" -ForegroundColor Gray
+            }
+            elseif ($allVersions.Count -gt 1) {
+                # Multiple versions found, use latest (first after descending sort)
+                $syncScriptPath = $allVersions[0].FullName
+                Write-Host "  Note: Using $($allVersions[0].Name) (latest version found)" -ForegroundColor Gray
+            }
+        }
+        
         if (-not (Test-Path $syncScriptPath)) {
             Write-Host ""
             Write-Host "  ERROR: Auto-Create Companies is ENABLED but required script is missing:" -ForegroundColor Red
-            Write-Host "         $syncScriptPath" -ForegroundColor Yellow
+            Write-Host "         Cove2CWM-SyncCustomers.ps1 (any version)" -ForegroundColor Yellow
             Write-Host ""
             Write-Host "  This script is required to automatically create missing companies in ConnectWise." -ForegroundColor Yellow
             Write-Host "  Please either:" -ForegroundColor Yellow
-            Write-Host "    1. Place 'Cove2CWM-SyncCustomers.ps1' in the same folder as this script, OR" -ForegroundColor White
+            Write-Host "    1. Place 'Cove2CWM-SyncCustomers.v10.ps1' in the same folder as this script, OR" -ForegroundColor White
             Write-Host "    2. Run with -AutoCreateCompanies `$false to disable this feature" -ForegroundColor White
             Write-Host ""
             
@@ -327,11 +358,42 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
         }
         Write-Host ""
         
-        # Check for helper script
-        $optionsScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SetTicketsConfig.ps1"
-        if (Test-Path $optionsScriptPath) {
+        # Check for helper script - try specific version first, then find latest version
+        $optionsScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SetTicketsConfig.v10.ps1"
+        
+        if (-not (Test-Path $optionsScriptPath)) {
+            # Try to find any version of the script
+            $allVersions = Get-ChildItem -Path $PSScriptRoot -Filter "Cove2CWM-SetTicketsConfig*.ps1" -File | Sort-Object Name -Descending
+            
+            if ($allVersions.Count -eq 1) {
+                # Only one version found, use it automatically
+                $optionsScriptPath = $allVersions[0].FullName
+                Write-Host "  Note: Using $($allVersions[0].Name) (v10 not found)" -ForegroundColor Gray
+            }
+            elseif ($allVersions.Count -gt 1) {
+                # Multiple versions found, prompt user
+                Write-Host "  Multiple versions of SetTicketsConfig found:" -ForegroundColor Yellow
+                for ($i = 0; $i -lt $allVersions.Count; $i++) {
+                    Write-Host "    $($i+1). $($allVersions[$i].Name)" -ForegroundColor White
+                }
+                
+                $selection = Read-Host "  Select version to use (1-$($allVersions.Count)) or press Enter to skip"
+                if ($selection -match '^\d+$' -and [int]$selection -ge 1 -and [int]$selection -le $allVersions.Count) {
+                    $optionsScriptPath = $allVersions[[int]$selection - 1].FullName
+                }
+                else {
+                    $optionsScriptPath = $null
+                }
+            }
+            else {
+                $optionsScriptPath = $null
+            }
+        }
+        
+        if ($optionsScriptPath -and (Test-Path $optionsScriptPath)) {
+            $scriptName = Split-Path $optionsScriptPath -Leaf
             Write-Host "  A helper script is available to enumerate valid options from your ConnectWise instance:" -ForegroundColor Cyan
-            Write-Host "    .\Cove2CWM-SetTicketsConfig.ps1" -ForegroundColor White
+            Write-Host "    .\$scriptName" -ForegroundColor White
             Write-Host ""
             Write-Host "  This script will show you:" -ForegroundColor Yellow
             Write-Host "    - Available Service Boards" -ForegroundColor White
@@ -354,12 +416,12 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
                 
                 # Re-read the script to check if parameters were updated
                 $updatedContent = Get-Content $monitoringScriptPath -Raw
-                $boardMatch = if ($updatedContent -match '\$TicketBoard\s*=\s*"([^"]*)"') { $matches[1] } else { $null }
-                $statusMatch = if ($updatedContent -match '\$TicketStatus\s*=\s*"([^"]*)"') { $matches[1] } else { $null }
-                $priorityServerMatch = if ($updatedContent -match '\$TicketPriorityServer\s*=\s*"([^"]*)"') { $matches[1] } else { $null }
-                $priorityWorkstationMatch = if ($updatedContent -match '\$TicketPriorityWorkstation\s*=\s*"([^"]*)"') { $matches[1] } else { $null }
-                $priorityM365Match = if ($updatedContent -match '\$TicketPriorityM365\s*=\s*"([^"]*)"') { $matches[1] } else { $null }
-                $closedMatch = if ($updatedContent -match '\$TicketClosedStatus\s*=\s*"([^"]*)"') { $matches[1] } else { $null }
+                $boardMatch = if ($updatedContent -match '\$TicketBoard\s*=\s*"(.*?)"') { $matches[1] } else { $null }
+                $statusMatch = if ($updatedContent -match '\$TicketStatus\s*=\s*"(.*?)"') { $matches[1] } else { $null }
+                $priorityServerMatch = if ($updatedContent -match '\$TicketPriorityServer\s*=\s*"(.*?)"') { $matches[1] } else { $null }
+                $priorityWorkstationMatch = if ($updatedContent -match '\$TicketPriorityWorkstation\s*=\s*"(.*?)"') { $matches[1] } else { $null }
+                $priorityM365Match = if ($updatedContent -match '\$TicketPriorityM365\s*=\s*"(.*?)"') { $matches[1] } else { $null }
+                $closedMatch = if ($updatedContent -match '\$TicketClosedStatus\s*=\s*"(.*?)"') { $matches[1] } else { $null }
                 
                 $allUpdated = $boardMatch -and $statusMatch -and $priorityServerMatch -and $priorityWorkstationMatch -and $priorityM365Match -and $closedMatch
                 
@@ -391,16 +453,18 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
                     exit 1
                 }
             }
-        } else {
+        }
+        
+        if (-not $optionsScriptPath -or -not (Test-Path $optionsScriptPath)) {
             Write-Host "  Helper script not found: Cove2CWM-SetTicketsConfig.ps1" -ForegroundColor Yellow
             Write-Host ""
             Write-Host "  You need to set these parameters when running the script:" -ForegroundColor Yellow
             Write-Host "    -TicketBoard               : Name of your ConnectWise Service Board" -ForegroundColor White
-            Write-Host "    -TicketStatus              : Status name for new tickets (e.g., 'New', 'Open')" -ForegroundColor White
-            Write-Host "    -TicketPriorityServer      : Priority for server tickets (e.g., 'Priority 1 - Emergency Response')" -ForegroundColor White
-            Write-Host "    -TicketPriorityWorkstation : Priority for workstation tickets (e.g., 'Priority 3 - Normal Response')" -ForegroundColor White
-            Write-Host "    -TicketPriorityM365        : Priority for M365 tickets (e.g., 'Priority 2 - Quick Response')" -ForegroundColor White
-            Write-Host "    -TicketClosedStatus        : Status name for closed tickets (e.g., 'Closed', 'Resolved')" -ForegroundColor White
+            Write-Host "    -TicketStatus              : Status name for new tickets" -ForegroundColor White
+            Write-Host "    -TicketPriorityServer      : Priority for server tickets" -ForegroundColor White
+            Write-Host "    -TicketPriorityWorkstation : Priority for workstation tickets" -ForegroundColor White
+            Write-Host "    -TicketPriorityM365        : Priority for M365 tickets" -ForegroundColor White
+            Write-Host "    -TicketClosedStatus        : Status name for closed tickets" -ForegroundColor White
             Write-Host ""
             Write-Host "  To get valid values, you can:" -ForegroundColor Yellow
             Write-Host "    1. Log into ConnectWise Manage and check your Service Board settings, OR" -ForegroundColor White
@@ -468,7 +532,7 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
         
         # Use simpler approach - direct ServicePointManager manipulation
         try {
-            Add-Type @"
+            $addTypeCode = @'
                 using System.Net;
                 using System.Security.Cryptography.X509Certificates;
                 public class TrustAllCertsPolicy : ICertificatePolicy {
@@ -478,7 +542,8 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
                         return true;
                     }
                 }
-"@ -ErrorAction SilentlyContinue
+'@
+            Add-Type -TypeDefinition $addTypeCode -ErrorAction SilentlyContinue
             [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
         } catch {
             # Type already loaded, ignore error
@@ -5115,9 +5180,26 @@ Function AuthenticateCWM {
         }
         Write-Host ""
         
-        $optionsScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SetTicketsConfig.ps1"
-        if (Test-Path $optionsScriptPath) {
-            Write-Host "  Would you like to run Cove2CWM-SetTicketsConfig.ps1 to select valid options?" -ForegroundColor Cyan
+        $optionsScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SetTicketsConfig.v10.ps1"
+        
+        if (-not (Test-Path $optionsScriptPath)) {
+            # Try to find any version of the script
+            $allVersions = Get-ChildItem -Path $PSScriptRoot -Filter "Cove2CWM-SetTicketsConfig*.ps1" -File | Sort-Object Name -Descending
+            
+            if ($allVersions.Count -eq 1) {
+                $optionsScriptPath = $allVersions[0].FullName
+            }
+            elseif ($allVersions.Count -gt 1) {
+                $optionsScriptPath = $allVersions[0].FullName
+            }
+            else {
+                $optionsScriptPath = $null
+            }
+        }
+        
+        if ($optionsScriptPath -and (Test-Path $optionsScriptPath)) {
+            $scriptName = Split-Path $optionsScriptPath -Leaf
+            Write-Host "  Would you like to run $scriptName to select valid options?" -ForegroundColor Cyan
             $response = Read-Host "  Enter Y to update parameters, or N to exit"
             
             if ($response -eq 'Y' -or $response -eq 'y') {
@@ -5256,7 +5338,9 @@ Function AuthenticateCWM {
                 Write-Host "  Script execution cancelled." -ForegroundColor Yellow
                 exit 1
             }
-        } else {
+        }
+        
+        if (-not $optionsScriptPath -or -not (Test-Path $optionsScriptPath)) {
             Write-Host "  Cove2CWM-SetTicketsConfig.ps1 not found. Please update parameters manually." -ForegroundColor Yellow
             Write-Host "  Script execution cancelled." -ForegroundColor Yellow
             exit 1
@@ -5593,11 +5677,22 @@ Function Get-CWMCompanyForDevice {
         
         # Call Cove2CWM-SyncCustomers script to create company with intelligent identifier
         try {
-            $syncScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SyncCustomers.ps1"
+            $syncScriptPath = Join-Path $PSScriptRoot "Cove2CWM-SyncCustomers.v10.ps1"
             
             if (-not (Test-Path $syncScriptPath)) {
-                Write-Warning "Cove2CWM-SyncCustomers.ps1 not found at: $syncScriptPath"
-                Write-Warning "Cannot auto-create company. Please run Cove2CWM-SyncCustomers.ps1 manually first."
+                # Try to find any version of the script
+                $allVersions = Get-ChildItem -Path $PSScriptRoot -Filter "Cove2CWM-SyncCustomers*.ps1" -File | Sort-Object Name -Descending
+                
+                if ($allVersions.Count -ge 1) {
+                    # Use latest version found
+                    $syncScriptPath = $allVersions[0].FullName
+                    if ($debugCWM) { Write-Host "  [SCRIPT] Using $($allVersions[0].Name) for company creation" -ForegroundColor Cyan }
+                }
+            }
+            
+            if (-not (Test-Path $syncScriptPath)) {
+                Write-Warning "Cove2CWM-SyncCustomers.ps1 not found (any version)"
+                Write-Warning "Cannot auto-create company. Please run Cove2CWM-SyncCustomers script manually first."
                 return $null
             }
             
@@ -5684,12 +5779,12 @@ Function Get-CWMCompanyForDevice {
         }
         catch {
             Write-Warning "Failed to create company '$matchName' via Sync script: $($_.Exception.Message)"
-            Write-Host "  Run this command manually: .\Cove2CWM-SyncCustomers.ps1 -PartnerName `"$Script:PartnerName`" -CreateCompany `"$matchName`"" -ForegroundColor Yellow
+            Write-Host "  Run this command manually: .\Cove2CWM-SyncCustomers.v10.ps1 -PartnerName `"$Script:PartnerName`" -CreateCompany `"$matchName`"" -ForegroundColor Yellow
         }
     }
     elseif (-not $AutoCreateCompanies -and $debugCWM) {
         Write-Host "  Auto-create companies disabled - skipping company creation" -ForegroundColor Yellow
-        Write-Host "  To create missing companies, run: .\Cove2CWM-SyncCustomers.ps1 -PartnerName `"$Script:PartnerName`"" -ForegroundColor Gray
+        Write-Host "  To create missing companies, run: .\Cove2CWM-SyncCustomers.v10.ps1 -PartnerName `"$Script:PartnerName`"" -ForegroundColor Gray
     }
     elseif (-not $Device.EndCustomer -and $debugCWM) {
         Write-Host "  Skipping company creation - not an End Customer (Level: $($Device.EndCustomerLevel))" -ForegroundColor Yellow
@@ -7762,6 +7857,13 @@ if ($Script:CWMServerConnection) {
 }
 
 #endregion ----- Main Script Execution ----
+
+
+
+
+
+
+
 
 
 

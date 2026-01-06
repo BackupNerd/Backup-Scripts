@@ -6,9 +6,29 @@ Automated ticket management for N-able Cove Data Protection backup monitoring us
 
 This suite of PowerShell scripts provides complete automation for monitoring Cove backup failures and syncing them to ConnectWise Manage as support tickets. The integration handles ticket creation, updates, and automatic closure when issues are resolved.
 
+## ⚙️ Requirements
+
+### PowerShell Version
+- **PowerShell 7.x is required** for all scripts
+- Scripts will not run in PowerShell 5.1 due to syntax requirements
+
+**To install PowerShell 7:**
+- Download from: https://aka.ms/powershell
+- Or use winget: `winget install Microsoft.PowerShell`
+
+**To verify your PowerShell version:**
+```powershell
+$PSVersionTable.PSVersion
+```
+
+**Note:** If you're in Windows PowerShell 5.1, launch PowerShell 7 with:
+```powershell
+pwsh
+```
+
 ## 🔧 Scripts
 
-### 1. **Cove2CWM-SyncTickets.v10.ps1** (Main Monitoring Script)
+### 1. **Cove2CWM-SyncTickets.v##.ps1** (Main Monitoring Script)
 
 **Purpose:** Core monitoring engine that tracks backup failures and manages tickets
 
@@ -44,14 +64,19 @@ This suite of PowerShell scripts provides complete automation for monitoring Cov
 **Usage:**
 ```powershell
 # Basic monitoring
-.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "YourPartnerName"
+.\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "Acme Technologies"
 
 # With custom configuration
-.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "YourPartnerName" `
+.\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "Acme Technologies" `
     -TicketBoard "Service Desk" `
     -TicketPriorityServer "Priority 1 - Emergency Response" `
     -TicketPriorityWorkstation "Priority 3 - Normal Response"
 ```
+
+**Requirements:**
+- **Requires PowerShell 7.x**
+- Cove API credentials must be configured
+- ConnectWise API credentials must be configured
 
 **Output:**
 - ConnectWise tickets created/updated automatically
@@ -59,7 +84,7 @@ This suite of PowerShell scripts provides complete automation for monitoring Cov
 
 ---
 
-### 2. **Cove2CWM-SetTicketsConfig.ps1** (Configuration Helper)
+### 2. **Cove2CWM-SetTicketsConfig.v##.ps1** (Configuration Helper)
 
 **Purpose:** Interactive GUI tool to configure monitoring script parameters
 
@@ -72,7 +97,7 @@ This suite of PowerShell scripts provides complete automation for monitoring Cov
   - Server priority level (with recommendations)
   - Workstation priority level (with recommendations)
   - M365 priority level (with recommendations)
-- Updates parameters in `Cove2CWM-SyncTickets.v10.ps1`
+- Updates parameters in `Cove2CWM-SyncTickets.v##.ps1`
 - Validates all changes were applied correctly
 - Saves configuration for easy re-use
 
@@ -117,7 +142,7 @@ SUCCESS: All parameters validated successfully!
 
 ---
 
-### 3. **Cove2CWM-SyncCustomers.ps1** (Company Sync Tool)
+### 3. **Cove2CWM-SyncCustomers.v##.ps1** (Company Sync Tool)
 
 **Purpose:** Synchronize Cove customers to ConnectWise companies
 
@@ -154,18 +179,18 @@ SUCCESS: All parameters validated successfully!
 **Usage:**
 ```powershell
 # Interactive analysis - shows GridView with comparison
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName"
+.\Cove2CWM-SyncCustomers.v##.ps1 -PartnerName "Acme Technologies"
 
 # Use CSV from monitoring script
-.\Cove2CWM-SyncCustomers.ps1 -CSVPath ".\tickets\YYYYMMDD_CoveMonitoring_v03.csv"
+.\Cove2CWM-SyncCustomers.v##.ps1 -CSVPath ".\tickets\YYYYMMDD_CoveMonitoring_v03.csv"
 
 # Create specific company (called from monitoring script)
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName" `
-    -CreateCompany "Acme Corporation" `
+.\Cove2CWM-SyncCustomers.v##.ps1 -PartnerName "Acme Technologies" `
+    -CreateCompany "DataSafe Solutions" `
     -NonInteractive
 
 # Preview mode
-.\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartnerName" -WhatIf
+.\Cove2CWM-SyncCustomers.v##.ps1 -PartnerName "Acme Technologies" -WhatIf
 ```
 
 **GridView Columns:**
@@ -193,19 +218,19 @@ Missing in CWM: 3 (6.7%)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                 Cove2CWM-SetTicketsConfig.ps1               │
+│                 Cove2CWM-SetTicketsConfig.v##.ps1           │
 │                  (Configuration Helper)                     │
 │                                                             │
 │  • Loads current monitoring script config                   │
 │  • Shows GridView menus for parameter selection             │
-│  • Updates Cove2CWM-SyncTickets.v10.ps1 parameters          │
+│  • Updates Cove2CWM-SyncTickets.v##.ps1 parameters          │
 │  • Validates changes were applied correctly                 │
 └────────────────────────┬────────────────────────────────────┘
                          │
                          │ Configures
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Cove2CWM-SyncTickets.v10.ps1                   │
+│              Cove2CWM-SyncTickets.v##.ps1                   │
 │                 (Main Monitoring Script)                    │
 │                                                             │
 │  • Queries Cove API for device backup status                │
@@ -217,7 +242,7 @@ Missing in CWM: 3 (6.7%)
                          │ Exports CSV / Calls for missing companies
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Cove2CWM-SyncCustomers.ps1                     │
+│              Cove2CWM-SyncCustomers.v##.ps1                 │
 │                  (Company Sync Tool)                        │
 │                                                             │
 │  • Compares Cove customers to CWM companies                 │
@@ -232,25 +257,25 @@ Missing in CWM: 3 (6.7%)
 1. **Initial Setup:**
    ```powershell
    # Configure monitoring parameters
-   .\Cove2CWM-SetTicketsConfig.ps1
+   .\Cove2CWM-SetTicketsConfig.v##.ps1
    ```
 
 2. **First Run - Company Sync:**
    ```powershell
    # Sync customers to ensure all companies exist
-   .\Cove2CWM-SyncCustomers.ps1 -PartnerName "YourPartner"
+   .\Cove2CWM-SyncCustomers.v##.ps1 -PartnerName "Acme Technologies"
    ```
 
 3. **Ongoing Monitoring:**
    ```powershell
    # Run daily/weekly via Task Scheduler
-   .\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "YourPartner"
+   .\Cove2CWM-SyncTickets.v##.ps1 -PartnerName "Acme Technologies"
    ```
 
 4. **Reconfiguration:**
    ```powershell
    # Change ticket priorities or board
-   .\Cove2CWM-SetTicketsConfig.ps1
+   .\Cove2CWM-SetTicketsConfig.v##.ps1
    ```
 
 ---
@@ -349,9 +374,9 @@ Key column codes used by monitoring script:
 ```
 CDP2PSA.ConnectWiseManage/
 └── CDP2CWM-Ticketing/
-    ├── Cove2CWM-SyncTickets.v10.ps1      # Main monitoring script
-    ├── Cove2CWM-SetTicketsConfig.ps1     # Configuration helper
-    ├── Cove2CWM-SyncCustomers.ps1        # Company sync tool
+    ├── Cove2CWM-SyncTickets.v##.ps1      # Main monitoring script
+    ├── Cove2CWM-SetTicketsConfig.v##.ps1  # Configuration helper
+    ├── Cove2CWM-SyncCustomers.v##.ps1     # Company sync tool
     ├── README.md                          # This file
     └── tickets/                           # CSV exports
         └── YYYYMMDD_CoveMonitoring_v03.csv
@@ -365,19 +390,19 @@ CDP2PSA.ConnectWiseManage/
 
 ```powershell
 # REQUIRED: Run the main monitoring script first (creates credentials and handles everything)
-.\Cove2CWM-SyncTickets.v10.ps1
+.\Cove2CWM-SyncTickets.v##.ps1
 
 # OPTIONAL: Configure monitoring parameters via GUI (if you want to change defaults)
-.\Cove2CWM-SetTicketsConfig.ps1
+.\Cove2CWM-SetTicketsConfig.v##.ps1
 
 # OPTIONAL: Pre-sync customers to ConnectWise (monitoring script will auto-create if missing)
-.\Cove2CWM-SyncCustomers.ps1
+.\Cove2CWM-SyncCustomers.v##.ps1
 ```
 
-**Important:** The monitoring script (`Cove2CWM-SyncTickets.v10.ps1`) should always be run first. It will:
+**Important:** The monitoring script (`Cove2CWM-SyncTickets.v##.ps1`) should always be run first. It will:
 - Prompt for credentials on first run and create encrypted credential files
 - Automatically detect partner name from your Reseller-level Cove API credentials (no `-PartnerName` parameter needed)
-- Automatically call `Cove2CWM-SyncCustomers.ps1` if it encounters a missing ConnectWise company
+- Automatically call `Cove2CWM-SyncCustomers.v##.ps1` if it encounters a missing ConnectWise company
 - Use default ticket board/status/priority settings (which can be changed later with `SetTicketsConfig.ps1`)
 
 ### 2. Schedule Automated Monitoring
@@ -387,11 +412,11 @@ CDP2PSA.ConnectWiseManage/
 **Create Task Scheduler job:**
 
 ```powershell
-# Run as the user who created the credentials (e.g., the user who first ran Cove2CWM-SyncTickets.v10.ps1)
+# Run as the user who created the credentials (e.g., the user who first ran Cove2CWM-SyncTickets.v##.ps1)
 $taskUser = "$env:USERDOMAIN\$env:USERNAME"  # Or specify: "DOMAIN\Username"
 
 $action = New-ScheduledTaskAction -Execute "pwsh.exe" `
-    -Argument '-NoProfile -ExecutionPolicy Bypass -File "<ScriptPath>\Cove2CWM-SyncTickets.v10.ps1"'
+    -Argument '-NoProfile -ExecutionPolicy Bypass -File "<ScriptPath>\Cove2CWM-SyncTickets.v##.ps1"'
 
 # Choose one of these trigger options:
 
@@ -429,17 +454,17 @@ Register-ScheduledTask -TaskName "Cove Backup Monitoring" `
 - **User Context:** Task MUST run as the same user who first ran the scripts and created the credentials
 - **DPAPI Security:** Credentials are encrypted per-user and per-machine - cannot be decrypted by different users
 - **Password Required:** You'll need to provide the user's password when registering the task to enable "Run whether user is logged on or not"
-- **Script Execution:** The main monitoring script (`Cove2CWM-SyncTickets.v10.ps1`) will automatically call helper scripts if needed:
+- **Script Execution:** The main monitoring script (`Cove2CWM-SyncTickets.v##.ps1`) will automatically call helper scripts if needed:
   - Calls `Cove2CWM-SyncCustomers.ps1` if a ConnectWise company is missing
   - Uses `Cove2CWM-SetTicketsConfig.ps1` for interactive configuration (run manually as needed)
-- **First Run:** Always run `Cove2CWM-SyncTickets.v10.ps1` interactively first to create credential files before scheduling
+- **First Run:** Always run `Cove2CWM-SyncTickets.v##.ps1` interactively first to create credential files before scheduling
 
 ---
 
 ## 🛠️ Troubleshooting
 
 ### Issue: "Cove API credentials not found"
-**Solution:** Run `Cove2CWM-SyncTickets.v10.ps1` interactively first to create credentials
+**Solution:** Run `Cove2CWM-SyncTickets.v##.ps1` interactively first to create credentials
 
 ### Issue: "ConnectWise company not found for device"
 **Solution:** Run `Cove2CWM-SyncCustomers.ps1` to create missing companies
