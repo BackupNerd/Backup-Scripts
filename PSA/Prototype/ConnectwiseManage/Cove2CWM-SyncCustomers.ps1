@@ -641,7 +641,11 @@ if ($CreateCompany) {
         Write-Host "`nNo companies selected. Exiting." -ForegroundColor Yellow
         
         # Export results
-        $exportPath = "$PSScriptRoot\CoveToConnectWise_Comparison_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+        $companiesFolder = "$PSScriptRoot\Companies"
+        if (-not (Test-Path $companiesFolder)) {
+            New-Item -Path $companiesFolder -ItemType Directory -Force | Out-Null
+        }
+        $exportPath = "$companiesFolder\CoveToConnectWise_Comparison_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
         $comparisonResults | Export-Csv -Path $exportPath -NoTypeInformation
         Write-Host "Results exported to: $exportPath" -ForegroundColor Green
         exit 0
@@ -773,7 +777,11 @@ if ($results.Count -gt 0) {
 }
 
 # Export comparison results
-$comparisonExportPath = "$PSScriptRoot\CoveToConnectWise_Comparison_$timestamp.csv"
+$companiesFolder = "$PSScriptRoot\Companies"
+if (-not (Test-Path $companiesFolder)) {
+    New-Item -Path $companiesFolder -ItemType Directory -Force | Out-Null
+}
+$comparisonExportPath = "$companiesFolder\CoveToConnectWise_Comparison_$timestamp.csv"
 $comparisonResults | Export-Csv -Path $comparisonExportPath -NoTypeInformation
 Write-Host "Comparison results exported to: $comparisonExportPath" -ForegroundColor Cyan
 

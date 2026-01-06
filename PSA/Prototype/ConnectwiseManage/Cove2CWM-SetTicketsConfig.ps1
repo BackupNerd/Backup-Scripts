@@ -22,7 +22,7 @@ if ($Undo) {
     Clear-Host
     Write-Host "`n  ConnectWise Manage - Undo Configuration Changes`n" -ForegroundColor Cyan
     
-    $backupFolder = Join-Path (Split-Path $MonitoringScriptPath) "ConfigBackups"
+    $backupFolder = Join-Path (Split-Path $MonitoringScriptPath) "Backups"
     
     if (Test-Path $backupFolder) {
         # Get all backup files
@@ -639,7 +639,7 @@ if ($Interactive) {
         if (Test-Path $MonitoringScriptPath) {
             try {
                 # Create backup folder if it doesn't exist
-                $backupFolder = Join-Path (Split-Path $MonitoringScriptPath) "ConfigBackups"
+                $backupFolder = Join-Path (Split-Path $MonitoringScriptPath) "Backups"
                 if (-not (Test-Path $backupFolder)) {
                     New-Item -Path $backupFolder -ItemType Directory -Force | Out-Null
                 }
