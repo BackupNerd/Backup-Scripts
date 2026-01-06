@@ -5038,16 +5038,20 @@ Function AuthenticateCWM {
     if ($null -eq $CWMAPICreds) {
         Prompt-CWMAPICreds      
         $CWMAPICreds = Get-CWMAPICreds
-        $null = Connect-CWM @CWMAPICreds
     }
     
     # CRITICAL v09: Disconnect existing session to clear module cache (prevents stale data in VSCode runs)
+    # Only disconnect if we're already connected (prevents "Connection object not found" warning)
     try {
+        $null = Get-CWMServiceBoard -pageSize 1 -ErrorAction Stop
+        # If we got here, we're connected - disconnect to clear cache
         Disconnect-CWM -ErrorAction SilentlyContinue
     } catch {
-        # Ignore disconnect errors (may not be connected)
+        # Not connected yet - ignore (this is expected on first run)
     }
     
+    # Connect to ConnectWise Manage
+    Write-Host "`n  Connecting to ConnectWise Manage..." -ForegroundColor Cyan
     $null = Connect-CWM @CWMAPICreds
     
     # Verify connection was successful before validating parameters
