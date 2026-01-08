@@ -1,48 +1,79 @@
 <# ----- About: ----
     # ConnectWise Manage - Interrogate Ticket Configuration Options
-    # Revision v02 - 2025-12-20
+    # Revision v10 - 2026-01-08
     # Author: Eric Harless, Head Backup Nerd - N-able
-    # 
+    # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
+# -----------------------------------------------------------#>  ## About
+
+<# ----- Legal: ----
+    # Sample scripts are not supported under any N-able support program or service.
+    # The sample scripts are provided AS IS without warranty of any kind.
+    # N-able expressly disclaims all implied warranties including, warranties
+    # of merchantability or of fitness for a particular purpose.
+    # In no event shall N-able or any other party be liable for damages arising
+    # out of the use of or inability to use the sample scripts.
+# -----------------------------------------------------------#>  ## Legal
+
+<# ----- Compatibility: ----
+    # For use with N-able | Cove Data Protection and ConnectWise Manage
+    # Requires ConnectWiseManageAPI PowerShell module
     # Credentials are stored using Windows DPAPI encryption and can only be 
     # decrypted by the same user account on the same machine where created.
-#>
+# -----------------------------------------------------------#>  ## Compatibility
+
+<# ----- Behavior: ----
+    # Load stored ConnectWise Manage API credentials (DPAPI encrypted)
+    # Connect to ConnectWise Manage API
+    # Discover and enumerate:
+    #   - Service Boards (active boards only)
+    #   - Service Statuses (grouped by board)
+    #   - Service Priorities (with color codes)
+    # Export discovered configuration to CSV files in Boards subfolder
+    # Display recommendations for monitoring script configuration
+    # Interactive mode: Allow selection of configuration via GridView
+    # Auto-update Cove monitoring script with selected configuration
+    # Create timestamped backup before modifying monitoring script
+    # Undo mode: Restore monitoring script from previous backup
+    #
+    # Use the -AllowInsecureSSL parameter to bypass SSL validation (default=$true, staging/dev only)
+    # Use the -Interactive parameter to enable interactive mode (default=$true, set to $false for discovery/export only with no prompts/changes)
+    # Use the -MonitoringScriptPath parameter to specify monitoring script (auto-detects if omitted)
+    # Use the -Undo parameter to restore monitoring script from backup (default=$false, interactive GridView selection)
+    #
+    # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/service-management/json-api/home.htm
+    # https://github.com/christaylorcodes/ConnectWiseManageAPI
+# -----------------------------------------------------------#>  ## Behavior
 
 [CmdletBinding(SupportsShouldProcess)]
 Param (
-    [Parameter(Mandatory=$False)][Switch]$AllowInsecureSSL = $true,
-    [Parameter(Mandatory=$False)][Switch]$Interactive = $true,
-    [Parameter(Mandatory=$False)][string]$MonitoringScriptPath = "$PSScriptRoot\Cove2CWM-SyncTickets.v10.ps1",
-    [Parameter(Mandatory=$False)][Switch]$Undo = $false
+    [Parameter(Mandatory=$False)][bool]$AllowInsecureSSL = $true,     ## Bypass SSL certificate validation (for staging/dev)
+    [Parameter(Mandatory=$False)][bool]$Interactive = $true,          ## Enable interactive GridView selection and script updates ($false = discovery/export only, no prompts, no changes)
+    [Parameter(Mandatory=$False)][string]$MonitoringScriptPath = "",  ## Auto-detect latest version if not specified
+    [Parameter(Mandatory=$False)][bool]$Undo = $false                 ## Restore monitoring script from backup (interactive GridView selection)
 )
 
-#Requires -Version 5.1 #relaunches in PS 7.x
+#Requires -Version 7.0
 
-# Check if running in PowerShell 5 and relaunch with PowerShell 7 if available
+# PowerShell 7 version check with helpful error message
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-    $pwshPath = $null
+    Write-Host "ERROR: This script requires PowerShell 7 or later." -ForegroundColor Red
+    Write-Host "Current version: $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
+    Write-Host "Download PowerShell 7: https://aka.ms/powershell" -ForegroundColor Cyan
+    exit 1
+}
+
+# Auto-detect monitoring script if not specified
+if (-not $MonitoringScriptPath) {
+    $detectedScript = Get-ChildItem -Path $PSScriptRoot -Filter "Cove2CWM-SyncTickets.v*.ps1" | 
+        Where-Object { $_.Name -notmatch 'backup' } | 
+        Sort-Object Name -Descending | 
+        Select-Object -First 1
     
-    # Check common PowerShell 7 installation paths
-    $possiblePaths = @(
-        "C:\Program Files\PowerShell\7\pwsh.exe",
-        "C:\Program Files (x86)\PowerShell\7\pwsh.exe",
-        "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-    )
-    
-    foreach ($path in $possiblePaths) {
-        if (Test-Path $path) {
-            $pwshPath = $path
-            break
-        }
-    }
-    
-    if ($pwshPath) {
-        Write-Host "PowerShell 7 required. Relaunching with PowerShell 7..." -ForegroundColor Yellow
-        $params = $PSBoundParameters.GetEnumerator() | ForEach-Object { "-$($_.Key)", $_.Value }
-        & $pwshPath -File $PSCommandPath @params
-        exit $LASTEXITCODE
+    if ($detectedScript) {
+        $MonitoringScriptPath = $detectedScript.FullName
     } else {
-        Write-Host "ERROR: This script requires PowerShell 7 or later." -ForegroundColor Red
-        Write-Host "Please install PowerShell 7 from: https://aka.ms/powershell" -ForegroundColor Yellow
+        Write-Host "ERROR: Could not find Cove2CWM-SyncTickets script in $PSScriptRoot" -ForegroundColor Red
+        Write-Host "Specify path manually with -MonitoringScriptPath parameter" -ForegroundColor Yellow
         exit 1
     }
 }

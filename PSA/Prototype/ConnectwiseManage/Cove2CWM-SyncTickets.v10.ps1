@@ -6,7 +6,7 @@
     # https://github.com/backupNerd
     #
     # v10 Changes:
-    #   - Added EndCustomer→CWM Company cache to eliminate redundant lookups for same customer
+    #   - Added EndCustomer → CWM Company cache to eliminate redundant lookups for same customer
     #   - Fixed company creation timing - delay moved BEFORE CWM query (was after, causing ticket creation failures)
     #   - Enhanced placeholder pattern with wait logic for concurrent company creation
     #   - Expected performance: Eliminates duplicate CWM API calls when multiple devices share same EndCustomer
@@ -28,7 +28,7 @@
 # -----------------------------------------------------------#>  ## Legal
 
 <# ----- Compatibility: ----
-    # For use with N-able | Cove Data Protection
+    # For use with N-able | Cove Data Protection and ConnectWise Manage
     # Sample scripts may contain non-public API calls which are subject to change without notification
 # -----------------------------------------------------------#>  ## Compatibility
 
@@ -48,33 +48,38 @@
     # Use the -DeviceCount parameter to define the maximum number of devices to query (default=5000)
     # Use the -PartnerName parameter to specify exact Cove partner/customer name to monitor (e.g., "MYPartner Inc (bob@myparter.com)") (optional - defaults to authenticated partner)
     # Use the -TestDeviceName parameter to filter to a single device for testing (e.g., "desktop-pmb")
-     Use the -MonitorSystems switch to enable monitoring of servers and workstations (default=$true)
-    # Use the -StaleHoursServers parameter to define hours since last successful backup before considering stale for servers (default=24)
+    # Use the -MonitorSystems parameter to enable/disable monitoring of servers and workstations (default=$true)
+    # Use the -StaleHoursServers parameter to define hours since last successful backup before considering stale for servers (default=26)
     # Use the -StaleHoursWorkstations parameter to define hours since last successful backup before considering stale for workstations (default=240)
     # 
-    # Use the -MonitorM365 switch to enable monitoring of Microsoft 365 tenants (default=$true)
-    # Use the -StaleHoursM365 parameter to define hours since last successful backup before considering stale for M365 tenants (default=24)
+    # Use the -MonitorM365 parameter to enable/disable monitoring of Microsoft 365 tenants (default=$true)
+    # Use the -StaleHoursM365 parameter to define hours since last successful backup before considering stale for M365 tenants (default=12)
     #
-    # Use the -CreateTickets switch to actually create tickets in ConnectWise Manage (default=$true) set to $false for test mode
-    # Use the -UpdateTickets switch to update existing open tickets with new information (default=$true) set to $false to skip updates
-    # Use the -CloseResolvedTickets switch to close tickets when issues are resolved (default=$true) set to $false to keep tickets open
-    # Use the -AutoCreateCompanies switch to auto-create missing companies in ConnectWise Manage (default=$true) set to $false to disable auto-creation
-    # Use the -UpdateCoveReferences switch to append Cove PartnerReference/ExternalCode with CWM Company ID (default=$false) set to $true to enable
-
-    # Use the -TicketBoard parameter to specify the ConnectWise Service Board name (default="Monitoring")
-    # Use the -TicketCompany parameter to specify the default company for tickets (optional)
+    # Use the -CreateTickets parameter to create tickets in ConnectWise Manage (default=$true, set to $false for test mode)
+    # Use the -UpdateTickets parameter to update existing open tickets with new information (default=$true, set to $false to skip updates)
+    # Use the -CloseResolvedTickets parameter to close tickets when issues are resolved (default=$true, set to $false to keep tickets open)
+    # Use the -AutoCreateCompanies parameter to auto-create missing companies in ConnectWise Manage (default=$true, set to $false to disable)
+    # Use the -UpdateCoveReferences parameter to append Cove PartnerReference/ExternalCode with CWM Company ID (default=$false, set to $true to enable)
+    # Use the -UseDevicePartner parameter to create tickets at device partner level instead of End Customer (default=$false) - PROTOTYPE
+    # Use the -UseLocalTime parameter to display timestamps in local time instead of UTC (default=$true)
+    #
+    # Use the -TicketBoard parameter to specify the ConnectWise Service Board name (default="Service Desk")
+    # Use the -TicketType parameter to specify ticket type (default="ServiceTicket")
+    # Use the -TicketStatus parameter to specify new ticket status (default="New Support Issue")
     # Use the -TicketPriorityServer parameter to specify ticket priority for servers (default="Priority 1 - Emergency Response")
     # Use the -TicketPriorityWorkstation parameter to specify ticket priority for workstations (default="Priority 3 - Normal Response")
     # Use the -TicketPriorityM365 parameter to specify ticket priority for M365 tenants (default="Priority 2 - Quick Response")
-    # Use the -TicketStatus parameter to specify new ticket status (default="New")
+    # Use the -TicketClosedStatus parameter to specify closed ticket status (default="Closed")
+    # Use the -TicketCompany parameter to specify the default company for tickets (optional) - PROTOTYPE
     #
-    # Use the -ExportPath parameter to specify CSV file path for results
-    # Use the -ClearCDPCredentials switch to remove stored Cove API credentials
-    # Use the -ClearCWMCredentials switch to remove stored ConnectWise Manage API credentials
-    # Use the -AllowInsecureSSL switch to bypass SSL certificate validation (staging/dev environments only)
-    # Use the -TestMode switch to simulate 50% of devices as successful for ticket closure testing
-    # Use the -DebugCDP switch to display debug info for Cove Data Protection queries
-    # Use the -DebugCWM switch to display debug info for ConnectWise Manage operations
+    # Use the -ExportPath parameter to specify CSV file path for results (default=$PSScriptRoot)
+    # Use the -ClearCDPCredentials parameter to remove stored Cove API credentials (default=$false)
+    # Use the -ClearCWMCredentials parameter to remove stored ConnectWise Manage API credentials (default=$false)
+    # Use the -AllowInsecureSSL parameter to bypass SSL certificate validation (default=$true, staging/dev environments only)
+    # Use the -CleanupCoveTickets parameter to delete all Cove-created tickets from last 24 hours (default=$false, WARNING: Cannot be undone!)
+    # Use the -TestMode parameter to simulate 50% of devices as successful for ticket closure testing (default=$false)
+    # Use the -DebugCDP parameter to display debug info for Cove Data Protection queries (default=$false)
+    # Use the -DebugCWM parameter to display debug info for ConnectWise Manage operations (default=$false)
     #
     # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/service-management/json-api/home.htm
     # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/service-management/json-api/API-column-codes.htm
@@ -85,30 +90,162 @@
 
 # -----------------------------------------------------------#>  ## Behavior
 
+<#
+.SYNOPSIS
+Sync N-able Cove Data Protection backup issues to ConnectWise Manage tickets.
+
+.DESCRIPTION
+Monitors Cove backup devices (servers, workstations, M365 tenants) for failures, errors, and stale backups.
+Automatically creates ConnectWise Manage tickets for issues and closes them when resolved.
+
+.PARAMETER DaysBack
+Number of days to look back for backup failures. Devices with timestamps older than this are considered orphaned/obsolete and ignored regardless of status. Default: 30 days.
+
+.PARAMETER DeviceCount
+Maximum number of devices to query from Cove API. Use lower values for testing. Default: 20 devices.
+
+.PARAMETER PartnerName
+Exact Cove partner/customer name to monitor (e.g., "MyPartner Inc (bob@mypartner.com)"). If omitted, defaults to authenticated partner or prompts for selection.
+
+.PARAMETER TestDeviceName
+Filter to a single device for testing purposes (e.g., "desktop-ph5hqmb"). Useful for development and troubleshooting.
+
+.PARAMETER MonitorSystems
+Enable monitoring of servers and workstations. Set to $false to skip system monitoring. Default: $true.
+
+.PARAMETER StaleHoursServers
+Hours since last successful backup before a server is considered stale. Default: 26 hours.
+
+.PARAMETER StaleHoursWorkstations
+Hours since last successful backup before a workstation is considered stale. Default: 240 hours (10 days).
+
+.PARAMETER MonitorM365
+Enable monitoring of Microsoft 365 tenants (Exchange, OneDrive, SharePoint, Teams). Set to $false to skip M365. Default: $true.
+
+.PARAMETER StaleHoursM365
+Hours since last successful backup before an M365 tenant is considered stale. Default: 12 hours.
+
+.PARAMETER CreateTickets
+Create new tickets in ConnectWise Manage for detected issues. Set to $false for test mode (no tickets created). Default: $true.
+
+.PARAMETER UpdateTickets
+Update existing open tickets with new information when device status changes. Set to $false to skip updates. Default: $true.
+
+.PARAMETER CloseResolvedTickets
+Automatically close tickets when issues are resolved (successful backup detected). Set to $false to keep tickets open. Default: $true.
+
+.PARAMETER AutoCreateCompanies
+Automatically create missing companies in ConnectWise Manage when Cove partner has no CWM match. Set to $false to disable auto-creation. Default: $true.
+
+.PARAMETER UpdateCoveReferences
+Append Cove PartnerReference/ExternalCode field with ConnectWise Company ID for future lookups. Set to $true to enable cross-referencing. Default: $false.
+
+.PARAMETER UseDevicePartner
+Create tickets at device partner level instead of End Customer level. PROTOTYPE feature. Default: $false.
+
+.PARAMETER UseLocalTime
+Display timestamps in local time zone instead of UTC. Default: $true.
+
+.PARAMETER TicketBoard
+ConnectWise Service Board name where tickets will be created. Default: "Service Desk".
+
+.PARAMETER TicketType
+ConnectWise ticket type identifier. Default: "ServiceTicket".
+
+.PARAMETER TicketStatus
+Status to assign to newly created tickets. Default: "New Support Issue".
+
+.PARAMETER TicketPriorityServer
+Priority level for server backup failure tickets. Default: "Priority 1 - Emergency Response".
+
+.PARAMETER TicketPriorityWorkstation
+Priority level for workstation backup failure tickets. Default: "Priority 3 - Normal Response".
+
+.PARAMETER TicketPriorityM365
+Priority level for Microsoft 365 backup failure tickets. Default: "Priority 2 - Quick Response".
+
+.PARAMETER TicketClosedStatus
+Status to set when closing resolved tickets. Default: "Closed".
+
+.PARAMETER TicketCompany
+Default company identifier for tickets. PROTOTYPE feature. Leave empty for auto-detection.
+
+.PARAMETER ExportPath
+Directory path for CSV export files. Default: Script directory ($PSScriptRoot).
+
+.PARAMETER ClearCDPCredentials
+Remove stored Cove Data Protection API credentials from encrypted credential file. Forces re-authentication on next run.
+
+.PARAMETER ClearCWMCredentials
+Remove stored ConnectWise Manage API credentials from encrypted credential file. Forces re-authentication on next run.
+
+.PARAMETER AllowInsecureSSL
+Bypass SSL certificate validation. Only use for staging/development environments. Default: $true.
+
+.PARAMETER CleanupCoveTickets
+Delete ALL Cove-created tickets from the last 24 hours. WARNING: Cannot be undone! Use for testing cleanup only.
+
+.PARAMETER TestMode
+Simulate 50% of devices as successful for testing ticket closure logic. Does not affect real device status.
+
+.PARAMETER DebugCDP
+Enable verbose debug output for Cove Data Protection API queries. Shows API calls, filters, and response data.
+
+.PARAMETER DebugCWM
+Enable verbose debug output for ConnectWise Manage operations. Shows ticket creation, updates, and company lookups.
+
+.EXAMPLE
+.\Cove2CWM-SyncTickets.v10.ps1
+Run with default settings - monitor all devices, create/update/close tickets.
+
+.EXAMPLE
+.\Cove2CWM-SyncTickets.v10.ps1 -PartnerName "Acme Corp (admin@acme.com)" -DaysBack 7
+Monitor specific partner for issues in the last 7 days.
+
+.EXAMPLE
+.\Cove2CWM-SyncTickets.v10.ps1 -TestDeviceName "srv-backup01" -CreateTickets:$false
+Test mode - monitor single device, don't create tickets.
+
+.EXAMPLE
+.\Cove2CWM-SyncTickets.v10.ps1 -MonitorSystems:$false -MonitorM365:$true -StaleHoursM365 24
+Monitor only M365 tenants with 24-hour stale threshold.
+
+.NOTES
+Requires PowerShell 7.0 or later.
+Credentials stored using Windows DPAPI encryption (user/machine specific).
+ConnectWiseManageAPI module required: Install-Module -Name ConnectWiseManageAPI
+
+.LINK
+https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/service-management/json-api/home.htm
+
+.LINK
+https://github.com/christaylorcodes/ConnectWiseManageAPI
+#>
+
 [CmdletBinding()]
 Param (
     [int]$DaysBack = 30,                                         ## Days to look back for backup failures
-    [int]$DeviceCount = 5000,                                    ## Maximum number of devices to query
+    [int]$DeviceCount = 20,                                      ## Maximum number of devices to query
     [string]$PartnerName = "",                                   ## Exact Cove partner/customer name to monitor (optional - defaults to authenticated partner)
     [string]$TestDeviceName = "",                                ## Filter to single device for testing (e.g., "desktop-ph5hqmb")
 
     # Servers/Workstations Monitoring
-    [switch]$MonitorSystems = $true,                             ## Monitor servers and workstations
+    [bool]$MonitorSystems = $true,                               ## Monitor servers and workstations
     [int]$StaleHoursServers = 26,                                ## Hours since last backup to consider stale (servers)
     [int]$StaleHoursWorkstations = 240,                          ## Hours since last backup to consider stale (workstations)
     
     # M365 Monitoring
-    [switch]$MonitorM365 = $true,                                ## Monitor Microsoft 365 tenants
+    [bool]$MonitorM365 = $true,                                  ## Monitor Microsoft 365 tenants
     [int]$StaleHoursM365 = 12,                                   ## Hours since last backup to consider stale (M365 tenants)
 
     # Ticketing Options
-    [switch]$CreateTickets = $true,                              ## Set $true to create tickets in ConnectWise
-    [switch]$UpdateTickets = $true,                              ## Set $true to update existing tickets
-    [switch]$CloseResolvedTickets = $true,                       ## Set $true to close resolved tickets
-    [switch]$AutoCreateCompanies = $true,                        ## Set $true to auto-create missing companies in ConnectWise
-    [switch]$UpdateCoveReferences = $false,                      ## Set $true to update Cove partner ExternalCode with CWM Company ID
-    [switch]$UseDevicePartner = $false,                          ## Set $true to create tickets at device partner level (not End Customer) - PROTOTYPE
-    [Switch]$UseLocalTime = $true,                               ## Display timestamps in local time instead of UTC
+    [bool]$CreateTickets = $true,                                ## Set $true to create tickets in ConnectWise
+    [bool]$UpdateTickets = $true,                                ## Set $true to update existing tickets
+    [bool]$CloseResolvedTickets = $true,                         ## Set $true to close resolved tickets
+    [bool]$AutoCreateCompanies = $true,                          ## Set $true to auto-create missing companies in ConnectWise
+    [bool]$UpdateCoveReferences = $false,                        ## Set $true to update Cove partner ExternalCode with CWM Company ID
+    [bool]$UseDevicePartner = $false,                            ## Set $true to create tickets at device partner level (not End Customer) - PROTOTYPE
+    [bool]$UseLocalTime = $true,                                 ## Display timestamps in local time instead of UTC
 
     # ConnectWise Ticket Settings
     [string]$TicketBoard = "Service Desk",                       ## ConnectWise Service Board name
@@ -121,14 +258,15 @@ Param (
     [string]$TicketCompany = "",                                 ## Default company for tickets - PROTOTYPE
     [string]$ExportPath = "$PSScriptRoot",                       ## Export Path for CSV
 
-    [switch]$ClearCDPCredentials = $false,                       ## Remove Stored Cove API Credentials
-    [switch]$ClearCWMCredentials = $false,                       ## Remove Stored CWM API Credentials
-    [Switch]$AllowInsecureSSL = $true,                           ## Bypass SSL certificate validation (for staging/dev)
-    [switch]$CleanupCoveTickets = $false,                        ## Delete all Cove-created tickets from last 24 hours (WARNING: Cannot be undone!)
-
-    [Switch]$TestMode = $false,                                  ## Simulate 50% ticket closures for testing
-    [Switch]$DebugCDP = $false,                                  ## Enable Debug for Cove Data Protection
-    [Switch]$DebugCWM = $false                                    ## Enable Debug for ConnectWise Manage
+    [bool]$ClearCDPCredentials = $false,                         ## Remove Stored Cove API Credentials
+    [bool]$ClearCWMCredentials = $false,                         ## Remove Stored CWM API Credentials
+    
+    # Testing Commands
+    [bool]$AllowInsecureSSL = $true,                             ## Bypass SSL certificate validation (for staging/dev)
+    [bool]$CleanupCoveTickets = $false,                          ## Delete all Cove-created tickets from last 24 hours (WARNING: Cannot be undone!)
+    [bool]$TestMode = $false,                                    ## Simulate 50% ticket closures for testing
+    [bool]$DebugCDP = $false,                                    ## Enable Debug for Cove Data Protection
+    [bool]$DebugCWM = $false                                      ## Enable Debug for ConnectWise Manage
 )
 
 #Requires -Version 7.0
@@ -801,15 +939,15 @@ Function Get-DatasourceStatus {
     
     $statusList = @()
     
-    # Files and Folders (D01/D1)
-    if ($DataSourceString -match 'D01|D1') {
+    # Files and Folders (D01 only - not D1 to avoid matching D19)
+    if ($DataSourceString -match '\bD01\b') {
         $statusCode = $DeviceSettings.F0 -join ''
         $statusText = Get-SessionStatusText $statusCode
         $statusList += "Files: $statusText"
     }
     
-    # System State (D02/D2)
-    if ($DataSourceString -match 'D02|D2') {
+    # System State (D02 only - not D2 to avoid matching D20, D23)
+    if ($DataSourceString -match '\bD02\b') {
         $statusCode = $DeviceSettings.S0 -join ''
         $statusText = Get-SessionStatusText $statusCode
         $statusList += "SystemState: $statusText"
@@ -6191,6 +6329,7 @@ M365 Tenant          : $($Device.DeviceName) (ID:$($Device.AccountID))
 Customer             : $partnerDisplay
 $(if ($Device.Reference) { "Reference            : $($Device.Reference)`n" })$(if ($Device.Notes) { "Notes                : $($Device.Notes)`n" })Severity             : $($Device.IssueSeverity)
 Description          : $($Device.IssueDescription)
+Ticket Criteria      : Lookback < $DaysBack days | Stale > $StaleHoursM365 hours
 Creation Date        : $creationDateFormatted $creationDateRelative
 Last Timestamp       : $lastTimestampDisplay $lastTimestampRelative
 $(if ($oldestProblemRow) { "$oldestProblemRow`n" })
@@ -6313,6 +6452,7 @@ Computer             : $($Device.ComputerName)
 $(if ($Device.DeviceAlias) { "Alias                : $($Device.DeviceAlias)`n" })Customer             : $partnerDisplay
 $(if ($Device.Reference) { "Reference            : $($Device.Reference)`n" })$(if ($Device.Notes) { "Notes                : $($Device.Notes)`n" })Severity             : $($Device.IssueSeverity)
 Description          : $($Device.IssueDescription)
+Ticket Criteria      : Lookback < $DaysBack days | Stale > $(if ($Device.OSType -eq '2' -or $Device.OS -match 'Server') { "$StaleHoursServers" } else { "$StaleHoursWorkstations" }) hours
 Creation Date        : $creationDateFormatted $creationDateRelative
 Last Timestamp       : $lastTimestampDisplay $lastTimestampRelative
 $(if ($oldestProblemRow) { "$oldestProblemRow`n" })
@@ -6564,6 +6704,7 @@ Updated Status - $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") (System Time)
 
 Severity             : $($Device.IssueSeverity)
 Description          : $($Device.IssueDescription)
+Ticket Criteria      : Lookback < $DaysBack days | Stale > $(if ($Device.AccountType -eq '2') { "$StaleHoursM365" } elseif ($Device.OSType -eq '2' -or $Device.OS -match 'Server') { "$StaleHoursServers" } else { "$StaleHoursWorkstations" }) hours
 Last Timestamp       : $($Device.TimeStamp)
 $(if ($oldestProblemRow) { "$oldestProblemRow`n" })
 ─────────────────────────────────────────────────────────────────
@@ -6754,11 +6895,21 @@ Function Close-CWMTicketForDevice {
             $recoveryStats += "  Resolution Verified  : $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') (System Time)`n"
         }
         
-        # Get current datasource status summary
+        # Get current datasource status summary - M365 ONLY (filter out any non-M365 datasources)
         $statusSummary = ""
         if ($Device.DeviceSettings -and $Device.DataSources) {
-            $statusSummary = "`nCurrent Backup Status:`n"
-            $statusSummary += "  " + (Get-DatasourceStatus -DeviceSettings $Device.DeviceSettings -DataSourceString $Device.DataSources) + "`n"
+            # Only show M365 datasources: D19 (Exchange), D20 (OneDrive), D5 (SharePoint), D23 (Teams)
+            # Keep only D19, D20, D5/D05, D23 - remove all others (D01, D02, D10, etc.)
+            $m365Only = ""
+            if ($Device.DataSources -match 'D19') { $m365Only += "D19" }
+            if ($Device.DataSources -match 'D20') { $m365Only += "D20" }
+            if ($Device.DataSources -match 'D0?5') { $m365Only += "D5" }
+            if ($Device.DataSources -match 'D23') { $m365Only += "D23" }
+            
+            if ($m365Only) {
+                $statusSummary = "`nCurrent Backup Status:`n"
+                $statusSummary += "  " + (Get-DatasourceStatus -DeviceSettings $Device.DeviceSettings -DataSourceString $m365Only) + "`n"
+            }
         }
         
         $closeNote = @"
@@ -6843,7 +6994,18 @@ This ticket was automatically closed by Cove Data Protection Monitoring $($Scrip
                 detailDescriptionFlag = $true
                 internalAnalysisFlag = $false
             }
-            $noteResult = New-CWMTicketNote @noteParams -ErrorAction Stop
+            
+            try {
+                $noteResult = New-CWMTicketNote @noteParams -ErrorAction Stop
+            }
+            catch {
+                # Check if ticket doesn't exist (404)
+                if ($_.Exception.Message -match '404|not found|does not exist') {
+                    Write-Host "  Skipping ticket #$($Ticket.id) - ticket no longer exists in ConnectWise" -ForegroundColor Gray
+                    return "NotFound"  # Return special value to indicate ticket doesn't exist
+                }
+                throw  # Re-throw other errors
+            }
             
             if (-not $noteResult -or -not $noteResult.id) {
                 Write-Warning "Failed to add closing note to ticket #$($Ticket.id)"
@@ -6857,7 +7019,19 @@ This ticket was automatically closed by Cove Data Protection Monitoring $($Scrip
                 Path = "status/name"
                 Value = $TicketClosedStatus
             }
-            $updateResult = Update-CWMTicket @updateParams -ErrorAction Stop            
+            
+            try {
+                $updateResult = Update-CWMTicket @updateParams -ErrorAction Stop
+            }
+            catch {
+                # Check if ticket doesn't exist (404)
+                if ($_.Exception.Message -match '404|not found|does not exist') {
+                    Write-Host "  Skipping ticket #$($Ticket.id) - ticket no longer exists in ConnectWise" -ForegroundColor Gray
+                    return "NotFound"  # Return special value to indicate ticket doesn't exist
+                }
+                throw  # Re-throw other errors
+            }
+            
             if ($updateResult -and $updateResult.id) {
                 $Script:ProcessedTickets.Closed += $Ticket.id
                 $ticketUrl = Get-CWMTicketURL -TicketID $Ticket.id
@@ -7427,7 +7601,7 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
     # Query all open Cove backup tickets from ConnectWise
     $openCoveTickets = @()
     try {
-        $ticketFilter = "board/name='$TicketBoard' and closedFlag=false and summary contains 'Cove'"
+        $ticketFilter = "board/name='$TicketBoard' and closedFlag=false and summary like 'Cove%'"
         $openCoveTickets = Get-CWMTicket -condition $ticketFilter -all
         $Script:PerformanceMetrics.TicketSearchCount++
         
@@ -7498,7 +7672,7 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
             $data.params.query.PartnerId = [int]$Script:PartnerId
             $data.params.query.Filter = $deviceIdFilter
             # Request all columns needed for datasource details in closure notes
-            $data.params.query.Columns = @('AU','AN','TL','T0','I78','AT','TZ',
+            $data.params.query.Columns = @('AU','AN','TL','T0','I78','AT','OT','TZ',
                 'F0','F3','F4','F5','F7','FL','FO','FA','FJ','FQ',  # Files
                 'S0','S3','S4','S5','S7','SL','SO','SA','SJ','SQ',  # System State
                 'G0','G3','G4','G5','G7','GL','GO','GA','GJ','GQ','GM','G@',  # M365 Exchange
@@ -7549,6 +7723,7 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
     $ticketsClosed = 0
     $ticketsSkipped_ParseFailed = 0
     $ticketsSkipped_NotInCove = 0
+    $ticketsSkipped_NotFound = 0  # NEW: Tickets that don't exist in ConnectWise anymore
     $ticketsLeftOpen_StillHasIssues = 0
     $ticketsLeftOpen_InProcess = 0
     $ticketsSkipped_JustCreatedOrUpdated = 0  # NEW: Track tickets we just processed
@@ -7634,8 +7809,15 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
                 $lastBackupTime = $epoch.ToUniversalTime().AddSeconds([int64]$lastBackupUnix)
                 $hoursSinceBackup = ((Get-Date).ToUniversalTime() - $lastBackupTime).TotalHours
                 
-                # Check if backup is stale (older than threshold)
-                $staleThreshold = if ($accountType -eq '2') { $M365StaleHours } else { $StaleHours }
+                # Check if backup is stale (older than threshold) - use proper server/workstation/M365 thresholds
+                $osType = $coveDevice.Settings.OT -join ''
+                $staleThreshold = if ($accountType -eq '2') { 
+                    $StaleHoursM365 
+                } elseif ($osType -eq '2') { 
+                    $StaleHoursServers 
+                } else { 
+                    $StaleHoursWorkstations 
+                }
                 $isStale = ($hoursSinceBackup -gt $staleThreshold)
                 
                 if ($debugCDP) {
@@ -7666,7 +7848,9 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
             $ticketCloseStart = Get-Date
             $closeResult = Close-CWMTicketForDevice -Ticket $ticket -Device $deviceObj
             $Script:PerformanceMetrics.TicketCloseTime += ((Get-Date) - $ticketCloseStart).TotalMilliseconds
-            if ($closeResult) {
+            if ($closeResult -eq "NotFound") {
+                $ticketsSkipped_NotFound++
+            } elseif ($closeResult) {
                 $ticketsClosed++
             }
             
@@ -7710,6 +7894,7 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
     Write-Host ("    Tickets Left Open (Still Failing)  : {0,5}" -f $ticketsLeftOpen_StillHasIssues) -ForegroundColor Yellow
     Write-Host ("    Tickets Skipped (Just Created/Upd) : {0,5}" -f $ticketsSkipped_JustCreatedOrUpdated) -ForegroundColor Cyan
     Write-Host ("    Tickets Skipped (Not In Cove)      : {0,5}" -f $ticketsSkipped_NotInCove) -ForegroundColor Gray
+    Write-Host ("    Tickets Skipped (Not Found in CWM) : {0,5}" -f $ticketsSkipped_NotFound) -ForegroundColor Gray
     Write-Host ("    Tickets Skipped (Parse Failed)     : {0,5}" -f $ticketsSkipped_ParseFailed) -ForegroundColor Gray
     Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
 }
@@ -7785,36 +7970,36 @@ if ($Script:HierarchyLookupStats) {
     
     # Summary section FIRST (most important info)
     Write-Host "`n  ━━━━━ Summary ━━━━━" -ForegroundColor Yellow
-    Write-Host ("    Total API Time          : {0,7:N2} seconds ({1:N1} minutes)" -f $totalAPISeconds, ($totalAPISeconds / 60)) -ForegroundColor Cyan
-    Write-Host ("    Other Processing        : {0,7:N2} seconds" -f $otherProcessing) -ForegroundColor Gray
-    Write-Host ("    Percentage API Time     : {0,6:N1}%" -f $apiPercent) -ForegroundColor $(if ($apiPercent -gt 75) { 'Yellow' } else { 'Green' })
+    Write-Host ("    Total API Time       : {0,8:N2} seconds ({1:N1} minutes)" -f $totalAPISeconds, ($totalAPISeconds / 60)) -ForegroundColor Cyan
+    Write-Host ("    Other Processing     : {0,8:N2} seconds" -f $otherProcessing) -ForegroundColor Gray
+    Write-Host ("    Percentage API Time  : {0,7:N1}%" -f $apiPercent) -ForegroundColor $(if ($apiPercent -gt 75) { 'Yellow' } else { 'Green' })
     
     # Cove API
     Write-Host "`n  ━━━━━ Cove API Performance ━━━━━" -ForegroundColor Yellow
-    Write-Host ("    Device Statistics Query : {0,7:N2} seconds" -f ($Script:PerformanceMetrics.DeviceQueryTime / 1000)) -ForegroundColor White
+    Write-Host ("    Device Statistics Query : {0,6:N2} seconds" -f ($Script:PerformanceMetrics.DeviceQueryTime / 1000)) -ForegroundColor White
     
     # Partner Hierarchy Cache
     if ($Script:HierarchyLookupStats.TotalLookups -gt 0) {
         $hierarchyCacheHitRate = [math]::Round(($Script:HierarchyLookupStats.CacheHits / $Script:HierarchyLookupStats.TotalLookups) * 100, 1)
         Write-Host "`n  ━━━━━ Partner Hierarchy Performance ━━━━━" -ForegroundColor Yellow
-        Write-Host ("    Total Lookups           : {0,4}" -f $Script:HierarchyLookupStats.TotalLookups) -ForegroundColor White
-        Write-Host ("    Cache Hits              : {0,4}" -f $Script:HierarchyLookupStats.CacheHits) -ForegroundColor Green
-        Write-Host ("    Cache Misses (API calls): {0,4}" -f $Script:HierarchyLookupStats.CacheMisses) -ForegroundColor Yellow
-        Write-Host ("    Unique Partners         : {0,4}" -f $Script:HierarchyLookupStats.UniquePartnerIDs.Count) -ForegroundColor White
-        Write-Host ("    Total Time              : {0,7:N2} seconds" -f ($Script:HierarchyLookupStats.TotalTime / 1000)) -ForegroundColor White
-        Write-Host ("    Average per Lookup      : {0,6:N2} ms" -f ($Script:HierarchyLookupStats.TotalTime / $Script:HierarchyLookupStats.TotalLookups)) -ForegroundColor Gray
-        Write-Host ("    Cache Hit Rate          : {0,6:N1}%" -f $hierarchyCacheHitRate) -ForegroundColor $(if ($hierarchyCacheHitRate -gt 50) { "Green" } else { "Yellow" })
+        Write-Host ("    Total Lookups            : {0,2}" -f $Script:HierarchyLookupStats.TotalLookups) -ForegroundColor White
+        Write-Host ("    Cache Hits               : {0,2}" -f $Script:HierarchyLookupStats.CacheHits) -ForegroundColor Green
+        Write-Host ("    Cache Misses (API calls) : {0,2}" -f $Script:HierarchyLookupStats.CacheMisses) -ForegroundColor Yellow
+        Write-Host ("    Unique Partners          : {0,2}" -f $Script:HierarchyLookupStats.UniquePartnerIDs.Count) -ForegroundColor White
+        Write-Host ("    Total Time               : {0,6:N2} seconds" -f ($Script:HierarchyLookupStats.TotalTime / 1000)) -ForegroundColor White
+        Write-Host ("    Average per Lookup       : {0,6:N2} ms" -f ($Script:HierarchyLookupStats.TotalTime / $Script:HierarchyLookupStats.TotalLookups)) -ForegroundColor Gray
+        Write-Host ("    Cache Hit Rate           : {0,5:N1}%" -f $hierarchyCacheHitRate) -ForegroundColor $(if ($hierarchyCacheHitRate -gt 50) { "Green" } else { "Yellow" })
     }
     
     # EndCustomer → CWM Company Cache
     if ($Script:EndCustomerCacheStats.TotalLookups -gt 0) {
         $endCustomerCacheHitRate = [math]::Round(($Script:EndCustomerCacheStats.CacheHits / $Script:EndCustomerCacheStats.TotalLookups) * 100, 1)
         Write-Host "`n  ━━━━━ EndCustomer → CWM Company Cache Performance ━━━━━" -ForegroundColor Yellow
-        Write-Host ("    Total Lookups           : {0,4}" -f $Script:EndCustomerCacheStats.TotalLookups) -ForegroundColor White
-        Write-Host ("    Cache Hits              : {0,4}" -f $Script:EndCustomerCacheStats.CacheHits) -ForegroundColor Green
-        Write-Host ("    Cache Misses (CWM calls): {0,4}" -f $Script:EndCustomerCacheStats.CacheMisses) -ForegroundColor Yellow
-        Write-Host ("    Unique Customers Cached : {0,4}" -f $Script:EndCustomerToCWMCompanyCache.Count) -ForegroundColor White
-        Write-Host ("    Cache Hit Rate          : {0,6:N1}%" -f $endCustomerCacheHitRate) -ForegroundColor $(if ($endCustomerCacheHitRate -gt 50) { "Green" } else { "Yellow" })
+        Write-Host ("    Total Lookups            : {0,2}" -f $Script:EndCustomerCacheStats.TotalLookups) -ForegroundColor White
+        Write-Host ("    Cache Hits               : {0,2}" -f $Script:EndCustomerCacheStats.CacheHits) -ForegroundColor Green
+        Write-Host ("    Cache Misses (CWM calls) : {0,2}" -f $Script:EndCustomerCacheStats.CacheMisses) -ForegroundColor Yellow
+        Write-Host ("    Unique Customers Cached  : {0,2}" -f $Script:EndCustomerToCWMCompanyCache.Count) -ForegroundColor White
+        Write-Host ("    Cache Hit Rate           : {0,5:N1}%" -f $endCustomerCacheHitRate) -ForegroundColor $(if ($endCustomerCacheHitRate -gt 50) { "Green" } else { "Yellow" })
     }
     
     # ConnectWise API
@@ -7822,24 +8007,24 @@ if ($Script:HierarchyLookupStats) {
     $totalCompanyLookups = ($DevicesWithIssues | Measure-Object).Count
     $totalTicketSearches = ($DevicesWithIssues | Measure-Object).Count
     
-    Write-Host ("    Company Lookups         : {0,4}" -f $totalCompanyLookups) -ForegroundColor White
-    Write-Host ("    Total Lookup Time       : {0,7:N2} seconds" -f ($Script:PerformanceMetrics.CompanyLookupTime / 1000)) -ForegroundColor White
+    Write-Host ("    Company Lookups      : {0,2}" -f $totalCompanyLookups) -ForegroundColor White
+    Write-Host ("    Total Lookup Time    : {0,6:N2} seconds" -f ($Script:PerformanceMetrics.CompanyLookupTime / 1000)) -ForegroundColor White
     if ($totalCompanyLookups -gt 0) {
-        Write-Host ("    Avg per Lookup          : {0,6:N2} ms" -f ($Script:PerformanceMetrics.CompanyLookupTime / $totalCompanyLookups)) -ForegroundColor Gray
+        Write-Host ("    Avg per Lookup       : {0,6:N2} ms" -f ($Script:PerformanceMetrics.CompanyLookupTime / $totalCompanyLookups)) -ForegroundColor Gray
     }
     
-    Write-Host ("    Ticket Searches         : {0,4}" -f $totalTicketSearches) -ForegroundColor White
-    Write-Host ("    Total Search Time       : {0,7:N2} seconds" -f ($Script:PerformanceMetrics.TicketSearchTime / 1000)) -ForegroundColor White
+    Write-Host ("    Ticket Searches      : {0,2}" -f $totalTicketSearches) -ForegroundColor White
+    Write-Host ("    Total Search Time    : {0,6:N2} seconds" -f ($Script:PerformanceMetrics.TicketSearchTime / 1000)) -ForegroundColor White
     if ($totalTicketSearches -gt 0) {
-        Write-Host ("    Avg per Search          : {0,6:N2} ms" -f ($Script:PerformanceMetrics.TicketSearchTime / $totalTicketSearches)) -ForegroundColor Gray
+        Write-Host ("    Avg per Search       : {0,6:N2} ms" -f ($Script:PerformanceMetrics.TicketSearchTime / $totalTicketSearches)) -ForegroundColor Gray
     }
     
     # Ticket Operations
     Write-Host "`n  ━━━━━ Ticket Operations Performance ━━━━━" -ForegroundColor Yellow
-    Write-Host ("    Ticket Creation Time    : {0,7:N2} seconds" -f ($Script:PerformanceMetrics.TicketCreateTime / 1000)) -ForegroundColor White
-    Write-Host ("    Ticket Update Time      : {0,7:N2} seconds" -f ($Script:PerformanceMetrics.TicketUpdateTime / 1000)) -ForegroundColor White
-    Write-Host ("    Ticket Closure Time     : {0,7:N2} seconds" -f ($Script:PerformanceMetrics.TicketCloseTime / 1000)) -ForegroundColor White
-    Write-Host ("    Total Ticket Operations : {0,7:N2} seconds" -f ($totalTicketOperationTime / 1000)) -ForegroundColor Cyan
+    Write-Host ("    Ticket Creation Time     : {0,6:N2} seconds" -f ($Script:PerformanceMetrics.TicketCreateTime / 1000)) -ForegroundColor White
+    Write-Host ("    Ticket Update Time       : {0,6:N2} seconds" -f ($Script:PerformanceMetrics.TicketUpdateTime / 1000)) -ForegroundColor White
+    Write-Host ("    Ticket Closure Time      : {0,6:N2} seconds" -f ($Script:PerformanceMetrics.TicketCloseTime / 1000)) -ForegroundColor White
+    Write-Host ("    Total Ticket Operations  : {0,6:N2} seconds" -f ($totalTicketOperationTime / 1000)) -ForegroundColor Cyan
 }
 #endregion ----- Summary Output ----
 
@@ -7861,6 +8046,8 @@ if ($Script:CWMServerConnection) {
 }
 
 #endregion ----- Main Script Execution ----
+
+
 
 
 

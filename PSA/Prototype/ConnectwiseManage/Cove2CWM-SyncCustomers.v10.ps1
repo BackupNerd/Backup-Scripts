@@ -1,85 +1,80 @@
 <# ----- About: ----
     # Sync Cove Customers to ConnectWise Companies
     # Compares Cove partner hierarchy to CWM companies and creates missing ones
-    # Revision v05 - 2025-12-26
+    # Revision v10 - 2026-01-08
     # Author: Eric Harless, Head Backup Nerd - N-able
-#>
+    # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
+# -----------------------------------------------------------#>  ## About
+
+<# ----- Legal: ----
+    # Sample scripts are not supported under any N-able support program or service.
+    # The sample scripts are provided AS IS without warranty of any kind.
+    # N-able expressly disclaims all implied warranties including, warranties
+    # of merchantability or of fitness for a particular purpose.
+    # In no event shall N-able or any other party be liable for damages arising
+    # out of the use of or inability to use the sample scripts.
+# -----------------------------------------------------------#>  ## Legal
+
+<# ----- Compatibility: ----
+    # For use with N-able | Cove Data Protection
+    # Requires ConnectWise Manage API access
+    # Credentials are stored using Windows DPAPI encryption and can only be 
+    # decrypted by the same user account on the same machine where created.
+# -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
-    # 1. Authenticates to both Cove API and ConnectWise Manage
-    # 2. Resolves Cove partners to End-Customer level (skips Sites)
-    # 3. Compares against existing CWM companies using multiple matching strategies
-    # 4. Shows GridView with match results and allows creating missing companies
-    # 5. Supports creating single company or batch creation
+    # Authenticate to Cove Data Protection API
+    # Authenticate to ConnectWise Manage API
+    # Enumerate Cove partners with backup issues (or use existing CSV)
+    # Resolve partners to End-Customer level (skips Sites)
+    # Compare against existing ConnectWise companies using multiple matching strategies:
+    #   - Exact name match
+    #   - Identifier match (company ID embedded in Cove partner reference)
+    #   - Normalized name match (case-insensitive, special characters removed)
+    # Display comparison results in GridView for review
+    # Create missing companies in ConnectWise Manage with:
+    #   - Auto-generated intelligent identifier (company abbreviation)
+    #   - Configurable status (default: Active)
+    #   - Configurable type (default: Customer)
+    # Export comparison results to CSV for record-keeping
     #
-    # Usage Examples:
-    #   # Interactive mode - analyze all customers
-    #   .\Cove2CWM-SyncCustomers.v10.ps1 -PartnerName "CMIT Solutions of Kelowna"
+    # Use the -PartnerName parameter to specify Cove partner name to analyze
+    # Use the -CSVPath parameter to load existing monitoring script CSV (skips API enumeration)
+    # Use the -CreateCompany parameter to create specific company (skip GridView selection)
+    # Use the -CompanyStatus parameter to set company status (default="Active")
+    # Use the -CompanyType parameter to set company type (default="Customer")
+    # Use the -WhatIf parameter to preview company creation without making changes (default=$false)
+    # Use the -NonInteractive parameter to skip user prompts when called from another script (default=$false)
     #
-    #   # Create specific company only
-    #   .\Cove2CWM-SyncCustomers.v10.ps1 -PartnerName "CMIT Solutions of Kelowna" -CreateCompany "CMIT Oak WC - LCA Services"
-    #
-    #   # Use existing CSV from monitoring script
-    #   .\Cove2CWM-SyncCustomers.v10.ps1 -CSVPath ".\tickets\20251222_CoveMonitoring_v03.csv"
-    #
-    #   # WhatIf mode - preview without creating
-    #   .\Cove2CWM-SyncCustomers.v10.ps1 -PartnerName "SEDEMO" -WhatIf
-#>
+    # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/service-management/json-api/home.htm
+    # https://github.com/christaylorcodes/ConnectWiseManageAPI
+# -----------------------------------------------------------#>  ## Behavior
 
 [CmdletBinding()]
 Param(
-    [Parameter(Mandatory=$false)]
-    [string]$PartnerName = "",
+    [Parameter(Mandatory=$false)][string]$PartnerName = "", 
     
-    [Parameter(Mandatory=$false)]
-    [string]$CSVPath = "",
+    [Parameter(Mandatory=$false)][string]$CSVPath = "",             ## Path to CSV from Cove monitoring script (skips API enumeration)
     
-    [Parameter(Mandatory=$false)]
-    [string]$CreateCompany = "",  # Specific company name to create (skip GridView)
+    [Parameter(Mandatory=$false)][string]$CreateCompany = "",       ## Specific company name to create (skip GridView)
     
-    [Parameter(Mandatory=$false)]
-    [string]$CompanyStatus = "Active",
+    [Parameter(Mandatory=$false)][string]$CompanyStatus = "Active", ## ConnectWise Company Status to assign
     
-    [Parameter(Mandatory=$false)]
-    [string]$CompanyType = "Customer",
+    [Parameter(Mandatory=$false)][string]$CompanyType = "Customer", ## ConnectWise Company Type to assign
     
-    [Parameter(Mandatory=$false)]
-    [switch]$WhatIf,
+    [Parameter(Mandatory=$false)][bool]$WhatIf = $false,            ## Simulate company creation without making changes
     
-    [Parameter(Mandatory=$false)]
-    [switch]$NonInteractive  # Skip user prompts when called from another script
+    [Parameter(Mandatory=$false)][bool]$NonInteractive = $false     ## Skip user prompts when called from another script
 )
 
-#Requires -Version 5.1 #relaunches in PS 7.x
+#Requires -Version 7.0
 
-# Check if running in PowerShell 5 and relaunch with PowerShell 7 if available
+# PowerShell 7 version check with helpful error message
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-    $pwshPath = $null
-    
-    # Check common PowerShell 7 installation paths
-    $possiblePaths = @(
-        "C:\Program Files\PowerShell\7\pwsh.exe",
-        "C:\Program Files (x86)\PowerShell\7\pwsh.exe",
-        "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-    )
-    
-    foreach ($path in $possiblePaths) {
-        if (Test-Path $path) {
-            $pwshPath = $path
-            break
-        }
-    }
-    
-    if ($pwshPath) {
-        Write-Host "PowerShell 7 required. Relaunching with PowerShell 7..." -ForegroundColor Yellow
-        $params = $PSBoundParameters.GetEnumerator() | ForEach-Object { "-$($_.Key)", $_.Value }
-        & $pwshPath -File $PSCommandPath @params
-        exit $LASTEXITCODE
-    } else {
-        Write-Host "ERROR: This script requires PowerShell 7 or later." -ForegroundColor Red
-        Write-Host "Please install PowerShell 7 from: https://aka.ms/powershell" -ForegroundColor Yellow
-        exit 1
-    }
+    Write-Host "ERROR: This script requires PowerShell 7 or later." -ForegroundColor Red
+    Write-Host "Current version: $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
+    Write-Host "Download PowerShell 7: https://aka.ms/powershell" -ForegroundColor Cyan
+    exit 1
 }
 
 Clear-Host
