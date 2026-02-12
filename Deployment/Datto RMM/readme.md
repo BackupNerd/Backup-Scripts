@@ -5,6 +5,9 @@ Some scripts in this repo branch have been depricated, with new instructions ava
 ## Documentation
 https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/external-cove-integrations/Datto/datto.htm
 
+## Script
+https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/Downloads/Cove%20Data%20Protection%20deployment.cpt
+
 With use of this guide, you will be able to roll out Cove Data Protection (Cove) onto your Datto RMM devices with just a few mouse clicks. After the roll-out, the backup software is not only installed but also configured with a backup Profile and Retention Policy of your choice.
 
 ## The automation policy will:
