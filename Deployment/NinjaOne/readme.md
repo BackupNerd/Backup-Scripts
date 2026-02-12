@@ -2,6 +2,7 @@
 
 Some scripts in this repo branch have been depricated, with new instructions available directly from within the Cove documentation at the below link:
 
+## Documentation
 https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/external-cove-integrations/ninjaOne/NinjaOne.htm
 
 With use of this guide, you will be able to roll out Cove Data Protection (Cove) onto your NinjaOne devices with just a few clicks. After the roll-out, the backup software is not only installed but also configured with a backup Profile and Retention Policy of your choice.
