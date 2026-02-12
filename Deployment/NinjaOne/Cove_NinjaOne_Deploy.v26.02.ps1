@@ -1,3 +1,31 @@
+<# ----- About: ----
+    # Cove Data Protection Agent Deployment for Windows (NinjaOne)
+    # Revision v26.2
+    # Reddit https://www.reddit.com/r/Nable/
+# -----------------------------------------------------------#>
+
+<# ----- Legal: ----
+    # Sample scripts are not supported under any N-able support program or service.
+    # The sample scripts are provided AS IS without warranty of any kind.
+    # N-able expressly disclaims all implied warranties including, warranties
+    # of merchantability or of fitness for a particular purpose. 
+    # In no event shall N-able or any other party be liable for damages arising
+    # out of the use of or inability to use the sample scripts.
+# -----------------------------------------------------------#>
+<# ----- Compatibility: ----
+    # For use with the Standalone edition of N-able | Cove Data Protection
+    # Tested with release 25.10
+# -----------------------------------------------------------#>
+
+<# ----- Behavior: ----
+    # Downloads the latest version of the Cove Backup Manager
+	# Save the download in C:\Users\Public\Downloads\
+	# Silently installs the Backup Manager
+	# Adds the new device to the appropriate Cove customer with optional profile and retention policy
+	# Removes the downloaded installer after installation
+    # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/external-cove-integrations/ninjaOne/NinjaOne-generate-deployment-script.htm
+
+# -----------------------------------------------------------#>
 # Begin Install Script Cove Data Protection deployment
 
 $CoveInstallationID = Ninja-Property-Get 'CoveInstallationID'
