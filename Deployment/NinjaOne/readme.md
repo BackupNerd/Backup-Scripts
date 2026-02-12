@@ -1,6 +1,6 @@
 # NinjaOne Integration - Overview
 
-Some scripts in this repo branch have been depricated, with new instructions available directly from within the Cove documentation at this link  
+Some scripts in this repo branch have been depricated, with new instructions available directly from within the Cove documentation at the below link:
 
 https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/external-cove-integrations/ninjaOne/NinjaOne.htm
 
