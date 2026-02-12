@@ -12,6 +12,7 @@
     # In no event shall N-able or any other party be liable for damages arising
     # out of the use of or inability to use the sample scripts.
 # -----------------------------------------------------------#>
+
 <# ----- Compatibility: ----
     # For use with the Standalone edition of N-able | Cove Data Protection
     # Tested with release 25.10
@@ -26,6 +27,7 @@
     # https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/external-cove-integrations/ninjaOne/NinjaOne-generate-deployment-script.htm
 
 # -----------------------------------------------------------#>
+
 # Begin Install Script Cove Data Protection deployment
 
 $CoveInstallationID = Ninja-Property-Get 'CoveInstallationID'
