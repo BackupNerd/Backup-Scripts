@@ -1,11 +1,18 @@
 <# ----- About: ----
     # N-able Cove Data Protection Monitoring with ConnectWise Manage Ticket Integration
-    # Revision v10 - 2026-01-01 - Company Lookup Cache Optimization
+    # Revision v10.1 - 2026-02-16 - Authentication & Credential Handling Fixes
     # Author: Eric Harless, Head Backup Nerd - N-able
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # https://github.com/backupNerd
     #
-    # v10 Changes:
+    # v10.1 Changes (2026-02-16):
+    #   - Fixed Set-APICredentials to use XML format (Export-Clixml) instead of text file format
+    #   - Added try/catch error handling for corrupted credential files with auto-recovery
+    #   - Enhanced Send-APICredentialsCookie with detailed error messages (API errors vs network errors)
+    #   - Fixed case sensitivity in authentication visa token validation
+    #   - Improved debug output for authentication troubleshooting
+    #
+    # v10 Changes (2026-01-01):
     #   - Added EndCustomer → CWM Company cache to eliminate redundant lookups for same customer
     #   - Fixed company creation timing - delay moved BEFORE CWM query (was after, causing ticket creation failures)
     #   - Enhanced placeholder pattern with wait logic for concurrent company creation
@@ -226,23 +233,23 @@ https://github.com/christaylorcodes/ConnectWiseManageAPI
 Param (
     [int]$DaysBack = 30,                                         ## Days to look back for backup failures
     [int]$DeviceCount = 20,                                      ## Maximum number of devices to query
-    [string]$PartnerName = "",                                   ## Exact Cove partner/customer name to monitor (optional - defaults to authenticated partner)
+    [string]$PartnerName = "SEDEMO",                                   ## Exact Cove partner/customer name to monitor (optional - defaults to authenticated partner)
     [string]$TestDeviceName = "",                                ## Filter to single device for testing (e.g., "desktop-ph5hqmb")
 
     # Servers/Workstations Monitoring
     [bool]$MonitorSystems = $true,                               ## Monitor servers and workstations
     [int]$StaleHoursServers = 26,                                ## Hours since last backup to consider stale (servers)
-    [int]$StaleHoursWorkstations = 240,                          ## Hours since last backup to consider stale (workstations)
+    [int]$StaleHoursWorkstations = 72,                          ## Hours since last backup to consider stale (workstations)
     
     # M365 Monitoring
     [bool]$MonitorM365 = $true,                                  ## Monitor Microsoft 365 tenants
-    [int]$StaleHoursM365 = 12,                                   ## Hours since last backup to consider stale (M365 tenants)
+    [int]$StaleHoursM365 = 2,                                   ## Hours since last backup to consider stale (M365 tenants)
 
     # Ticketing Options
     [bool]$CreateTickets = $true,                                ## Set $true to create tickets in ConnectWise
     [bool]$UpdateTickets = $true,                                ## Set $true to update existing tickets
     [bool]$CloseResolvedTickets = $true,                         ## Set $true to close resolved tickets
-    [bool]$AutoCreateCompanies = $true,                          ## Set $true to auto-create missing companies in ConnectWise
+    [bool]$AutoCreateCompanies = $false,                          ## Set $true to auto-create missing companies in ConnectWise
     [bool]$UpdateCoveReferences = $false,                        ## Set $true to update Cove partner ExternalCode with CWM Company ID
     [bool]$UseDevicePartner = $false,                            ## Set $true to create tickets at device partner level (not End Customer) - PROTOTYPE
     [bool]$UseLocalTime = $true,                                 ## Display timestamps in local time instead of UTC
@@ -710,6 +717,7 @@ $sslDebugLogPath = Join-Path $PSScriptRoot "SSL_Certificate_Errors_$(Get-Date -F
     
     # Track processed tickets to prevent duplicate operations in same session
     $Script:ProcessedTickets = @{
+        Created = @()  # Track created tickets to prevent duplicates
         Updated = @()
         Closed = @()
     }
@@ -3545,12 +3553,20 @@ Function Set-APICredentials {
     Write-Output "  Enter Exact, Case Sensitive Partner Name for Backup.Management API i.e. 'Acme, Inc (bob@acme.net)'"
     DO{ $Script:PartnerName = Read-Host "  Enter Login Partner Name" }
     WHILE ($PartnerName.length -eq 0)
-    $PartnerName | out-file $APIcredfile
 
     $BackupCred = Get-Credential -Message 'Enter Login Email and Password for Backup.Management API'
-    $BackupCred | Add-Member -MemberType NoteProperty -Name PartnerName -Value "$PartnerName"
-    $BackupCred.UserName | Out-file -append $APIcredfile
-    $BackupCred.Password | ConvertFrom-SecureString | Out-file -append $APIcredfile
+    
+    # Create credential object in v10 XML format (matches CWM pattern)
+    $CDPCredentials = [PSCustomObject]@{
+        PartnerName = $PartnerName
+        Username = $BackupCred.UserName
+        Password = ($BackupCred.Password | ConvertFrom-SecureString)
+    }
+
+    # Save to XML (DPAPI encrypted)
+    $CDPCredentials | Export-Clixml -Path $APIcredfile -Force
+    
+    Write-Output "  ✓ Credentials saved to: $APIcredfile"
 
     Start-Sleep -milliseconds 300
 
@@ -3578,17 +3594,30 @@ Function Get-APICredentials {
             Write-Output    $Script:strLineSeparator
             "  Backup API Credential File Present"
             
-            # Load XML credential file
-            $APIcredentials = Import-Clixml -Path $APIcredfile
+            try {
+                # Load XML credential file
+                $APIcredentials = Import-Clixml -Path $APIcredfile -ErrorAction Stop
 
-            $Script:cred0 = $APIcredentials.PartnerName
-            $Script:cred1 = $APIcredentials.Username
-            $Script:cred2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR(($APIcredentials.Password | ConvertTo-SecureString)))
+                $Script:cred0 = $APIcredentials.PartnerName
+                $Script:cred1 = $APIcredentials.Username
+                $Script:cred2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR(($APIcredentials.Password | ConvertTo-SecureString)))
 
-            Write-Output    $Script:strLineSeparator
-            Write-Output "  Stored Backup API Partner  = $Script:cred0"
-            Write-Output "  Stored Backup API User     = $Script:cred1"
-            Write-Output "  Stored Backup API Password = Encrypted"
+                Write-Output    $Script:strLineSeparator
+                Write-Output "  Stored Backup API Partner  = $Script:cred0"
+                Write-Output "  Stored Backup API User     = $Script:cred1"
+                Write-Output "  Stored Backup API Password = Encrypted"
+            } catch {
+                Write-Output    $Script:strLineSeparator
+                Write-Warning "  Backup API Credential File is corrupted or invalid"
+                Write-Output "  Error: $($_.Exception.Message)"
+                Write-Output "  Removing corrupted file and prompting for new credentials..."
+                
+                # Delete corrupted file
+                Remove-Item -Path $APIcredfile -Force -ErrorAction SilentlyContinue
+                
+                # Prompt for new credentials
+                Set-APICredentials
+            }
 
         } else {
             Write-Output    $Script:strLineSeparator
@@ -3613,30 +3642,63 @@ Function Send-APICredentialsCookie {
     $data.params.username = $Script:cred1
     $data.params.password = $Script:cred2
 
-    $Script:Authenticate = Invoke-RestMethod -Method POST `
-        -ContentType 'application/json' `
-        -Body (ConvertTo-Json $data) `
-        -Uri $url `
-        -TimeoutSec 30 `
-        -SessionVariable Script:websession `
-        -UseBasicParsing
-    $Script:cookies = $websession.Cookies.GetCookies($url)
-    $Script:websession = $websession
+    try {
+        $Script:Authenticate = Invoke-RestMethod -Method POST `
+            -ContentType 'application/json' `
+            -Body (ConvertTo-Json $data) `
+            -Uri $url `
+            -TimeoutSec 30 `
+            -SessionVariable Script:websession `
+            -UseBasicParsing
+        $Script:cookies = $websession.Cookies.GetCookies($url)
+        $Script:websession = $websession
 
-    if ($DebugCDP) {
-        Write-Host "`n[DEBUG] API Authentication Response:" -ForegroundColor Yellow
-        $Script:Authenticate | ConvertTo-Json -Depth 5 | Write-Host
-    }
+        if ($DebugCDP) {
+            Write-Host "`n[DEBUG] API Authentication Response:" -ForegroundColor Yellow
+            $Script:Authenticate | ConvertTo-Json -Depth 5 | Write-Host
+        }
 
-    if ($authenticate.visa) {
-        $Script:visa = $authenticate.visa
-        $Script:UserId = $authenticate.result.result.id
-    }else{
+        # Check for API error response
+        if ($Script:Authenticate.error) {
+            Write-Output    $Script:strLineSeparator
+            Write-Output "  Authentication API Error:"
+            Write-Output "  Code: $($Script:Authenticate.error.code)"
+            Write-Output "  Message: $($Script:Authenticate.error.message)"
+            Write-Output    $Script:strLineSeparator
+            Set-APICredentials  ## Create API Credential File if Authentication Fails
+            return
+        }
+
+        # Check for valid visa token
+        if ($Script:Authenticate.visa) {
+            $Script:visa = $Script:Authenticate.visa
+            $Script:UserId = $Script:Authenticate.result.result.id
+            Write-Output "  ✓ Authentication successful"
+        } else {
+            Write-Output    $Script:strLineSeparator
+            Write-Output "  Authentication Failed: No visa token received"
+            Write-Output "  Please confirm your Backup.Management Partner Name and Credentials"
+            Write-Output "  Please Note: Multiple failed authentication attempts could temporarily lockout your user account"
+            Write-Output    $Script:strLineSeparator
+
+            if ($DebugCDP) {
+                Write-Host "`n[DEBUG] Full authentication response:" -ForegroundColor Red
+                $Script:Authenticate | ConvertTo-Json -Depth 10 | Write-Host
+            }
+
+            Set-APICredentials  ## Create API Credential File if Authentication Fails
+        }
+    } catch {
         Write-Output    $Script:strLineSeparator
-        Write-Output "  Authentication Failed: Please confirm your Backup.Management Partner Name and Credentials"
-        Write-Output "  Please Note: Multiple failed authentication attempts could temporarily lockout your user account"
+        Write-Output "  Authentication Network Error:"
+        Write-Output "  $($_.Exception.Message)"
         Write-Output    $Script:strLineSeparator
-
+        
+        if ($DebugCDP) {
+            Write-Host "`n[DEBUG] Exception Details:" -ForegroundColor Red
+            $_ | Format-List * -Force | Out-String | Write-Host
+        }
+        
         Set-APICredentials  ## Create API Credential File if Authentication Fails
     }
 
@@ -6499,6 +6561,7 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
         if ($CreateTickets) {
             $newTicket = New-CWMTicket @ticketParams
             if ($newTicket -and $newTicket.id -and $newTicket.id -gt 0) {
+                $Script:ProcessedTickets.Created += $newTicket.id  # Track to prevent duplicates
                 $ticketUrl = Get-CWMTicketURL -TicketID $newTicket.id
                 Write-Host "  Created ticket #$($newTicket.id) for $($Device.DeviceName) at company $($CWMCompany.Name)" -ForegroundColor Green
                 Write-Host "    URL: $ticketUrl" -ForegroundColor Gray
@@ -6529,6 +6592,7 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
                 $newTicket = New-CWMTicket @ticketParams
                 
                 if ($newTicket -and $newTicket.id -and $newTicket.id -gt 0) {
+                    $Script:ProcessedTickets.Created += $newTicket.id  # Track to prevent duplicates
                     $ticketUrl = Get-CWMTicketURL -TicketID $newTicket.id
                     Write-Host "    ✓ Retry successful - Created ticket #$($newTicket.id)" -ForegroundColor Green
                     Write-Host "      URL: $ticketUrl" -ForegroundColor Gray
@@ -7348,6 +7412,20 @@ foreach ($partner in $Script:SelectedPartners) {
                 }
             } else {
                 # Create new ticket
+                # Check if we already created a ticket for this device in this session
+                $alreadyCreated = $Script:TicketActions | Where-Object { 
+                    $_.Action -eq 'Created' -and 
+                    $_.DeviceName -eq $device.DeviceName -and 
+                    $_.Company -eq $CWMCompany.Name 
+                }
+                
+                if ($alreadyCreated) {
+                    if ($debugCDP) { 
+                        Write-Host "[DEBUG] Skipping duplicate ticket creation for $($device.DeviceName) - already created ticket #$($alreadyCreated.TicketID)" -ForegroundColor Magenta 
+                    }
+                    continue  # Skip to next device
+                }
+                
                 $ticketCreateStart = Get-Date
                 $newTicket = New-CWMTicketForDevice -Device $device -CWMCompany $CWMCompany
                 $Script:PerformanceMetrics.TicketCreateTime += ((Get-Date) - $ticketCreateStart).TotalMilliseconds
@@ -7885,11 +7963,14 @@ This ticket was automatically created by Cove Data Protection Monitoring $($Scri
         }
     }
     
+    # Calculate consistent ticket closure count from TicketActions
+    $ticketsClosedCount = ($Script:TicketActions | Where-Object {$_.Action -eq 'Closed'}).Count
+    
     # Display detailed closure statistics
     Write-Host "`n  Ticket Closure Summary:" -ForegroundColor Cyan
     Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
     Write-Host ("    Total Open Tickets Found           : {0,5}" -f $ticketsEvaluated) -ForegroundColor White
-    Write-Host ("    Tickets Closed (Issue Resolved)    : {0,5}" -f $ticketsClosed) -ForegroundColor Green
+    Write-Host ("    Tickets Closed (Issue Resolved)    : {0,5}" -f $ticketsClosedCount) -ForegroundColor Green
     Write-Host ("    Tickets Left Open (Backup Running) : {0,5}" -f $ticketsLeftOpen_InProcess) -ForegroundColor Yellow
     Write-Host ("    Tickets Left Open (Still Failing)  : {0,5}" -f $ticketsLeftOpen_StillHasIssues) -ForegroundColor Yellow
     Write-Host ("    Tickets Skipped (Just Created/Upd) : {0,5}" -f $ticketsSkipped_JustCreatedOrUpdated) -ForegroundColor Cyan
@@ -8046,6 +8127,8 @@ if ($Script:CWMServerConnection) {
 }
 
 #endregion ----- Main Script Execution ----
+
+
 
 
 
