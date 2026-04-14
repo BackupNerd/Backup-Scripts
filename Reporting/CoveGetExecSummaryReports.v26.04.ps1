@@ -56,7 +56,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$False)][datetime]$Since,                               ## Earliest report date (default = first day of prior month)
-    [Parameter(Mandatory=$False)][string]$ExportPath = "$PSScriptRoot",          ## Root download folder
+    [Parameter(Mandatory=$False)][string]$ExportPath = "",                        ## Root download folder (default: script directory)
     [Parameter(Mandatory=$False)][int]$MaxGenerate = 6,                          ## Max report generation requests per run (0 = unlimited)
     [Parameter(Mandatory=$False)][switch]$ClearCredentials                       ## Wipe stored credentials
 )
@@ -87,6 +87,7 @@ $urlReports  = 'https://api.backup.management/report-manager'
 $urlFiles    = 'https://api.backup.management/downloads-proxy-api'
 $urlDownload = 'https://downloads-proxy-api.cloudbackup.management/downloads'
 
+if (-not $ExportPath) { $ExportPath = $PSScriptRoot }            ## PS5: $PSScriptRoot is unavailable in param defaults
 $ExportPath  = Join-Path -Path $ExportPath -ChildPath "Exec_Summary_Reports_$($Since.ToString('yyyy-MM'))"
 New-Item -ItemType Directory -Path $ExportPath -Force | Out-Null
 
