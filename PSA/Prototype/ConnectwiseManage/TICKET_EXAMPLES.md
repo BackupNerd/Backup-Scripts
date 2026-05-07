@@ -108,7 +108,7 @@ System State Status: Completed
 View Device: https://backup.management/#/backup/overview/view/1662(panel:device-properties/2345678/summary)
 
 This ticket was automatically created by Cove Data Protection Monitoring v10 @ 2026-01-06 00:03:41 (System Time)
-```
+``
   Session Start       : 2025-12-29 03:15:35 (EST)
   Last Completed      : 2025-12-29 03:18:22 (EST) (~2d 8h ago)
   Last Success        : 2025-12-29 03:18:22 (EST) (~2d 8h ago)
