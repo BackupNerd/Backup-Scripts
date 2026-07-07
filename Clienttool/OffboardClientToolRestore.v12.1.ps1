@@ -1,6 +1,6 @@
 <# ----- About: ----
     # Cove Data Protection | Offline Backup Session Restore
-    # Revision v12.1 - 2026-07-07
+    # Revision v12.11 - 2026-07-07
     # Author: Eric Harless, Head Backup Nerd - N-able
     # Twitter @Backup_Nerd  Email: eric.harless@n-able.com
     # Script repository @ https://github.com/backupnerd
@@ -135,12 +135,12 @@
 #>
 
 param (
-        [string[]]$RestoreSelection = @("C:\temp","C:\output"),                                     ## Path(s) to restore; multiple paths each get their own -selection argument
-        [string]$RestoreBase = "d:\test restores\",                                        ## Base directory where the restored files will be placed 
+        [string[]]$RestoreSelection = @("D:\NTLFILES01\Ypsilanti Controlled Documents"),                                     ## Path(s) to restore; multiple paths each get their own -selection argument
+        [string]$RestoreBase = "D:\Restore\",                                        ## Base directory where the restored files will be placed 
         [switch]$CombinedRestore = $true,                                               ## ( if $true ) Combine multiple date restores into a single directory
 
         [ValidateSet("Overwrite", "Skip")]
-        [string]$ExistingFileRestorePolicy = "Overwrite",                                     ## Restore policy for existing files
+        [string]$ExistingFileRestorePolicy = "Skip",                                     ## Restore policy for existing files
                 
         [ValidateSet("CheckContentOfOutdatedFilesOnly", "CheckContentOfAllFiles")]
         [string]$OutdatedFileRestorePolicy = "CheckContentOfOutdatedFilesOnly",          ## Restore only outdated files
@@ -149,7 +149,7 @@ param (
         [string]$DataSource = "FileSystem",                                              ## Data source type to be restored
 
         [ValidateSet("All", "Daily", "Weekly", "Monthly")]
-        [string]$SessionType = "All",                                                    ## Type of sessions to display be restored
+        [string]$SessionType = "Weekly",                                                    ## Type of sessions to display be restored
         
         [ValidateSet("Sunday", "Monday", "Tuesday",
         "Wednesday", "Thursday", "Friday", "Saturday")][string]$Weekday = "Friday",      ## Day of the week for weekly restore sessions
