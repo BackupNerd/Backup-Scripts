@@ -165,19 +165,14 @@
 
 ### Local SpeedVault
 
-If a SpeedVault cache exists on the restore machine, configure it as the restore source:
-
-```powershell
-# In BackupFP config.ini [General] section
-RestoreDataSource=SpeedVault
-```
+If a SpeedVault cache exists at the restore restore location, configure it fro fster restores
 
 ### Parallel Download Threads
 
 Increase download concurrency:
 
 ```powershell
-# In config.ini [General] section
+# In config.ini [General] section add
 RestoreDownloadThreadCount=50
 
 # Then restart BackupFP service
