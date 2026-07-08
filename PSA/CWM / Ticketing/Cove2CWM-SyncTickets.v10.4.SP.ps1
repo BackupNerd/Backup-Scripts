@@ -279,7 +279,7 @@ https://github.com/christaylorcodes/ConnectWiseManageAPI
 Param (
     [int]$DaysBack = 30,                                         ## Days to look back for backup failures
     [int]$DeviceCount = 5000,                                    ## Maximum number of devices to query
-    [string]$PartnerName = "Soft Point Media",                   ## Exact Cove partner/customer name to monitor (optional - defaults to authenticated partner)
+    [string]$PartnerName = "",                   ## Exact Cove partner/customer name to monitor (optional - defaults to authenticated partner)
     [string]$TestDeviceName = "",                                ## Filter to single device for testing (e.g., "desktop-ph5hqmb")
 
     # Servers/Workstations Monitoring
