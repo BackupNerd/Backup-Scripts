@@ -1,28 +1,29 @@
-﻿<# ----- About: ----
-    # N-able Backup Get M365 Device Stats
-    # Revision v31 - 2022-06-15
-    # Author: Eric Harless, Head Backup Nerd - N-able 
-    # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
+<# ----- About: ----
+    # Cove Data Protection | M365 Device Statistics
+    # Revision v31a - 2026-07-15
+    # Author: Eric Harless, Head Backup Nerd - N-able
+    # Twitter @Backup_Nerd  Email:eric.harless@N-able.com
     # Reddit https://www.reddit.com/r/Nable/
+    # Script repository @ https://github.com/backupnerd
+    # Schedule a meeting @ https://calendly.com/backup_nerd/
 # -----------------------------------------------------------#>  ## About
 
 <# ----- Legal: ----
     # Sample scripts are not supported under any N-able support program or service.
     # The sample scripts are provided AS IS without warranty of any kind.
     # N-able expressly disclaims all implied warranties including, warranties
-    # of merchantability or of fitness for a particular purpose. 
+    # of merchantability or of fitness for a particular purpose.
     # In no event shall N-able or any other party be liable for damages arising
     # out of the use of or inability to use the sample scripts.
 # -----------------------------------------------------------#>  ## Legal
 
 <# ----- Compatibility: ----
-    # For use with the Standalone edition of N-able Backup
+    # For use with the Standalone edition of N-able | Cove Data Protection
     # Sample scripts may contain non-public API calls which are subject to change without notification
-  
-# -----------------------------------------------------------#>  ## Compatibility
+  # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
-    # Check/ Get/ Store secure credentials 
+    # Check/ Get/ Store secure credentials
     # Authenticate to https://backup.management console
     # Check partner level/ Enumerate partners/ GUI select partner
     # Enumerate devices/ GUI select M365 devices
@@ -44,10 +45,37 @@
     # Use the -ExchangeAutoInclude parameter (On,Off) to set AutoInclude Backup for new users (Mandatory)
     # Use the -OneDriveAutoInclude parameter (On,Off) to set AutoInclude Backup for new users (Mandatory)
     #
-    # https://documentation.n-able.com/backup/userguide/documentation/Content/service-management/json-api/home.htm
-    # https://documentation.n-able.com/backup/userguide/documentation/Content/service-management/json-api/API-column-codes.htm
-
+    # https://developer.n-able.com/n-able-cove/docs
+    # https://developer.n-able.com/n-able-cove/docs/column-codes
+    #
 # -----------------------------------------------------------#>  ## Behavior
+
+<# ----- Troubleshooting: ----
+    # If you encounter issues running the script, ensure that the script is unblocked and the execution policy is set correctly.
+    # You may need to login as an adminsitrator to perform these tasks.
+    #
+    # To unblock the script:
+    # 1. Right-click the script file in File Explorer and select 'Properties'.
+    # 2. In the 'General' tab, check the 'Unblock' checkbox if it is present.
+    # 3. Click 'Apply' and then 'OK'.
+    #
+    # Alternatively, you can unblock the script using PowerShell:
+    # 1. Open PowerShell as an administrator.
+    # 2. Run the following command to unblock the script:
+    #    Unblock-File -Path "C:\Path\To\Your\Script.ps1"
+    #
+    # To set the execution policy to allow scripts to run:
+    # 1. Open PowerShell as an administrator.
+    # 2. Run the following command to set the execution policy:
+    #    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+    # 3. If prompted, confirm the change by typing 'Y' and pressing Enter.
+    #
+    # Note: Setting the execution policy to 'Unrestricted' allows all scripts to run, which is less secure but can be useful for troubleshooting.
+    #       Alternatively, you can use 'Bypass' to completely bypass the execution policy for the current session:
+    #       Run the following command to set the execution policy to 'Bypass':
+    #       Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+    #       This setting is temporary and only applies to the current PowerShell session.
+# -----------------------------------------------------------#>  ## Troubleshooting
 
 [CmdletBinding(DefaultParameterSetName="Export")]
     Param (
@@ -67,7 +95,7 @@
         [Parameter(ParameterSetName="Import",Mandatory=$True)]
             [ValidateSet('On','Off')]  [String]$OneDriveAutoInclude,                                        ## (On,Off) to set AutoInclude Backup for new users (Mandatory)
         [Parameter(Mandatory=$False)] [string]$ExportPath = "$PSScriptRoot",                                ## Export Path
-        [Parameter(Mandatory=$False)] [string]$delimiter = "",                                              ## Delimiter
+        [Parameter(Mandatory=$False)] [string]$delimiter = ",",                                              ## Delimiter
         [Parameter(Mandatory=$False)] [switch]$ClearCredentials                                             ## Remove Stored API Credentials at start of script
     )
 
@@ -273,6 +301,9 @@ Function Save-CSVasExcel {
     }
 
     PROCESS {
+        # Re-write with UTF-8 BOM so Excel COM reads Unicode chars correctly
+        $content = [System.IO.File]::ReadAllText($CSVFile, [System.Text.Encoding]::UTF8)
+        [System.IO.File]::WriteAllText($CSVFile, $content, [System.Text.Encoding]::UTF8)
         $wb = $xl.workbooks.open($CSVFile)
         $xlOut = $CSVFile -replace '\.csv$', '.xlsx'
         
