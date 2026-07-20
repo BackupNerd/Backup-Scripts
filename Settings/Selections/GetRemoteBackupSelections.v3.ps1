@@ -1125,20 +1125,32 @@
         ##   Metadata quote: literal " in PartnerName/OS/etc — row unrecoverable, drop it (re-added next full run)
         ##   Schedule quote:  literal " in _Sched/_HFSched  — clear those columns only, metadata stays intact
         $metaColsToCheck  = @('PartnerName','OS','DeviceName','ComputerName','AccountID','Manufacturer','Model')
-        $schedColNames    = @($rows[0].PSObject.Properties.Name | Where-Object { $_ -match '_Sched$|_HFSched$' })
         $droppedRows      = [System.Collections.Generic.List[object]]::new()
         $schedHealedCount = 0
+        ## Per-datasource column sets — when any column in a set is corrupt, clear all 7
+        $dsAbbrevPrefixes = @($rows[0].PSObject.Properties.Name | Where-Object { $_ -match '^(.+)_Sched$' } |
+            ForEach-Object { if ($_ -match '^(.+)_Sched$') { $Matches[1] } })
+        $allDsColSuffixes = @('_Sched','_HFSched','_Include','_Exclude','_Signature','_LastValidated','_Changed')
 
         $rows = $rows | Where-Object {
             $row = $_
             ## Drop rows where metadata columns contain embedded quotes (unrecoverable column shift)
             $metaBad = $metaColsToCheck | Where-Object { $row.$_ -match '"' }
             if ($metaBad) { $droppedRows.Add($row); return $false }
-            ## Heal rows where only schedule columns are corrupt
-            $schedBad = $schedColNames | Where-Object { $row.$_ -match '"' }
-            if ($schedBad) {
-                foreach ($col in $schedColNames) { $row.$col = '' }
-                $schedHealedCount++
+            ## Per-datasource heal: clear all 7 columns if sched/hfsched/include/lastvalidated are corrupt or shifted
+            foreach ($prefix in $dsAbbrevPrefixes) {
+                $isCorrupt = ($row."${prefix}_Sched"          -match '"') -or
+                             ($row."${prefix}_HFSched"        -match '"') -or
+                             ($row."${prefix}_LastValidated"  -match '"') -or
+                             ($row."${prefix}_HFSched"        -match '^\d{2}:\d{2}$') -or  ## bare time = Sched shift
+                             ($row."${prefix}_Include"        -match '^\d{2}:\d{2}') -or   ## time in Include = shifted
+                             ($row."${prefix}_Include"        -match '^\d+ \| ')             ## sched format in Include = shifted
+                if ($isCorrupt) {
+                    foreach ($suffix in $allDsColSuffixes) {
+                        if ($row.PSObject.Properties["${prefix}${suffix}"]) { $row."${prefix}${suffix}" = '' }
+                    }
+                    $schedHealedCount++
+                }
             }
             return $true
         }
@@ -1182,36 +1194,9 @@
             $standardRows += $stdRow
         }
         
-        ## Export to CSV — recreate rows with properties in exact order, then export
-        ##  ConvertTo-Csv/Export-Csv always sort columns alphabetically, so we build CSV manually
-        
+        ## Export-Csv respects Select-Object property order in PS7 — handles all quoting correctly
         if ($Script:DebugCDP) { Write-Host "    [DEBUG] $($allColumns.Count) columns, first 5 are: $(($allColumns | Select-Object -First 5) -join ', ')" -ForegroundColor DarkGray }
-        if ($Script:DebugCDP) { Write-Host "    [DEBUG] DS columns (Include only): $(($allColumns | Where-Object { $_ -match '_Include' }) -join ', ')" -ForegroundColor DarkGray }
-        
-        ## Header
-        $headerLine = $allColumns -join ','
-        if ($Script:DebugCDP) { Write-Host "    [DEBUG] Header line first 100 chars: $($headerLine.Substring(0, 100))" -ForegroundColor DarkGray }
-        $csvLines = @($headerLine)
-        
-        ## Data rows - build from existing row, preserving property order
-        foreach ($row in $standardRows) {
-            $values = @()
-            foreach ($colName in $allColumns) {
-                $val = $row.$colName
-                # Escape CSV values properly
-                if ([string]::IsNullOrEmpty($val)) {
-                    $values += ""
-                } elseif ($val -like '* *' -or $val -like '*,*' -or $val -like '*"*' -or $val -match '[\r\n]') {
-                    $values += "`"$($val -replace '"', '""')`""
-                } else {
-                    $values += $val
-                }
-            }
-            $csvLines += $values -join ','
-        }
-        
-        ## Write to file
-        $csvLines -join "`r`n" | Out-File -FilePath $masterPath -Encoding UTF8 -Force
+        $standardRows | Select-Object $allColumns | Export-Csv -Path $masterPath -NoTypeInformation -Encoding UTF8 -Force
         
         Write-Host "  [*] Master CSV saved: $(Split-Path $masterPath -Leaf) ($($standardRows.Count) devices)" -ForegroundColor Cyan
         
