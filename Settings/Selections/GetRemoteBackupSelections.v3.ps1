@@ -177,102 +177,88 @@
 #region ----- Functions ----
 
 #region ----- Authentication ----
-    Function Set-APICredentials {
-        Write-Output $Script:strLineSeparator
-        Write-Output "  Setting Backup API Credentials"
-        if (Test-Path $APIcredpath) {
-            Write-Output $Script:strLineSeparator
-            Write-Output "  Backup API Credential Path Present" }else{ New-Item -ItemType Directory -Path $APIcredpath }
+    $Script:CredentialFile = "C:\ProgramData\MXB\$($env:COMPUTERNAME)_$($env:USERNAME)_API_Credentials.xml"
 
-        Write-Output "  Enter Exact, Case Sensitive Partner Name for N-able | Cove Data Protection | Backup.Management API i.e. 'Acme, Inc (bob@acme.net)'"
-        DO{ $Script:PartnerName = Read-Host "  Enter Login Partner Name" }
-        WHILE ($PartnerName.length -eq 0)
-        $PartnerName | Out-File $APIcredfile
-
-        $BackupCred = Get-Credential -Message 'Enter Login Email and Password for N-able | Cove Data Protection API'
-        $BackupCred | Add-Member -MemberType NoteProperty -Name PartnerName -Value "$PartnerName"
-
-        $BackupCred.UserName | Out-File -Append $APIcredfile
-        $BackupCred.Password | ConvertFrom-SecureString | Out-File -Append $APIcredfile
-
-        Start-Sleep -Milliseconds 300
-
-        Send-APICredentialsCookie  ## Attempt API Authentication
-
-    }  ## Set API credentials if not present
+    Function ConvertFrom-SecureString2 {
+        param([System.Security.SecureString]$SecureString)
+        $ptr  = [System.Runtime.InteropServices.Marshal]::SecureStringToGlobalAllocUnicode($SecureString)
+        $text = [System.Runtime.InteropServices.Marshal]::PtrToStringUni($ptr)
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeGlobalAllocUnicode($ptr)
+        return $text
+    }
 
     Function Get-APICredentials {
-        $Script:True_path = "C:\ProgramData\MXB\"
-        $Script:APIcredfile = Join-Path -Path $True_Path -ChildPath "$env:computername API_Credentials.Secure.txt"
-        $Script:APIcredpath = Split-Path -Path $APIcredfile
+        $credFile = $Script:CredentialFile
 
-        if (($ClearCredentials) -and (Test-Path $APIcredfile)) {
-            Remove-Item -Path $Script:APIcredfile
-            $ClearCredentials = $Null
-            Write-Output $Script:strLineSeparator
-            Write-Output "  Backup API Credential File Cleared"
-            Send-APICredentialsCookie  ## Retry Authentication
-        } else {
-            Write-Output $Script:strLineSeparator
-            Write-Output "  Getting Backup API Credentials"
-
-            if (Test-Path $APIcredfile) {
-                Write-Output $Script:strLineSeparator
-                "  Backup API Credential File Present"
-                $APIcredentials = Get-Content $APIcredfile
-
-                $Script:cred0 = [string]$APIcredentials[0]
-                $Script:cred1 = [string]$APIcredentials[1]
-                $Script:cred2 = $APIcredentials[2] | ConvertTo-SecureString
-                $Script:cred2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($Script:cred2))
-
-                Write-Output $Script:strLineSeparator
-                Write-Output "  Stored Backup API Partner  = $Script:cred0"
-                Write-Output "  Stored Backup API User     = $Script:cred1"
-                Write-Output "  Stored Backup API Password = Encrypted"
-            } else {
-                Write-Output $Script:strLineSeparator
-                Write-Output "  Backup API Credential File Not Present"
-                Set-APICredentials  ## Create API Credential File if Not Found
-            }
+        if ($ClearCredentials -and (Test-Path $credFile)) {
+            Remove-Item $credFile -Force
+            Write-Host "  Credential file removed. Re-prompting..." -ForegroundColor Yellow
         }
 
-    }  ## Get API credentials if present
+        if (Test-Path $credFile) {
+            Write-Host "  Loading credentials from $credFile" -ForegroundColor Cyan
+            $stored = Import-Clixml -Path $credFile
+            if ($stored.PSObject.Properties['PartnerName']) {
+                $secPwd = $stored.Password | ConvertTo-SecureString
+                $Script:cred0 = $stored.PartnerName
+                $Script:cred1 = $stored.Username
+                $Script:cred2 = ConvertFrom-SecureString2 -SecureString $secPwd
+                Write-Host "  Partner  : $Script:cred0" -ForegroundColor DarkCyan
+                Write-Host "  API User : $Script:cred1" -ForegroundColor DarkCyan
+            } else {
+                ## Legacy PSCredential format
+                $Script:cred0 = ''
+                $Script:cred1 = $stored.UserName
+                $Script:cred2 = ConvertFrom-SecureString2 -SecureString $stored.Password
+                Write-Host "  API User : $Script:cred1  (legacy format)" -ForegroundColor DarkCyan
+            }
+        } elseif ($env:COVE_USERNAME -and $env:COVE_PASSWORD) {
+            Write-Host "  Using COVE_USERNAME / COVE_PASSWORD environment variables" -ForegroundColor Cyan
+            $Script:cred0 = ''
+            $Script:cred1 = $env:COVE_USERNAME
+            $Script:cred2 = $env:COVE_PASSWORD
+        } else {
+            Write-Host "  No credential file found. Creating..." -ForegroundColor Yellow
+            $partnerName = ''
+            do { $partnerName = Read-Host "  Enter Backup.Management Partner Name (e.g. 'Acme, Inc')" }
+            while ($partnerName.Length -eq 0)
+
+            $cred = Get-Credential -Message 'Enter Backup.Management API User (email / username) and API Token (password)'
+            if (-not $cred) { throw "No credentials provided." }
+
+            $dir = Split-Path $credFile -Parent
+            if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+
+            [PSCustomObject]@{
+                PartnerName = $partnerName
+                Username    = $cred.UserName
+                Password    = ($cred.Password | ConvertFrom-SecureString)
+            } | Export-Clixml -Path $credFile -Force
+
+            Write-Host "  Credentials saved to $credFile" -ForegroundColor Green
+            $Script:cred0 = $partnerName
+            $Script:cred1 = $cred.UserName
+            $Script:cred2 = ConvertFrom-SecureString2 -SecureString $cred.Password
+        }
+    }
 
     Function Send-APICredentialsCookie {
-        Get-APICredentials  ## Read API Credential File before Authentication
+        Get-APICredentials
 
-        $url = "https://api.backup.management/jsonapi"
-        $data = @{}
-        $data.jsonrpc = '2.0'
-        $data.id = '2'
-        $data.method = 'Login'
-        $data.params = @{}
-        $data.params.partner   = $Script:cred0
-        $data.params.username  = $Script:cred1
-        $data.params.password  = $Script:cred2
+        $url  = "https://api.backup.management/jsonapi"
+        $body = @{ jsonrpc='2.0'; id='2'; method='Login'
+                   params=@{ username=$Script:cred1; password=$Script:cred2 } } | ConvertTo-Json
 
-        $webrequest = Invoke-WebRequest -Method POST `
-            -ContentType 'application/json' `
-            -Body (ConvertTo-Json $data) `
-            -Uri $url `
-            -SessionVariable Script:websession `
-            -UseBasicParsing
-            $Script:cookies    = $websession.Cookies.GetCookies($url)
-            $Script:websession = $websession
-            $Script:Authenticate = $webrequest | ConvertFrom-Json
+        $resp = Invoke-RestMethod -Uri $url -Method POST -ContentType 'application/json' -Body $body
 
-        if ($authenticate.visa) {
-            $Script:visa   = $authenticate.visa
-            $Script:UserId = $authenticate.result.result.id
+        if ($resp.visa) {
+            $Script:visa   = $resp.visa
+            $Script:UserId = $resp.result.result.id
+            Write-Host "  Authenticated as: $Script:cred1" -ForegroundColor Green
         } else {
-            Write-Output $Script:strLineSeparator
-            Write-Output "  Authentication Failed: Please confirm your Backup.Management Partner Name and Credentials"
-            Write-Output "  Please Note: Multiple failed authentication attempts could temporarily lockout your user account"
-            Write-Output $Script:strLineSeparator
-            Set-APICredentials  ## Create API Credential File if Authentication Fails
+            Write-Host "  Authentication Failed — use -ClearCredentials to re-prompt" -ForegroundColor Red
+            exit 1
         }
-
     }  ## Use Backup.Management credentials to Authenticate
 
     Function Get-VisaTime {
@@ -521,10 +507,10 @@
                 DeviceAlias  = $DeviceResult.Settings.I2  -join ''  ## AL
                 PartnerName  = $DeviceResult.Settings.I8  -join ''  ## AR
                 Location     = $DeviceResult.Settings.I11 -join ''  ## LN
-                Product      = $DeviceResult.Settings.I10 -join ''  ## PN
-                ProductID    = $DeviceResult.Settings.I9  -join ''  ## PD
-                Profile      = $DeviceResult.Settings.I56 -join ''  ## OP
-                ProfileID    = $DeviceResult.Settings.I54 -join ''  ## OI
+                Product      = ($DeviceResult.Settings.I10 -join '').Trim()  ## PN
+                ProductID    = ($DeviceResult.Settings.I9  -join '').Trim()  ## PD
+                Profile      = ($DeviceResult.Settings.I56 -join '').Trim()  ## OP
+                ProfileID    = ($DeviceResult.Settings.I54 -join '').Trim()  ## OI
                 OS           = $DeviceResult.Settings.I16 -join ''  ## OS
                 OSType       = $DeviceResult.Settings.I32 -join ''  ## OT
                 ## Decode I78 to comma-separated plugin names ONCE here so all downstream code
@@ -1287,10 +1273,10 @@
 
         if ($AllDevices) {
             $Script:SelectedDevices = $Script:DeviceDetail |
-                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK
+                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,ProductID,Product,ProfileID,Profile,ClientVersion,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK
         } else {
             $Script:SelectedDevices = $Script:DeviceDetail |
-                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK |
+                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,ProductID,Product,ProfileID,Profile,ClientVersion,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK |
                 Out-GridView -Title "Select Devices | $Script:PartnerName" -OutputMode Multiple
         }
 
