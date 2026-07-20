@@ -1,8 +1,44 @@
+# GetLocalBackupSelections.v2.ps1
+
+**Cove Data Protection - Local Device Backup Selections Report**
+
+Enumerates backup selections and schedules from the local Cove Backup Manager on the machine where the script is run. This is the local-device companion to `GetRemoteBackupSelections.v3.ps1` and is useful when you want to inspect configured datasource selections directly on a single endpoint without using RCG.
+
+---
+
+## Requirements
+
+- PowerShell 7+
+- N-able Cove Backup Manager installed on the local device
+- Sufficient permissions to query the local Backup Manager JSON-RPC endpoint
+- Excel (optional) — for XLS export if the script supports CSV/XLS output
+
+---
+
+## How It Works
+
+1. Connects to the local Backup Manager / JSON-RPC interface on the device where the script is executed
+2. Calls `EnumerateBackupSelections` for active datasources to collect inclusion and exclusion paths
+3. Calls `EnumerateBackupSchedule` and related schedule methods to collect configured backup timing
+4. Flattens the results into an analyst-friendly view for on-screen review and/or export
+5. Highlights selection details such as full-machine protection, explicit exclusions, and profile-driven items where applicable
+
+---
+
+## Typical Use Cases
+
+- Validate the exact selections on one device before rolling out profile changes
+- Compare local selections with centrally reported remote selections
+- Troubleshoot why a datasource is or is not protected
+- Review schedules and high-frequency backup configuration on a specific endpoint
+
+---
+
 # GetRemoteBackupSelections.v3.ps1
 
 **Cove Data Protection - Remote Device Backup Selections Report**
 
-Enumerates backup selections and schedules for all Cove Backup Manager devices in a partner account by connecting to each device via the Remote Connection Gateway (RCG). Maintains a persistent master CSV across runs and produces an analyst-ready export with anomaly flagging.
+Enumerates backup selections and schedules for all Cove Backup Manager devices in a partner account by connecting to each device via the Remote Connection Gateway (RCG). Maintains a persistent master CSV of device selection data across runs.
 
 ---
 
@@ -46,7 +82,7 @@ Enumerates backup selections and schedules for all Cove Backup Manager devices i
 |-----------|---------|-------------|
 | `-PartnerName` | *(from stored credentials)* | Root partner name to authenticate against |
 | `-AllPartners` | `$true` | Skip GUI partner selection |
-| `-AllDevices` | `$true` | Skip GUI device selection |
+| `-AllDevices` | `$true` | Skip device selection GUI |
 | `-DeviceCount` | `5000` | Maximum devices returned from API |
 | `-Export` | `$true` | Generate CSV / XLS output files |
 | `-Launch` | `$true` | Open the XLS/CSV after export |
@@ -86,7 +122,7 @@ The master CSV is the persistent source of truth. It accumulates device records 
 - **Unreachable devices** — metadata refreshed from `EnumerateAccountStatistics`; selections and schedules preserved from the last successful reach
 - **Orphaned devices** — devices no longer in the current inventory are flagged `NotInCurrentInventory` but retained in the master
 
-On save, the master is checked for CSV corruption. Schedule column corruption is self-healed (cleared for refresh on next run). Metadata column corruption causes the row to be dropped and logged for re-addition on next full run.
+On save, the master is checked for CSV corruption. Schedule column corruption is self-healed (cleared for refresh on next run). Metadata column corruption causes the row to be dropped and logged for review.
 
 A `.lock` file prevents concurrent script instances from corrupting the master CSV.
 
@@ -96,7 +132,7 @@ A `.lock` file prevents concurrent script instances from corrupting the master C
 
 The dated export is built from the full master on every run. Columns include:
 
-**Device metadata:** `Anomalies`, `PartnerID`, `PartnerName`, `AccountID`, `DeviceName`, `ComputerName`, `IPAddress`, `OS`, `Physicality`, `Manufacturer`, `Model`, `CPUCores`, `RAMBytes`, `ProductID`, `Product`, `ProfileID`, `Profile`, `ClientVersion`, `DataSources`, `CreationDate`, `LastSuccess`, `TimeStamp`, `Reachable`
+**Device metadata:** `Anomalies`, `PartnerID`, `PartnerName`, `AccountID`, `DeviceName`, `ComputerName`, `IPAddress`, `OS`, `Physicality`, `Manufacturer`, `Model`, `CPUCores`, `RAMBytes`, `ProductID`, `Product`, `ProfileID`, `Profile`, `ClientVersion`, `CreationDate`, `TimeStamp`, `LastSuccess`
 
 **Per datasource (repeated for each active datasource):** `<DS> Sched`, `<DS> HFSched`, `<DS> Last`, `<DS> Inc+`, `<DS> Exc-`
 
@@ -158,4 +194,4 @@ Use `-ClearCredentials` to delete stored credentials and re-prompt on next run.
 
 ## Legal
 
-Sample scripts are not supported under any N-able support program or service. Provided AS IS without warranty of any kind. N-able expressly disclaims all implied warranties. Sample scripts may contain non-public API calls which are subject to change without notification.
+Sample scripts are not supported under any N-able support program or service. Provided AS IS without warranty of any kind. N-able expressly disclaims all implied warranties. Sample scripts may contain non-public API calls which are subject to change without notice.
