@@ -2,7 +2,7 @@
 
 **Cove Data Protection - Local Device Backup Selections Report**
 
-Enumerates backup selections and schedules from the local Cove Backup Manager on the machine where the script is run. This is the local-device companion to `GetRemoteBackupSelections.v3.ps1` and is useful when you want to inspect configured datasource selections directly on a single endpoint without using RCG.
+Enumerates backup selections from the local Cove Backup Manager on the machine where the script is run. This is the local-device companion to `GetRemoteBackupSelections.v3.ps1` and is useful when you want to inspect configured datasource inclusion and exclusion paths directly on a single endpoint without using RCG.
 
 ---
 
@@ -11,17 +11,16 @@ Enumerates backup selections and schedules from the local Cove Backup Manager on
 - PowerShell 7+
 - N-able Cove Backup Manager installed on the local device
 - Sufficient permissions to query the local Backup Manager JSON-RPC endpoint
-- Excel (optional) — for XLS export if the script supports CSV/XLS output
 
 ---
 
 ## How It Works
 
-1. Connects to the local Backup Manager / JSON-RPC interface on the device where the script is executed
-2. Calls `EnumerateBackupSelections` for active datasources to collect inclusion and exclusion paths
-3. Calls `EnumerateBackupSchedule` and related schedule methods to collect configured backup timing
-4. Flattens the results into an analyst-friendly view for on-screen review and/or export
-5. Highlights selection details such as full-machine protection, explicit exclusions, and profile-driven items where applicable
+1. Connects to the local Backup Manager JSON-RPC interface on the device where the script is executed
+2. Authenticates using an InAgent authentication token from the local Backup Manager storage path
+3. Calls `EnumerateBackupSelections` for the configured datasources
+4. Flattens the returned rows into an analyst-friendly table and prints a per-datasource summary
+5. Highlights inclusion paths, exclusion paths, and profile-driven items where applicable
 
 ---
 
@@ -30,7 +29,7 @@ Enumerates backup selections and schedules from the local Cove Backup Manager on
 - Validate the exact selections on one device before rolling out profile changes
 - Compare local selections with centrally reported remote selections
 - Troubleshoot why a datasource is or is not protected
-- Review schedules and high-frequency backup configuration on a specific endpoint
+- Review inclusion, exclusion, and profile-applied backup selections on a specific endpoint
 
 ---
 
