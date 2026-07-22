@@ -1,6 +1,6 @@
 <# ----- About: ----
     # Cove Data Protection - Get Remote Device Backup Selections
-    # Revision v3 - 2026-07-20
+    # Revision v3.1 - 2026-07-22
     # Author: Eric Harless, Head Backup Nerd - N-able
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -51,7 +51,7 @@
 
 [CmdletBinding()]
     Param (
-        [Parameter(Mandatory=$False)] [string]$PartnerName  = "",                       ## Override root partner name (default: partner from stored credentials)
+        [Parameter(Mandatory=$False)] [string]$PartnerName  = "",       ## Override root partner name (default: partner from stored credentials)
         [Parameter(Mandatory=$False)] [switch]$AllPartners  = $true,                    ## Skip partner selection GUI
         [Parameter(Mandatory=$False)] [switch]$AllDevices   = $true,                    ## Skip device selection GUI
         [Parameter(Mandatory=$False)] [int]$DeviceCount     = 5000,                     ## Maximum number of devices to return
@@ -63,13 +63,18 @@
 
         [Parameter(Mandatory=$False)] [int]$DeviceThrottle  = 20,                       ## Max parallel device threads (PS7+) — keep low to avoid overloading RCG relay servers
         [Parameter(Mandatory=$False)] [switch]$RetryFailed,                    ## Retry unreachable devices once after first pass
-        [Parameter(Mandatory=$False)] [int]$ActiveWithinDays = 7,                       ## Only process devices with heartbeat within N days (0 = all devices)
+        [Parameter(Mandatory=$False)] [int]$ActiveWithinDays = 30,                       ## Only process devices with heartbeat within N days (0 = all devices)
         [Parameter(Mandatory=$False)] [switch]$RetryOnly,                              ## Skip main pass; only retry devices marked ReachableStatus=No in master CSV
         [Parameter(Mandatory=$False)] [switch]$DebugCDP,                                ## Show debug output (column counts, System State merge details, etc.)
         [Parameter(Mandatory=$False)] [int[]]$FilterAccountIDs = @(),                   ## If set, only process devices with these AccountIDs
         [Parameter(Mandatory=$False)]
         [ValidateSet('FS','SS','HypV','SQL','MySQ','Net','VM','SP','ORC','Exch')]
-        [string[]]$ExcludeColumns = @('VM','SP','ORC','Exch')                           ## Datasource columns to omit from export (e.g. 'Exch','SP')
+        [string[]]$ExcludeColumns = @('VM','SP','ORC','Exch'),                          ## Datasource columns to omit from export (e.g. 'Exch','SP')
+        [Parameter(Mandatory=$False)]
+        [ValidateSet('IP','OS','Phys','Mfr','Model','CPU','RAM','ProdID','Prod','ProfID','Prof','Excl')]
+        [string[]]$ExcludeMetaColumns = @('IP','OS','Mfr','Model','CPU','RAM','ProdID','ProfID'),                                             ## Metadata columns to omit from export (e.g. 'CPU','RAM','Phys')
+        [Parameter(Mandatory=$False)]
+        [ValidateSet('Newline','Pipe')] [string]$PathSeparator = 'Pipe'                                                                                                    ## Separator between paths in Inc+/Exc- export columns
     )
 
     ## Translate short ExcludeColumns aliases to internal abbreviations used as column prefixes
@@ -83,6 +88,20 @@
         [string[]]($ExcludeColumns | ForEach-Object { $Script:ExcludeColAliasMap[$_] }),
         [System.StringComparer]::OrdinalIgnoreCase
     )
+
+    ## Translate ExcludeMetaColumns short codes to export row key names
+    $Script:ExcludeMetaAliasMap = @{
+        'IP'    = 'IPAddress';   'OS'    = 'OS';           'Phys'  = 'Physicality'; 'Mfr'   = 'Manufacturer'
+        'Model' = 'Model';       'CPU'   = 'CPUCores';    'RAM'   = 'RAMBytes'
+        'ProdID'= 'ProductID';   'Prod'  = 'Product';     'ProfID'= 'ProfileID'
+        'Prof'  = 'Profile'
+    }
+    $Script:ExcludeMetaSet = [System.Collections.Generic.HashSet[string]]::new(
+        [string[]]($ExcludeMetaColumns | Where-Object { $_ -ne 'Excl' } | ForEach-Object { $Script:ExcludeMetaAliasMap[$_] }),
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    $Script:ExcludeAllExcl  = $ExcludeMetaColumns -contains 'Excl'
+    $Script:PathSep         = if ($PathSeparator -eq 'Pipe') { ' | ' } else { "`n" }
 
 #region ----- Environment, Variables, Names and Paths ----
     Clear-Host
@@ -306,6 +325,19 @@
             $range = $ws.UsedRange
             [void]$range.AutoFilter()
             [void]$range.EntireColumn.Autofit()
+
+            ## Cap Inc+/Exc- columns at width 50 with word wrap
+            $headers = $ws.Rows.Item(1)
+            $lastCol = $ws.UsedRange.Columns.Count
+            for ($c = 1; $c -le $lastCol; $c++) {
+                $hdr = $ws.Cells.Item(1, $c).Text
+                if ($hdr -match ' Inc\+$| Exc-$') {
+                    $col = $ws.Columns.Item($c)
+                    $col.ColumnWidth  = 50
+                    $col.WrapText     = $true
+                }
+            }
+
             $num = 1
             $base = $(Split-Path $xlOut -Leaf) -replace '\.xlsx$'
             $nextname = $xlOut
@@ -453,9 +485,9 @@
         ## Add heartbeat cutoff if ActiveWithinDays > 0 — excludes devices whose RCG token has likely expired
         $tsFilter = if ($ActiveWithinDays -gt 0) {
             $cutoffTs = [int64]([datetime]::UtcNow.AddDays(-$ActiveWithinDays) - [datetime]'1970-01-01').TotalSeconds
-            "I59 == 1 AND I6 > $cutoffTs"
+            "AT == 1 AND I59 == 1 AND I6 > $cutoffTs"
         } else {
-            "I59 == 1"
+            "AT == 1 AND I59 == 1"
         }
         $data.params.query.Filter  = $tsFilter
         $data.params.query.Columns = @(
@@ -467,6 +499,8 @@
             "I54","I56",
             ## Feature / hardware
             "I78","I81","I84","I85",
+            ## Timezone
+            "TZ",
             ## Overall last success
             "TL",
             ## Per-datasource last successful session (new shortcodes)
@@ -482,7 +516,7 @@
             "HL",   ## Hyper-V
             "LL"    ## MySQL
         )
-        $data.params.query.OrderBy = "I1 ASC"   ## Device name ascending
+        $data.params.query.OrderBy = "TS DESC"   ## Device name ascending
         $data.params.query.StartRecordNumber = 0
         $data.params.query.RecordsCount = $DeviceCount
         $data.params.query.Totals = @("COUNT(AT==1)")
@@ -497,6 +531,13 @@
 
         $Script:DeviceResponse = Invoke-RestMethod @params
 
+        ## Debug: dump raw Settings for first device to verify column names returned by API
+        if ($Script:DebugCDP -and $Script:DeviceResponse.result.result.Count -gt 0) {
+            $firstDev = $Script:DeviceResponse.result.result[0]
+            $settingsObj = if ($firstDev.Settings -is [array]) { $firstDev.Settings[0] } else { $firstDev.Settings }
+            Write-Host "  [DEBUG] Settings properties: $($settingsObj.PSObject.Properties.Name -join ', ')" -ForegroundColor DarkGray
+            Write-Host "  [DEBUG] I10(Prod)=$($settingsObj.I10)  I17(CV)=$($settingsObj.I17)  I56(Prof)=$($settingsObj.I56)  TZ=$($settingsObj.TZ)" -ForegroundColor DarkGray
+        }
         $Script:DeviceDetail = @()
         ForEach ($DeviceResult in $Script:DeviceResponse.result.result) {
             $Script:DeviceDetail += New-Object -TypeName PSObject -Property @{
@@ -528,6 +569,7 @@
                 TimeStamp    = Convert-UnixTimeToDateTime ($DeviceResult.Settings.I6  -join '')  ## TS
                 LastSuccess  = Convert-UnixTimeToDateTime ($DeviceResult.Settings.TL  -join '')
                 CreationDate = Convert-UnixTimeToDateTime ($DeviceResult.Settings.I4  -join '')  ## CD
+                TimeZone     = $DeviceResult.Settings.TZ  -join ''  ## TZ
                 ClientVersion = ($DeviceResult.Settings.I17 -join '').Trim()  ## VN
                 IPAddress    = $DeviceResult.Settings.I19 -join ''  ## IP (internal); I20 = external IP
                 Manufacturer = $DeviceResult.Settings.I44 -join ''  ## MF
@@ -578,7 +620,7 @@
         # Result may be double-nested (result.result) or flat (result)
         $endpointsList = if ($rcgResp.result.result) { $rcgResp.result.result } else { $rcgResp.result }
         if (-not $endpointsList -or @($endpointsList).Count -eq 0) {
-            Write-Host "  No RCG endpoint (device offline or unavailable)" -ForegroundColor Yellow
+            Write-Host "  No RCG endpoint: $DeviceName" -ForegroundColor Yellow
             return $null
         }
 
@@ -589,7 +631,7 @@
 
         # Extract one-time auth_token from WebRcgUrl query param
         if (-not $rcgUrl) {
-            Write-Host "  WebRcgUrl is empty — device has no RCG endpoint" -ForegroundColor Yellow
+            Write-Host "  No RCG URL: $DeviceName" -ForegroundColor Yellow
             return $null
         }
         if (-not ($rcgUrl -match "auth_token=([^&]+)")) {
@@ -835,18 +877,24 @@
             ## This allows empty/missing paths (e.g., System State) to convert to "(all)"
             $includes = @($Selections | Where-Object { $_.Type -in @('Include','Inclusive') } |
                          ForEach-Object {
-                             $p = if ($_.Path) { $_.Path } else { '(all)' }
-                             if ($_.Flags -contains 'CreatedByAccountProfile') { "$p [p]" } else { $p }
+                             $p      = if ($_.Path) { $_.Path } else { '(all)' }
+                             $isRoot = ($_.Path -eq '\' -or $_.Path -eq '/' -or $_.Path -eq 'System State' -or $_.Path -eq '' -or -not $_.Path)
+                             if ($_.Flags -contains 'CreatedByAccountProfile') { "[P] $p" }
+                             elseif ($isRoot -and $p -ne '(all)')              { "[X] $p" }
+                             else                                               { "[L] $p" }
                          } |
-                         Sort-Object) -join ";"
+                         Sort-Object | Select-Object -Unique) -join ";"
             $excludes = @($Selections | Where-Object { $_.Type -in @('Exclude','Exclusive') -and $_.Path } |
                          ForEach-Object {
-                             if ($_.Flags -contains 'CreatedByAccountProfile') { "$($_.Path) [p]" } else { $_.Path }
-                         } | Sort-Object) -join ";"
+                             $isRoot = ($_.Path -eq '\' -or $_.Path -eq '/')
+                             if ($_.Flags -contains 'CreatedByAccountProfile') { "[P] $($_.Path)" }
+                             elseif ($isRoot)                                  { "[X] $($_.Path)" }
+                             else                                               { "[L] $($_.Path)" }
+                         } | Sort-Object | Select-Object -Unique) -join ";"
             
-            ## Clean up multiple "(all)" entries (e.g., "(all);(all)" -> "(all)")
-            if ($includes -match '^\(all\);' -or $includes -match ';\(all\)') {
-                $includes = '(all)'
+            ## Clean up multiple "(all)" entries (e.g., "[L] (all);[L] (all)" -> "[L] (all)")
+            if ($includes -match '^\[L\] \(all\);' -or $includes -match ';\[L\] \(all\)') {
+                $includes = '[L] (all)'
             }
             
             $result["${PluginId}_Include"] = $includes
@@ -978,6 +1026,7 @@
                 ProfileID = if ($DeviceObj.ProfileID) { $DeviceObj.ProfileID } else { "" }
                 Profile   = if ($DeviceObj.Profile)   { $DeviceObj.Profile }   else { "" }
                 ClientVersion = if ($DeviceObj.ClientVersion) { $DeviceObj.ClientVersion } else { "" }
+                TimeZone     = if ($DeviceObj.TimeZone)      { $DeviceObj.TimeZone }      else { "" }
                 CreationDate = if ($DeviceObj.CreationDate -is [datetime]) { $DeviceObj.CreationDate.ToString("yyyy-MM-dd HH:mm:ss UTC") } else { $DeviceObj.CreationDate }
                 TimeStamp = if ($DeviceObj.TimeStamp -is [datetime]) { $DeviceObj.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss UTC") } else { $DeviceObj.TimeStamp }
                 LastSuccess = if ($DeviceObj.LastSuccess -is [datetime]) { $DeviceObj.LastSuccess.ToString("yyyy-MM-dd HH:mm:ss UTC") } else { $DeviceObj.LastSuccess }
@@ -1055,6 +1104,7 @@
                 $existingRow | Add-Member -NotePropertyName 'ProfileID'    -NotePropertyValue $DeviceObj.ProfileID    -Force
                 $existingRow | Add-Member -NotePropertyName 'Profile'      -NotePropertyValue $DeviceObj.Profile      -Force
                 $existingRow | Add-Member -NotePropertyName 'ClientVersion' -NotePropertyValue $(if ($DeviceObj.ClientVersion) { $DeviceObj.ClientVersion } else { "" }) -Force
+                $existingRow | Add-Member -NotePropertyName 'TimeZone'     -NotePropertyValue $(if ($DeviceObj.TimeZone)      { $DeviceObj.TimeZone }      else { "" }) -Force
                 $existingRow.TimeStamp        = if ($DeviceObj.TimeStamp -is [datetime]) { $DeviceObj.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss UTC") } else { $DeviceObj.TimeStamp }
                 $existingRow.LastSuccess      = if ($DeviceObj.LastSuccess -is [datetime]) { $DeviceObj.LastSuccess.ToString("yyyy-MM-dd HH:mm:ss UTC") } else { $DeviceObj.LastSuccess }
                 ## Derive DataSources from confirmed selections (more reliable than I78 from EnumerateAccounts)
@@ -1079,18 +1129,33 @@
                 }
                 Write-Host "    [+] UPDATED device: $($DeviceObj.DeviceName) (ID: $acctId)" -ForegroundColor Green
             } else {
-                ## Device is currently unreachable — preserve old selections, only update status and timestamp
+                ## Device is currently unreachable — preserve old selections, update all API-sourced metadata
                 $existingRow.ReachableStatus = "No"
-                $existingRow.LastValidated = $now.ToString("yyyy-MM-dd HH:mm:ss UTC")
-                $existingRow.OrphanedStatus = "Active"
-                if ($DeviceObj.PartnerID -and -not $existingRow.PartnerID) {
-                    $existingRow | Add-Member -NotePropertyName 'PartnerID' -NotePropertyValue $DeviceObj.PartnerID -Force
+                $existingRow.LastValidated    = $now.ToString("yyyy-MM-dd HH:mm:ss UTC")
+                $existingRow.OrphanedStatus   = "Active"
+                $existingRow.PartnerName      = $DeviceObj.PartnerName
+                $existingRow.DeviceName       = $DeviceObj.DeviceName
+                $existingRow.ComputerName     = $DeviceObj.ComputerName
+                $existingRow.IPAddress        = $DeviceObj.IPAddress
+                $existingRow.OS               = $DeviceObj.OS
+                $existingRow.Physicality      = $DeviceObj.Physicality
+                $existingRow.Manufacturer     = $DeviceObj.Manufacturer
+                $existingRow.Model            = $DeviceObj.Model
+                $existingRow.CPUCores         = $DeviceObj.CPUCores
+                $existingRow.RAMBytes         = $DeviceObj.RAMBytes
+                $existingRow.TimeStamp        = if ($DeviceObj.TimeStamp   -is [datetime]) { $DeviceObj.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss UTC")   } else { $DeviceObj.TimeStamp   }
+                $existingRow.LastSuccess      = if ($DeviceObj.LastSuccess -is [datetime]) { $DeviceObj.LastSuccess.ToString("yyyy-MM-dd HH:mm:ss UTC") } else { $DeviceObj.LastSuccess }
+                if ($DeviceObj.PartnerID) {
+                    $existingRow | Add-Member -NotePropertyName 'PartnerID'     -NotePropertyValue $DeviceObj.PartnerID     -Force
                 }
                 if ($DeviceObj.DataSources) {
-                    $existingRow | Add-Member -NotePropertyName 'DataSources' -NotePropertyValue $DeviceObj.DataSources -Force
+                    $existingRow | Add-Member -NotePropertyName 'DataSources'   -NotePropertyValue $DeviceObj.DataSources   -Force
                 }
                 if ($DeviceObj.ClientVersion) {
                     $existingRow | Add-Member -NotePropertyName 'ClientVersion' -NotePropertyValue $DeviceObj.ClientVersion -Force
+                }
+                if ($DeviceObj.TimeZone) {
+                    $existingRow | Add-Member -NotePropertyName 'TimeZone'      -NotePropertyValue $DeviceObj.TimeZone      -Force
                 }
                 $existingRow | Add-Member -NotePropertyName 'ProductID' -NotePropertyValue $DeviceObj.ProductID -Force
                 $existingRow | Add-Member -NotePropertyName 'Product'   -NotePropertyValue $DeviceObj.Product   -Force
@@ -1134,14 +1199,19 @@
 
         $rows = $rows | Where-Object {
             $row = $_
-            ## Drop rows where metadata columns contain embedded quotes (unrecoverable column shift)
-            $metaBad = $metaColsToCheck | Where-Object { $row.$_ -match '"' }
+            ## Drop rows where metadata columns contain embedded quotes or newlines (unrecoverable column shift)
+            $metaBad = $metaColsToCheck | Where-Object { $row.$_ -match '"' -or $row.$_ -match "`n" }
             if ($metaBad) { $droppedRows.Add($row); return $false }
+            ## Clear any column that has an embedded newline (multi-line field from old CSV writer bug)
+            foreach ($col in $row.PSObject.Properties.Name) {
+                if ($row.$col -match "`n") { $row.$col = '' }
+            }
             ## Per-datasource heal: clear all 7 columns if sched/hfsched/include/lastvalidated are corrupt or shifted
             foreach ($prefix in $dsAbbrevPrefixes) {
                 $isCorrupt = ($row."${prefix}_Sched"          -match '"') -or
                              ($row."${prefix}_HFSched"        -match '"') -or
                              ($row."${prefix}_LastValidated"  -match '"') -or
+                             ($row."${prefix}_LastValidated"  -match ',') -or              ## comma = absorbed adjacent columns
                              ($row."${prefix}_HFSched"        -match '^\d{2}:\d{2}$') -or  ## bare time = Sched shift
                              ($row."${prefix}_Include"        -match '^\d{2}:\d{2}') -or   ## time in Include = shifted
                              ($row."${prefix}_Include"        -match '^\d+ \| ')             ## sched format in Include = shifted
@@ -1167,7 +1237,7 @@
         $metaColumns = @(
             'PartnerName', 'PartnerID', 'AccountID', 'DeviceName', 'ComputerName', 'IPAddress',
             'OS', 'Physicality', 'Manufacturer', 'Model', 'CPUCores', 'RAMBytes', 'ProductID', 'Product', 'ProfileID', 'Profile', 'ClientVersion',
-            'CreationDate', 'TimeStamp', 'LastSuccess', 'DataSources',
+            'TimeZone', 'CreationDate', 'TimeStamp', 'LastSuccess', 'DataSources',
             'ReachableStatus', 'LastValidated', 'OrphanedStatus'
         )
         
@@ -1225,26 +1295,38 @@
     Write-Output $Script:strLineSeparator
 
     if ($RetryOnly) {
-        ## Skip full enumeration — build device list directly from master CSV "No" rows
+        ## Enumerate devices from API to get fresh metadata (Product/Profile/TimeZone etc.) even in RetryOnly mode
+        Send-GetDevices
+        $apiLookup = @{}
+        foreach ($d in $Script:DeviceDetail) { $apiLookup[[string]$d.AccountID] = $d }
+
+        ## Build device list from master CSV "No" rows, overlaying fresh API metadata where available
         $Script:SelectedDevices = @($masterHash.Values | Where-Object { $_.ReachableStatus -in @('No','Unknown') } |
             ForEach-Object {
+                $api = $apiLookup[[string]$_.AccountID]
                 [PSCustomObject]@{
                     AccountID    = [int]$_.AccountID
                     DeviceName   = $_.DeviceName
                     ComputerName = $_.ComputerName
                     PartnerName  = $_.PartnerName
-                    PartnerID    = ""
-                    IPAddress    = $_.IPAddress
-                    OS           = $_.OS
-                    Physicality  = $_.Physicality
-                    Manufacturer = $_.Manufacturer
-                    Model        = $_.Model
-                    CPUCores     = $_.CPUCores
-                    RAMBytes     = $_.RAMBytes
+                    PartnerID    = if ($api) { $api.PartnerID }     else { "" }
+                    IPAddress    = if ($api) { $api.IPAddress }     else { $_.IPAddress }
+                    OS           = if ($api) { $api.OS }            else { $_.OS }
+                    Physicality  = if ($api) { $api.Physicality }   else { $_.Physicality }
+                    Manufacturer = if ($api) { $api.Manufacturer }  else { $_.Manufacturer }
+                    Model        = if ($api) { $api.Model }         else { $_.Model }
+                    CPUCores     = if ($api) { $api.CPUCores }      else { $_.CPUCores }
+                    RAMBytes     = if ($api) { $api.RAMBytes }      else { $_.RAMBytes }
+                    ProductID    = if ($api) { $api.ProductID }     else { $_.ProductID }
+                    Product      = if ($api) { $api.Product }       else { $_.Product }
+                    ProfileID    = if ($api) { $api.ProfileID }     else { $_.ProfileID }
+                    Profile      = if ($api) { $api.Profile }       else { $_.Profile }
+                    ClientVersion= if ($api) { $api.ClientVersion } else { $_.ClientVersion }
+                    TimeZone     = if ($api) { $api.TimeZone }      else { $_.TimeZone }
                     DataSources  = ""   ## empty = query all plugins (fallback in Get-RcgSelections)
                     CreationDate = $_.CreationDate
-                    TimeStamp    = $_.TimeStamp
-                    LastSuccess  = $_.LastSuccess
+                    TimeStamp    = if ($api) { $api.TimeStamp }     else { $_.TimeStamp }
+                    LastSuccess  = if ($api) { $api.LastSuccess }   else { $_.LastSuccess }
                 }
             })
         $retryOnlyBeforeCount = $Script:SelectedDevices.Count
@@ -1258,10 +1340,10 @@
 
         if ($AllDevices) {
             $Script:SelectedDevices = $Script:DeviceDetail |
-                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,ProductID,Product,ProfileID,Profile,ClientVersion,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK
+                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,ProductID,Product,ProfileID,Profile,ClientVersion,TimeZone,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK
         } else {
             $Script:SelectedDevices = $Script:DeviceDetail |
-                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,ProductID,Product,ProfileID,Profile,ClientVersion,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK |
+                Select-Object PartnerID,PartnerName,AccountID,DeviceName,ComputerName,IPAddress,OS,Physicality,Manufacturer,Model,CPUCores,RAMBytes,ProductID,Product,ProfileID,Profile,ClientVersion,TimeZone,DataSources,CreationDate,TimeStamp,LastSuccess,FS_LastOK,SysState_LastOK,LinuxSS_LastOK,MSSQL_LastOK,HyperV_LastOK,NetShares_LastOK,MySQL_LastOK,Exchange_LastOK,VMware_LastOK,SharePt_LastOK,Oracle_LastOK |
                 Out-GridView -Title "Select Devices | $Script:PartnerName" -OutputMode Multiple
         }
 
@@ -1424,17 +1506,31 @@
             } else {
                 $includes = ($dsRows | Where-Object { $_.Type -eq 'Inclusive' } |
                              ForEach-Object {
-                                 ## For FileSystem, SystemState, and MSSQL: normalize \, /, or System State to (all); for others, use path as-is
-                                 if ($abbrev -in @('FS', 'SysState', 'MSSQL') -and ($_.Path -eq '\' -or $_.Path -eq '/' -or $_.Path -eq 'System State' -or $_.Path -eq '' -or -not $_.Path)) {
+                                 $isRoot = ($_.Path -eq '\' -or $_.Path -eq '/' -or $_.Path -eq 'System State' -or $_.Path -eq '' -or -not $_.Path)
+                                 ## Normalize root paths for known full-datasource plugins
+                                 if ($abbrev -in @('FS', 'SysState', 'MSSQL') -and $isRoot) {
                                      $p = '(all)'
                                  } else {
                                      $p = if ($_.Path) { $_.Path } else { '(all)' }
                                  }
-                                 if ($_.Flags -contains 'CreatedByAccountProfile') { "$p [p]" } else { $p }
+                                 if ($_.Flags -contains 'CreatedByAccountProfile') {
+                                     "[P] $p"   ## active profile selection
+                                 } elseif ($isRoot -and $p -ne '(all)') {
+                                     "[X] $p"   ## orphaned profile selection (root path, profile no longer assigned)
+                                 } else {
+                                     "[L] $p"   ## local selection
+                                 }
                              } | Select-Object -Unique) -join "`n"
                 $excludes = ($dsRows | Where-Object { $_.Type -eq 'Exclusive' -and $_.Path } |
                              ForEach-Object {
-                                 if ($_.Flags -contains 'CreatedByAccountProfile') { "$($_.Path) [p]" } else { $_.Path }
+                                 $isRoot = ($_.Path -eq '\' -or $_.Path -eq '/')
+                                 if ($_.Flags -contains 'CreatedByAccountProfile') {
+                                     "[P] $($_.Path)"
+                                 } elseif ($isRoot) {
+                                     "[X] $($_.Path)"
+                                 } else {
+                                     "[L] $($_.Path)"
+                                 }
                              } | Select-Object -Unique) -join "`n"
             }
             ## Column order: Last, Inc+, Exc- (LastOK timestamp appears before selections for easier scanning)
@@ -1465,18 +1561,19 @@
         ## Specific FS path selections (not full backup)
         $fsInc = $MasterRow.FS_Include
         if ($fsInc) {
-            $hasSpecific = ($fsInc -split ';') | Where-Object { $_ -ne '' -and $_ -ne '\' -and $_ -ne '/' -and $_ -ne '(all)' }
+            $hasSpecific = ($fsInc -split ';') | ForEach-Object { $_ -replace '^\[(P|X|L)\] ','' } | Where-Object { $_ -ne '' -and $_ -ne '\' -and $_ -ne '/' -and $_ -ne '(all)' }
             if ($hasSpecific) { $anomalies += 'SPECIFIC_FS' }
         }
 
-        ## Profile: any _Include column contains [p]
+        ## Profile: any _Include column contains [P] (active profile selection)
         $incCols = $MasterRow.PSObject.Properties.Name | Where-Object { $_ -match '_Include$' }
-        if ($incCols | Where-Object { $MasterRow.$_ -match '\[p\]' }) { $anomalies += 'PROFILE' }
+        if ($incCols | Where-Object { $MasterRow.$_ -match '\[P\] ' }) { $anomalies += 'PROFILE' }
 
         ## Exclusions: any _Exclude column has data
         $excCols = $MasterRow.PSObject.Properties.Name | Where-Object { $_ -match '_Exclude$' }
         if ($excCols | Where-Object { "$($MasterRow.$_)".Trim() -ne '' }) { $anomalies += 'EXCLUSIONS' }
 
+        $xm = $Script:ExcludeMetaSet
         $row = [ordered]@{
             Anomalies    = $anomalies -join '; '
             PartnerID    = $MasterRow.PartnerID
@@ -1484,24 +1581,25 @@
             AccountID    = $MasterRow.AccountID
             DeviceName   = $MasterRow.DeviceName
             ComputerName = $MasterRow.ComputerName
-            IPAddress    = $MasterRow.IPAddress
-            OS           = $MasterRow.OS
-            Physicality  = $MasterRow.Physicality
-            Manufacturer = $MasterRow.Manufacturer
-            Model        = $MasterRow.Model
-            CPUCores      = $MasterRow.CPUCores
-            RAMBytes      = $MasterRow.RAMBytes
-            ProductID     = $MasterRow.ProductID
-            Product       = $MasterRow.Product
-            ProfileID     = $MasterRow.ProfileID
-            Profile       = $MasterRow.Profile
-            ClientVersion = $MasterRow.ClientVersion
-            DataSources   = $MasterRow.DataSources
-            CreationDate = $MasterRow.CreationDate
-            LastSuccess  = $MasterRow.LastSuccess
-            TimeStamp    = $MasterRow.TimeStamp
-            Reachable    = $MasterRow.ReachableStatus
         }
+        if (-not $xm.Contains('IPAddress'))    { $row['IPAddress']    = $MasterRow.IPAddress }
+        if (-not $xm.Contains('OS'))           { $row['OS']           = $MasterRow.OS }
+        if (-not $xm.Contains('Physicality'))  { $row['Physicality']  = $MasterRow.Physicality }
+        if (-not $xm.Contains('Manufacturer')) { $row['Manufacturer'] = $MasterRow.Manufacturer }
+        if (-not $xm.Contains('Model'))        { $row['Model']        = $MasterRow.Model }
+        if (-not $xm.Contains('CPUCores'))     { $row['CPUCores']     = $MasterRow.CPUCores }
+        if (-not $xm.Contains('RAMBytes'))     { $row['RAMBytes']     = $MasterRow.RAMBytes }
+        if (-not $xm.Contains('ProductID'))    { $row['ProductID']    = $MasterRow.ProductID }
+        if (-not $xm.Contains('Product'))      { $row['Product']      = $MasterRow.Product }
+        if (-not $xm.Contains('ProfileID'))    { $row['ProfileID']    = $MasterRow.ProfileID }
+        if (-not $xm.Contains('Profile'))      { $row['Profile']      = $MasterRow.Profile }
+        $row['ClientVersion'] = $MasterRow.ClientVersion
+        $row['DataSources']   = $MasterRow.DataSources
+        $row['TimeZone']      = $MasterRow.TimeZone
+        $row['CreationDate']  = $MasterRow.CreationDate
+        $row['LastSuccess']   = $MasterRow.LastSuccess
+        $row['TimeStamp']     = $MasterRow.TimeStamp
+        $row['Reachable']     = $MasterRow.ReachableStatus
 
         $activeDsList = @()
         $seenAbbrevs  = [System.Collections.Generic.HashSet[string]]::new()
@@ -1515,17 +1613,32 @@
             $exc  = $MasterRow."${abbrev}_Exclude"
             $last = $MasterRow."${abbrev}_LastValidated"
 
-            ## Convert ";" path separator to newline for Excel readability
-            $incFmt = if ($inc)  { $inc -replace ';', "`n" } else { '' }
-            $excFmt = if ($exc)  { $exc -replace ';', "`n" } else { '' }
+            $incFmt = if ($inc) {
+                $paths = $inc -split ';'
+                $clean = ($paths | ForEach-Object { $_ -replace '^\[(P|X|L)\] ', '' }) -join $Script:PathSep
+                $tag   = if ($paths -match '^\[P\]') { '[P]' }
+                         elseif ($paths -match '^\[X\]') { '[X]' }
+                         elseif ($paths | ForEach-Object { $_ -replace '^\[(P|X|L)\] ','' } | Where-Object { $_ -eq '\' -or $_ -eq '/' }) { '[X]' }
+                         else { '[L]' }
+                "$tag $clean"
+            } else { '' }
+            $excFmt = if ($exc) {
+                $paths = $exc -split ';'
+                $clean = ($paths | ForEach-Object { $_ -replace '^\[(P|X|L)\] ', '' }) -join $Script:PathSep
+                $tag   = if ($paths -match '^\[P\]') { '[P]' }
+                         elseif ($paths -match '^\[X\]') { '[X]' }
+                         elseif ($paths | ForEach-Object { $_ -replace '^\[(P|X|L)\] ','' } | Where-Object { $_ -eq '\' -or $_ -eq '/' }) { '[X]' }
+                         else { '[L]' }
+                "$tag $clean"
+            } else { '' }
 
             if ($inc -or $exc) { $activeDsList += $abbrev }
 
-            $row["$abbrev Sched"]   = $MasterRow."${abbrev}_Sched"
-            $row["$abbrev HFSched"] = $MasterRow."${abbrev}_HFSched"
+            $hfSched = $MasterRow."${abbrev}_HFSched"
+            $row["$abbrev Sched"]   = if ($hfSched) { $hfSched } else { $MasterRow."${abbrev}_Sched" }
             $row["$abbrev Last"]    = $last
             $row["$abbrev Inc+"]  = $incFmt
-            $row["$abbrev Exc-"]  = $excFmt
+            if (-not $Script:ExcludeAllExcl) { $row["$abbrev Exc-"] = $excFmt }
         }
 
         return [PSCustomObject]$row
