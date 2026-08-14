@@ -1,6 +1,6 @@
 <# ----- About: ----
     # N-able | Cove Data Protection | Monitor Full
-    # Revision v19 - 2024-08-23
+    # Revision v19.1 - 2026-08-14
     # Author: Eric Harless, Head Backup Nerd - N-able 
     # Twitter @Backup_Nerd  Email:eric.harless@n-able.com
     # Reddit https://www.reddit.com/r/Nable/
@@ -197,8 +197,12 @@ Function Get-USBVolumes {
         Get-Disk | Select-Object Number | Update-Disk
         $Disk = Get-Disk | Where-Object -FilterScript {$_.Bustype -eq "USB"} | Select-Object Number
     # (Exclude Null Partition Drive Letters)
+    # -ErrorAction SilentlyContinue is required because Get-Partition throws a non-terminating
+    # CimJobException per DiskNumber when a USB disk has no partitions (e.g. empty card reader slot,
+    # RAW/uninitialized disk). Non-terminating errors are NOT caught by try/catch, so try/catch alone
+    # does not suppress this - the -ErrorAction on the cmdlet itself is what silences it.
          try {
-            $USBvol = Get-Partition -DiskNumber $Disk.Number | Where-Object {$_.DriveLetter -ne "`0"} | Select-Object @{name="DriveLetter"; expression={$_.DriveLetter+":\"}} | Sort-Object DriveLetter
+            $USBvol = Get-Partition -DiskNumber $Disk.Number -ErrorAction SilentlyContinue | Where-Object {$_.DriveLetter -ne "`0"} | Select-Object @{name="DriveLetter"; expression={$_.DriveLetter+":\"}} | Sort-Object DriveLetter
          }catch{}
     # ----- End Get Disk Partion Letter for USB / Non USB Bustypes ----
         if ($USBvol) {
