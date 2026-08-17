@@ -18,7 +18,6 @@
 # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
-AMET
     # This Script is a powershell wrapper for the ServerTool command line seed loading utility.
     # It downloads, extracts and runs Servertool sequentually against a CSV device list to build or update one or more offsite speedvaults
     #
