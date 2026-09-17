@@ -46,7 +46,7 @@
     # Use the -GridView switch parameter to display output via Powershell Out-Gridview
     # Use the -DeviceCount ## (default=5000) parameter to define the maximum number of devices returned
     # Use the -Launch switch parameter to launch the XLS/CSV file after completion
-    # Use the -ExportPath (?:\Folder) parameter to specify alternate XLS/CSV file path
+    # Use the -ExportPath (?:\Folder) parameter to specify the parent export path; files are written to its Output subfolder
     # Use the -Delimiter (default=',') parameter to set the delimiter for XLS/CSV output (i.e. use ';' for The Netherland)
     # Use the -ClearCredentials parameter to remove stored API credentials at start of script
     #
@@ -78,6 +78,10 @@
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $Script:strLineSeparator = "  ---------"
     $CurrentDate = Get-Date -format "yyy-MM-dd_hh-mm-ss"
+    $OutputPath = Join-Path -Path $ExportPath -ChildPath 'Output'
+    if (-not (Test-Path $OutputPath)) {
+        New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
+    }
    
     Write-output "  Current Parameters:"
     Write-output "  -GridView      = $GridView"
@@ -475,6 +479,7 @@ if ($authenticate.PSObject.Properties['visa'] -and $authenticate.visa) {
 
     ## Export CSV
 
+    $ExportPath = $OutputPath
     $Script:csvoutputfile = "$ExportPath\$($CurrentDate)_Backup_Install_Audit_$($Partnername -replace(`" \(.*\)`",`"`") -replace(`"[^a-zA-Z_0-9]`",`"`"))_$($PartnerId).csv"
     $DeviceDetail | Export-Csv -Path $csvoutputfile -delimiter "$Delimiter" -NoTypeInformation -Encoding UTF8 -append
 
