@@ -35,7 +35,7 @@ This makes duplicate-name handling explicit and prevents silently operating on t
 
 ## Important API details
 
-- `NamePattern` is a bare substring. Pass `Henry Schein`, not `*Henry Schein*` or `%Henry Schein%`.
+- `NamePattern` is a bare substring. Pass `ABC Corp`, not `*ABC Corp*` or `%ABC Corp%`.
 - Matching is case-insensitive.
 - `GetPartnerTree` responses are double-wrapped: `response.result.result`.
 - The root/self node is not matched against its own `NamePattern`; only descendants are searched.
