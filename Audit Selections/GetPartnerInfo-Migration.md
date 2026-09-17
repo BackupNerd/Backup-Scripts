@@ -253,8 +253,5 @@ Use `$Script:PartnerId` for subsequent `EnumerateAccountStatistics`, `EnumerateP
 
 The validated project reference is:
 
-`[https://github.com/BackupNerd/Backup-Scripts/blob/master/Reporting/GetAllDeviceInstallations.v10.ps1]`
+`https://github.com/BackupNerd/Backup-Scripts/blob/master/Reporting/GetAllDeviceInstallations.v10.ps1`
 
-Additional migration notes:
-
-`C:\Scripts\0-Script Master\Cove-MCP-Server\docs\getpartnerinfo-migration.md`
