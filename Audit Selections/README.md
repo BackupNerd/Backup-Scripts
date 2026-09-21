@@ -1,30 +1,36 @@
-# GetRemoteBackupSelections.v3.ps1
+# GetRemoteBackupSelections.v5.ps1
 
 **Cove Data Protection - Remote Device Backup Selections Report**
 
-Enumerates backup selections and schedules for all Cove Backup Manager devices in a partner account by connecting to each device via the Remote Connection Gateway (RCG). Maintains a persistent master CSV across runs and produces an analyst-ready export with anomaly flagging.
+Collects backup selections and schedules from Cove Backup Manager devices through the Remote Connection Gateway (RCG). The script maintains a persistent master CSV and produces a dated analyst-friendly CSV and optional Excel workbook.
 
 ---
 
 ## Requirements
 
-- PowerShell 7+ (uses `ForEach-Object -Parallel`)
-- N-able Cove Data Protection — Standalone edition
-- Stored API credentials at `C:\ProgramData\MXB\<COMPUTERNAME>_<USERNAME>_API_Credentials.xml` (DPAPI-encrypted), or environment variables `COVE_USERNAME` / `COVE_PASSWORD`
-- Excel (optional) — for XLS export via `Export-Csv` + COM automation
+- PowerShell 7 or later (`ForEach-Object -Parallel` is required)
+- N-able Cove Data Protection Standalone edition
+- API credentials in one of these forms:
+   - DPAPI-protected XML at `C:\ProgramData\MXB\<COMPUTERNAME>_<USERNAME>_API_Credentials.xml`
+   - `COVE_USERNAME` and `COVE_PASSWORD` environment variables
+- Microsoft Excel for the default CSV/XLS export; use `-Export:$false` when Excel is unavailable
 
 ---
 
 ## How It Works
 
-1. Authenticates to `backup.management` using the machine/user credential XML or prompted credentials
-2. Calls `EnumerateAccountStatistics` to retrieve all Backup Manager devices and their metadata (OS, hardware, profile, product, client version, last success, datasource flags)
-3. Loads an existing master CSV if present; initialises a new one on first run
-4. Connects to each device in parallel via RCG and calls:
-   - `EnumerateBackupSelections` — per-datasource inclusion/exclusion paths
-   - `EnumerateBackupSchedule` + `GetHighFrequentBackupSchedule` — schedule details
-5. Merges live data into the master; unreachable devices retain their last known selections
-6. Saves the updated master CSV, then exports the full master in analyst-friendly format to a dated `Output\<date>` subfolder
+1. Authenticates to `backup.management`.
+2. Resolves the target partner through `GetPartnerTree` and `GetPartnerInfoById`.
+3. Retrieves Backup Manager devices and metadata with `EnumerateAccountStatistics`.
+4. Connects to devices in parallel through RCG.
+5. Collects datasource selections with `EnumerateBackupSelections`.
+6. Collects regular and high-frequency schedules with `EnumerateBackupSchedule` and `GetHighFrequentBackupSchedule`.
+7. Merges successful results into the persistent master CSV.
+8. Preserves the last known selections when a device cannot be reached.
+9. Automatically retries failed device connections once.
+10. Exports the full master inventory in analyst-friendly format.
+
+Datasource calls and schedule calls retry transient failures up to three times. The automatic device retry uses a reduced parallel throttle to avoid placing additional load on RCG relay servers.
 
 ---
 
@@ -32,11 +38,14 @@ Enumerates backup selections and schedules for all Cove Backup Manager devices i
 
 | File | Description |
 |------|-------------|
-| `GetRemoteBackupSelections.v3.ps1` | Main script |
-| `RemoteSelections_<Partner>_<ID>_MASTER.csv` | Persistent master — all devices, all runs |
-| `Output\<date>\<date>_RemoteSelections_<Partner>.csv` | Dated analyst export (CSV) |
-| `Output\<date>\<date>_RemoteSelections_<Partner>.xlsx` | Dated analyst export (XLS) |
-| `<ExportPath>\RemoteSelections_<Partner>_<ID>_MASTER.csv.lock` | Temporary lock file while the script is running |
+| `GetRemoteBackupSelections.v5.ps1` | Main script |
+| `RemoteSelections_<Partner>_<ID>_MASTER.csv` | Persistent inventory and selection history |
+| `Output\<date>\<timestamp>_RemoteSelections_<Partner>_<ID>.csv` | Dated analyst export |
+| `Output\<date>\<timestamp>_RemoteSelections_<Partner>_<ID>.xlsx` | Optional Excel export |
+| `Output\<date>\<timestamp>_RCG_Errors_<Partner>.csv` | Devices still failing RCG access |
+| `RemoteSelections_<Partner>_<ID>_MASTER.csv.lock` | Lock file used during master updates |
+
+When `-DebugCDP` is specified, the output folder also receives a raw schedule dump in Markdown format.
 
 ---
 
@@ -44,24 +53,26 @@ Enumerates backup selections and schedules for all Cove Backup Manager devices i
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `-PartnerName` | *(from stored credentials)* | Partner name passed to the legacy exact, case-sensitive `GetPartnerInfo` lookup |
+| `-PartnerName` | From credentials or authenticated partner | Partner name or partial name used for partner-tree lookup |
 | `-AllPartners` | `$true` | Skip GUI partner selection |
 | `-AllDevices` | `$true` | Skip GUI device selection |
 | `-DeviceCount` | `5000` | Maximum devices returned from API |
-| `-Export` | `$true` | Generate CSV / XLS output files |
+| `-Export` | `$true` | Generate CSV and Excel output |
 | `-Launch` | `$true` | Open the XLS/CSV after export |
-| `-Delimiter` | `,` | CSV field delimiter |
+| `-Delimiter` | `,` | Delimiter used while writing the live CSV; the final analyst export is comma-delimited |
 | `-ExportPath` | Script folder | Root path for master CSV and Output subfolder |
 | `-ClearCredentials` | — | Delete stored credentials and re-prompt |
-| `-DeviceThrottle` | `20` | Max parallel RCG threads |
-| `-RetryFailed` | — | Run an additional end-of-script retry for devices still unreachable after the automatic immediate retry |
-| `-RetryOnly` | — | Skip main pass; only retry devices marked unreachable in master |
-| `-ActiveWithinDays` | `7` | Only process devices with a heartbeat within N days (0 = all) |
-| `-FilterAccountIDs` | — | Process only the specified AccountIDs |
+| `-DeviceThrottle` | `20` | Maximum parallel RCG device operations |
+| `-ActiveWithinDays` | `90` | API heartbeat window; `0` includes all devices |
+| `-MaxRcgAgeHours` | `4` | Do not query RCG for devices with an older heartbeat; `0` disables this filter |
+| `-SkipRecentHours` | `72` | Reuse recent reachable master data without querying RCG; `0` disables this optimization |
+| `-RetryAuthDelayMs` | `500` | Maximum randomized delay before immediate retry authentication |
+| `-RetryOnly` | Off | Skip the normal pass and retry devices marked `No` or `Unknown` in the master |
+| `-FilterAccountIDs` | None | Process only the specified numeric AccountIDs |
 | `-ExcludeColumns` | `VM,SP,ORC,Exch` | Datasource columns to omit from export (see short codes below) |
-| `-ExcludeMetaColumns` | `IP,OS,Mfr,Model,CPU,RAM,ProdID,ProfID` | Metadata columns to omit from the analyst export |
-| `-PathSeparator` | `Pipe` | Use `Pipe` (` | `) or `Newline` between paths in export columns |
-| `-DebugCDP` | — | Enable verbose debug output and schedule dump files |
+| `-ExcludeMetaColumns` | `IP,OS,Mfr,Model,CPU,RAM,ProdID,ProfID` | Omit metadata columns from the analyst export |
+| `-PathSeparator` | `Pipe` | Use ` | ` or a newline between paths in export columns |
+| `-DebugCDP` | Off | Enable diagnostic output and raw schedule dumps |
 
 ### ExcludeColumns Short Codes
 
@@ -78,31 +89,57 @@ Enumerates backup selections and schedules for all Cove Backup Manager devices i
 | `ORC` | Oracle |
 | `Exch` | Exchange |
 
+### ExcludeMetaColumns Short Codes
+
+| Code | Export column |
+|------|---------------|
+| `IP` | `IPAddress` |
+| `OS` | `OS` |
+| `Phys` | `Physicality` |
+| `Mfr` | `Manufacturer` |
+| `Model` | `Model` |
+| `CPU` | `CPUCores` |
+| `RAM` | `RAMBytes` |
+| `ProdID` | `ProductID` |
+| `Prod` | `Product` |
+| `ProfID` | `ProfileID` |
+| `Prof` | `Profile` |
+| `Excl` | Omit all `Exc-` columns |
+
 ---
 
 ## Master CSV
 
-The master CSV is the persistent source of truth. It accumulates device records across runs:
+The master CSV is the persistent source of truth across runs.
 
-- **Reachable devices** — selections, schedules, and all metadata updated every run
-- **Unreachable devices** — metadata refreshed from `EnumerateAccountStatistics`; selections and schedules preserved from the last successful reach
-- **Orphaned devices** — devices no longer in the current inventory are flagged `NotInCurrentInventory` but retained in the master
-- **Immediate retry** — unreachable devices are automatically retried once after the first pass, regardless of `-RetryFailed`
-- **Optional final retry** — `-RetryFailed` retries any devices still unreachable after the immediate retry
+- Reachable devices receive refreshed metadata, selections, and schedules.
+- Unreachable devices receive refreshed API metadata while retaining their last successful selections and schedules.
+- Devices absent from a complete current inventory are retained and marked `NotInCurrentInventory`.
+- Recently validated devices can be skipped while retaining their existing data.
+- Devices with stale API heartbeats can be left out of RCG processing.
+- A lock file prevents concurrent instances from writing the same master.
+- Embedded CSV corruption is checked during save. Schedule-related corruption is cleared for later refresh; unrecoverable metadata rows are dropped so they can be re-added on a later full run.
 
-On save, the master is checked for CSV corruption. Schedule column corruption is self-healed (cleared for refresh on next run). Metadata column corruption causes the row to be dropped and logged for re-addition on next full run.
+Datasource calls and schedule calls retry transient failures up to three times. The automatic device retry uses a reduced parallel throttle. Devices that remain unreachable are written to the RCG error log with device identity, partner, OS, profile, storage status, timestamps, RCG host, installation information, and failure reason.
 
-A `.lock` file prevents concurrent script instances from corrupting the master CSV.
+The master contains metadata plus per-datasource fields for schedules, high-frequency schedules, selections, signatures, validation timestamps, and change indicators.
 
 ---
 
 ## Analyst Export
 
-The dated export is built from the full master on every run. Columns include:
+The dated analyst export is rebuilt from the complete master on every run. It contains device metadata such as:
 
-**Device metadata:** `Anomalies`, `PartnerID`, `PartnerName`, `AccountID`, `DeviceName`, `ComputerName`, `IPAddress`, `OS`, `Physicality`, `Manufacturer`, `Model`, `CPUCores`, `RAMBytes`, `ProductID`, `Product`, `ProfileID`, `Profile`, `ClientVersion`, `DataSources`, `CreationDate`, `LastSuccess`, `TimeStamp`, `Reachable`
+`Anomalies`, `PartnerID`, `PartnerName`, `AccountID`, `DeviceName`, `ComputerName`, `IPAddress`, `OS`, `Physicality`, `Manufacturer`, `Model`, `CPUCores`, `RAMBytes`, `ProductID`, `Product`, `ProfileID`, `Profile`, `ClientVersion`, `DataSources`, `TimeZone`, `CreationDate`, `LastSuccess`, `TimeStamp`, and `Reachable`.
 
-**Per datasource (repeated for each active datasource):** `<DS> Sched`, `<DS> HFSched`, `<DS> Last`, `<DS> Inc+`, `<DS> Exc-`
+Datasource columns include:
+
+- `<DS> Sched` — effective schedule; the high-frequency schedule is preferred when one exists
+- `<DS> Last` — last validation timestamp
+- `<DS> Inc+` — inclusion paths
+- `<DS> Exc-` — exclusion paths, unless `Excl` is selected
+
+The master retains regular and high-frequency schedule values separately, even though the analyst export presents the effective schedule in one column.
 
 ### Selection Path Markers
 
@@ -120,7 +157,7 @@ These markers make it easier to distinguish policy-controlled paths from local c
 
 ## Anomaly Flags
 
-Anomalies appear as a semicolon-separated list in the `Anomalies` column.
+The `Anomalies` column contains semicolon-separated flags.
 
 | Flag | Meaning |
 |------|---------|
@@ -130,9 +167,8 @@ Anomalies appear as a semicolon-separated list in the `Anomalies` column.
 | `EXCLUSIONS` | One or more datasource exclusion paths are configured |
 | `SPECIFIC_FS` | FileSystem is not backed up in full — specific paths are selected |
 | `ORPHANED_DS` | A datasource is enabled in device settings but has no selections configured |
-| `PROFILE_BASED` | On-screen/pivoted row flag for profile-created selections |
-| `NO_EXCLUSIONS` | On-screen/pivoted row flag when no exclusion path was returned |
-| `RETRY_RECOVERY` | On-screen/pivoted row flag for a device recovered during the optional retry pass |
+
+Additional diagnostics shown during processing include orphaned datasources, missing exclusions, profile-based selection counts, datasource prevalence, configuration standardization, and unexpected selection flags.
 
 ---
 
@@ -140,22 +176,25 @@ Anomalies appear as a semicolon-separated list in the `Anomalies` column.
 
 ```powershell
 # Full run — all devices, export to default path
-.\GetRemoteBackupSelections.v3.ps1
+.\GetRemoteBackupSelections.v5.ps1
 
-# Limit to 500 devices, retry unreachable ones
-.\GetRemoteBackupSelections.v3.ps1 -DeviceCount 500 -RetryFailed
+# Process no more than 500 devices
+.\GetRemoteBackupSelections.v5.ps1 -DeviceCount 500
 
-# Only retry previously unreachable devices (no main pass)
-.\GetRemoteBackupSelections.v3.ps1 -RetryOnly
+# Retry devices previously marked unreachable
+.\GetRemoteBackupSelections.v5.ps1 -RetryOnly
 
-# Exclude Exchange, SharePoint, Oracle, and VMware columns from export
-.\GetRemoteBackupSelections.v3.ps1 -ExcludeColumns Exch,SP,ORC,VM
+# Process selected devices
+.\GetRemoteBackupSelections.v5.ps1 -FilterAccountIDs 1234567,9876543
 
-# Process specific devices only
-.\GetRemoteBackupSelections.v3.ps1 -FilterAccountIDs 1234567,9876543
+# Exclude datasource and metadata columns
+.\GetRemoteBackupSelections.v5.ps1 -ExcludeColumns Exch,SP,ORC,VM -ExcludeMetaColumns IP,OS,RAM
 
-# Export to a different path, don't auto-launch
-.\GetRemoteBackupSelections.v3.ps1 -ExportPath "D:\Reports" -Launch:$false
+# Export elsewhere and do not auto-launch
+.\GetRemoteBackupSelections.v5.ps1 -ExportPath "D:\Reports" -Launch:$false
+
+# Enable diagnostics and include devices regardless of heartbeat age
+.\GetRemoteBackupSelections.v5.ps1 -DebugCDP -ActiveWithinDays 0 -MaxRcgAgeHours 0
 ```
 
 ---
@@ -174,12 +213,18 @@ Fallback: `COVE_USERNAME` and `COVE_PASSWORD` environment variables.
 
 Use `-ClearCredentials` to delete stored credentials and re-prompt on next run.
 
-### Partner lookup note
+## Retry notes
 
-This v3 script still calls the deprecated `GetPartnerInfo(name=...)` method. The lookup is exact and case-sensitive, and duplicate partner names may resolve incorrectly. The modern `GetPartnerTree` + `GetPartnerInfoById` migration has been applied to other scripts but not yet to this v3 script.
+Every normal run performs one automatic immediate retry for devices that fail the first RCG attempt. `-RetryOnly` is available for a later focused retry run.
+
+`-RetryFailed` is not an active v5 parameter; the former optional third retry pass was removed. The automatic retry is always performed.
 
 ---
 
 ## Legal
 
-Sample scripts are not supported under any N-able support program or service. Provided AS IS without warranty of any kind. N-able expressly disclaims all implied warranties. Sample scripts may contain non-public API calls which are subject to change without notification.
+Sample scripts are not supported under any N-able support program or service. They are provided AS IS without warranty of any kind. N-able expressly disclaims all implied warranties. Sample scripts may contain non-public API calls that are subject to change without notification.
+
+## Repository
+
+The latest version of this script is maintained in the [Backup-Scripts repository](https://github.com/BackupNerd/Backup-Scripts).
