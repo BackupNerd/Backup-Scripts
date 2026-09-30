@@ -21,7 +21,7 @@ selected devices, using the N-able Backup.Management JSON-RPC API.
 .\BulkSetGUIPassword.v15.ps1 -WipeGUIPassword
 
 # Target one specific device by exact name, skip partner selection entirely
-.\BulkSetGUIPassword.v15.ps1 -DeviceName "NABLE-CS66194"
+.\BulkSetGUIPassword.v15.ps1 -DeviceName "NABLE-CS66194_xdpr1"
 
 # Fully non-interactive (e.g. scheduled task) - supply the password directly
 .\BulkSetGUIPassword.v15.ps1 -DeviceName "NABLE-CS16194_xdpr1" -GUIPassword 'P@ssw0rd'
