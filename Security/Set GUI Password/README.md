@@ -1,6 +1,6 @@
-# Bulk Set GUI Password (v15)
+# Set GUI Password (v15)
 
-PowerShell script to bulk **set** or **wipe** the Cove/N-able Backup Manager GUI password across
+PowerShell script to **set** or **wipe** the Cove/N-able Backup Manager GUI password across
 selected devices, using the N-able Backup.Management JSON-RPC API.
 
 ## Requirements
@@ -15,19 +15,19 @@ selected devices, using the N-able Backup.Management JSON-RPC API.
 
 ```powershell
 # Interactive - prompts for credentials (first run only), partner, devices, and password
-.\BulkSetGUIPassword.v15.ps1
+.\SetGUIPassword.v15.ps1
 
 # Wipe the GUI password instead of setting one
-.\BulkSetGUIPassword.v15.ps1 -WipeGUIPassword
+.\SetGUIPassword.v15.ps1 -WipeGUIPassword
 
 # Target one specific device by exact name, skip partner selection entirely
-.\BulkSetGUIPassword.v15.ps1 -DeviceName "NABLE-CS66194_xdpr1"
+.\SetGUIPassword.v15.ps1 -DeviceName "NABLE-CS66194_xdpr1"
 
 # Fully non-interactive (e.g. scheduled task) - supply the password directly
-.\BulkSetGUIPassword.v15.ps1 -DeviceName "NABLE-CS16194_xdpr1" -GUIPassword 'P@ssw0rd'
+.\SetGUIPassword.v15.ps1 -DeviceName "NABLE-CS16194_xdpr1" -GUIPassword 'P@ssw0rd'
 
 # Fully non-interactive (e.g. scheduled task) - supply the password directly
-.\BulkSetGUIPassword.v15.ps1 -DeviceName "NABLE-CS16194_xdpr1" -GUIPassword (ConvertTo-SecureString 'P@ssw0rd' -AsPlainText -Force)
+.\SetGUIPassword.v15.ps1 -DeviceName "NABLE-CS16194_xdpr1" -GUIPassword (ConvertTo-SecureString 'P@ssw0rd' -AsPlainText -Force)
 
 ```
 
