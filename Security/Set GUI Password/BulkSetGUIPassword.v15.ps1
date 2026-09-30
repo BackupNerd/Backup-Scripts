@@ -1,5 +1,5 @@
 <# ----- About: ----
-    # Bulk Set SW Backup GUI Password 
+    # Set GUI Password 
     # Revision v15 - 2026-09-29 - Added -DeviceName (target device(s) by name, bypassing partner
     #   selection entirely via RecurseSubPartners), double-entry masked password confirmation,
     #   optional -GUIPassword (SecureString or plain string), -DebugCDP (masked, decoupled from
@@ -24,7 +24,7 @@
 # -----------------------------------------------------------#>  ## Legal
 
 <# ----- Compatibility: ----
-    # For use with the Standalone edition of N-able Backup
+    # For use with the Standalone edition of Cove Data Protection
 # -----------------------------------------------------------#>  ## Compatibility
 
 <# ----- Behavior: ----
@@ -72,7 +72,7 @@
     $dir = Split-Path $scriptpath
     Push-Location $dir
 
-    $ConsoleTitle = "Bulk Set GUI Password"
+    $ConsoleTitle = "Set GUI Password"
     $host.UI.RawUI.WindowTitle = $ConsoleTitle
     Write-Host "`n  $ConsoleTitle`n" -ForegroundColor Cyan
     $Syntax = Get-Command $PSCommandPath -Syntax ; Write-Host "  Script Parameter Syntax:`n`n  $Syntax" -ForegroundColor DarkGray
@@ -387,7 +387,7 @@ Function Convert-UnixTimeToDateTime($inputUnixTime){
     Function Send-GetDevices ($PartnerId, [switch]$RecurseSubPartners) {
 
         Write-Host "  Enumerating devices for partner $PartnerId$(if($RecurseSubPartners){' (incl. sub-partners)'})..." -ForegroundColor Cyan
-        Write-Progress -Id 1 -Activity "Bulk Set GUI Password" -Status "Enumerating devices..." -PercentComplete 10
+        Write-Progress -Id 1 -Activity "Set GUI Password" -Status "Enumerating devices..." -PercentComplete 10
 
         $url = "https://api.backup.management/jsonapi"
         $method = 'POST'
@@ -448,7 +448,7 @@ Function Convert-UnixTimeToDateTime($inputUnixTime){
                                                                     ProfileID      = $DeviceResult.Settings.OI -join '' }
         }
 
-        Write-Progress -Id 1 -Activity "Bulk Set GUI Password" -Completed
+        Write-Progress -Id 1 -Activity "Set GUI Password" -Completed
 
     } ## EnumerateAccountStatistics API Call
 
@@ -633,7 +633,7 @@ Function Convert-UnixTimeToDateTime($inputUnixTime){
         foreach ($selecteddevice in $SelectedDevices) {
 
         $deviceCounter++
-        Write-Progress -Id 2 -Activity "Bulk Set GUI Password" -Status "$($selecteddevice.DeviceName) ($deviceCounter of $($SelectedDevices.Count))" -PercentComplete ([int](100 * $deviceCounter / $SelectedDevices.Count))
+        Write-Progress -Id 2 -Activity "Set GUI Password" -Status "$($selecteddevice.DeviceName) ($deviceCounter of $($SelectedDevices.Count))" -PercentComplete ([int](100 * $deviceCounter / $SelectedDevices.Count))
         try {
             Send-RemoteCommand $selecteddevice
             #$result.result.result | Select-Object Id,@{Name="Status"; Expression={$_.Result.code}},@{Name="Message"; Expression={$_.Result.Message}} | Format-Table
@@ -643,7 +643,7 @@ Function Convert-UnixTimeToDateTime($inputUnixTime){
         }
 
         }
-        Write-Progress -Id 2 -Activity "Bulk Set GUI Password" -Completed
+        Write-Progress -Id 2 -Activity "Set GUI Password" -Completed
         $SecurePassword = $null; $UnsecureGUIPassword = $null   ## drop the plaintext/SecureString references now that the loop is done
 
         Write-Host "  Done." -ForegroundColor Green
